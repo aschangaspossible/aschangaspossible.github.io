@@ -1,60 +1,65 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <title>Academy Performance Report｜球員體能報告</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>網球學院｜運動員訓練成效報告</title>
 
-  <!-- 可選：Chart.js，之後你要畫圖再開啟 -->
-  <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
+  <!-- Chart.js：做柱狀圖 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- PapaParse：抓 Google Sheets CSV -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+  <!-- 產生 PDF 用：html2canvas + jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
-    /* ========= 全局設定 ========= */
     :root {
       --bg-page: #020617;
-      --bg-card: #02081a;
-      --bg-card-soft: #020b24;
-      --border-soft: rgba(148, 163, 184, 0.35);
-      --text-main: #e5f0ff;
-      --text-sub: #9ca3af;
+      --bg-card: #020617;
       --accent: #22c55e;
-      --accent-soft: rgba(34, 197, 94, 0.12);
-      --danger: #f97373;
-      --warn: #f97316;
-      --badge-green: #16a34a;
-      --badge-blue: #0ea5e9;
-      --badge-yellow: #eab308;
-      --badge-red: #ef4444;
-      --badge-text: #f9fafb;
+      --accent-alt: #38bdf8;
+      --accent-soft: #bbf7d0;
+      --text-main: #e5e7eb;
+      --text-sub: #9ca3af;
+      --text-muted: #6b7280;
+      --border-subtle: #1e293b;
+      --radius-lg: 18px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        "Noto Sans TC", sans-serif;
-      background: radial-gradient(circle at top left, #0b1635 0, #020617 40%, #000 100%);
-      color: var(--text-main);
-    }
+    * { box-sizing: border-box; }
 
     body {
-      padding: 32px 16px;
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+      background:
+        radial-gradient(circle at 10% 0, #0f172a 0, #020617 45%, #000 100%);
+      color: var(--text-main);
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* A4 直式比例的報告容器：螢幕版 */
+    .page-frame {
+      width: 800px;             /* 接近 A4 寬度 */
+      margin: 32px auto;
+      padding: 0;
     }
 
     .report-shell {
-      width: 100%;
-      max-width: 1160px;
-      background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), #020617);
+      background:
+        radial-gradient(circle at 0 0, rgba(56,189,248,0.16) 0, transparent 55%),
+        radial-gradient(circle at 100% 0, rgba(34,197,94,0.18) 0, transparent 60%),
+        radial-gradient(circle at 50% 120%, #020617 0, #000 55%);
       border-radius: 24px;
-      border: 1px solid var(--border-soft);
-      box-shadow: 0 32px 80px rgba(15, 23, 42, 0.9);
-      padding: 28px 28px 32px;
+      padding: 24px 26px 26px;
+      box-shadow:
+        0 18px 60px rgba(15,23,42,0.95),
+        0 0 0 1px rgba(148,163,184,0.25);
       position: relative;
       overflow: hidden;
     }
@@ -62,68 +67,40 @@
     .report-shell::before {
       content: "";
       position: absolute;
-      inset: -40%;
-      background:
-        radial-gradient(circle at 0 0, rgba(45, 212, 191, 0.22) 0, transparent 45%),
-        radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.22) 0, transparent 45%);
-      opacity: 0.9;
-      pointer-events: none;
+      width: 220px;
+      height: 220px;
+      border-radius: 999px;
+      border: 1px solid rgba(56,189,248,0.4);
+      right: -110px;
+      top: -70px;
+      opacity: 0.4;
+      box-shadow: 0 0 40px rgba(56,189,248,0.5);
     }
 
-    .report-inner {
+    .report-shell::after {
+      content: "";
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      border-radius: 999px;
+      border: 2px solid rgba(34,197,94,0.8);
+      left: -60px;
+      bottom: -50px;
+      opacity: 0.35;
+      box-shadow: 0 0 32px rgba(34,197,94,0.6);
+    }
+
+    header {
       position: relative;
       z-index: 1;
+      margin-bottom: 14px;
     }
 
-    h1, h2, h3, h4 {
-      margin: 0;
-      font-weight: 600;
-    }
-
-    .muted {
-      color: var(--text-sub);
-      font-size: 0.9rem;
-    }
-
-    .section {
-      margin-top: 20px;
-      padding: 18px 20px;
-      border-radius: 18px;
-      background: radial-gradient(circle at top left, rgba(51, 65, 85, 0.5) 0, rgba(15,23,42,0.9) 55%);
-      border: 1px solid rgba(148, 163, 184, 0.35);
-    }
-
-    .section + .section {
-      margin-top: 16px;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .section-header .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: #22c55e;
-      box-shadow: 0 0 10px rgba(34, 197, 94, 0.9);
-    }
-
-    .section-header h2 {
-      font-size: 1rem;
-      letter-spacing: 0.03em;
-    }
-
-    /* ========= 頁首 ========= */
-    .header-row {
+    .top-row {
       display: flex;
       justify-content: space-between;
-      gap: 24px;
-      align-items: center;
-      margin-bottom: 10px;
+      align-items: flex-start;
+      gap: 12px;
     }
 
     .title-block {
@@ -132,543 +109,1220 @@
       gap: 4px;
     }
 
-    .logo-row {
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #f9fafb;
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.92rem;
+      gap: 10px;
+    }
+
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: 2px solid rgba(34,197,94,0.9);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--accent-soft);
+      box-shadow: 0 0 18px rgba(34,197,94,0.9);
+      background: radial-gradient(circle at 30% 30%, #22c55e, #16a34a);
+    }
+
+    .brand-sub {
+      font-size: 12px;
       color: var(--text-sub);
     }
 
-    .logo-circle {
-      width: 26px;
-      height: 26px;
+    .pill-tag {
+      font-size: 11px;
+      padding: 4px 10px;
       border-radius: 999px;
-      background: radial-gradient(circle at 30% 30%, #facc15 0, #22c55e 55%, #16a34a 100%);
-      box-shadow: 0 0 12px rgba(34, 197, 94, 0.7);
-    }
-
-    .report-title {
-      font-size: 1.4rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    .controls-row {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.5);
-      background: rgba(15, 23, 42, 0.7);
-      color: var(--text-main);
-      font-size: 0.8rem;
+      border: 1px solid rgba(148,163,184,0.6);
+      background: rgba(15,23,42,0.9);
+      color: var(--text-sub);
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      cursor: pointer;
     }
 
-    .btn-primary {
-      border-color: rgba(56, 189, 248, 0.9);
-      background: linear-gradient(135deg, #0ea5e9, #22c55e);
-      color: #0b1020;
-      font-weight: 600;
+    .pill-tag span.dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 10px #22c55e;
+    }
+
+    .control-row {
+      margin-top: 10px;
+      margin-bottom: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .control-row label {
+      color: var(--text-sub);
+    }
+
+    select {
+      padding: 7px 12px;
+      font-size: 13px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.7);
+      background: rgba(15,23,42,0.95);
+      color: var(--text-main);
+      min-width: 180px;
+      appearance: none;
+      outline: none;
+      padding-right: 26px;
+      background-image: linear-gradient(45deg, transparent 50%, #9ca3af 50%),
+                        linear-gradient(135deg, #9ca3af 50%, transparent 50%);
+      background-position: calc(100% - 15px) 50%, calc(100% - 11px) 50%;
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+    }
+
+    .btn {
+      padding: 7px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,0.6);
+      background: rgba(15,23,42,0.95);
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text-sub);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:hover {
+      border-color: rgba(248,250,252,0.9);
+      color: #e5e7eb;
+      background: rgba(15,23,42,1);
     }
 
     .btn:disabled {
-      opacity: 0.7;
+      opacity: 0.55;
       cursor: default;
     }
 
-    /* ========= 基本資料區 ========= */
+    .status-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    /* 報告內容區（螢幕版） */
+    .report-body {
+      position: relative;
+      z-index: 1;
+      background: rgba(15,23,42,0.95);
+      border-radius: 18px;
+      padding: 16px 18px 18px;
+      border: 1px solid rgba(148,163,184,0.35);
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0 0 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #e5e7eb;
+    }
+
+    .section-title span.dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    .section-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin: 0 0 10px;
+    }
+
+    .profile-row {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .profile-card {
+      background: radial-gradient(circle at top left, rgba(34,197,94,0.1) 0, transparent 60%),
+                  radial-gradient(circle at bottom right, rgba(15,23,42,1) 0, #020617 80%);
+      border-radius: 14px;
+      border: 1px solid rgba(148,163,184,0.3);
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+
+    .profile-card h3 {
+      margin: 0 0 6px;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
     .profile-grid {
       display: grid;
-      grid-template-columns: 2.1fr 1.4fr;
-      gap: 16px;
+      grid-template-columns: repeat(3,minmax(0,1fr));
+      gap: 8px;
     }
 
-    .profile-cards {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+    .profile-item-title {
+      font-size: 11px;
+      color: var(--text-muted);
     }
 
-    .card {
-      padding: 12px 14px;
+    .profile-item-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f9fafb;
+    }
+
+    .summary-note {
+      font-size: 11px;
+      color: var(--text-sub);
+      line-height: 1.6;
+    }
+
+    /* 關鍵指標 + 柱狀圖 */
+    .key-metrics-section {
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    .chart-wrapper {
       border-radius: 14px;
-      background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(15,23,42,0.6));
-      border: 1px solid rgba(148, 163, 184, 0.45);
+      border: 1px solid rgba(148,163,184,0.35);
+      background: radial-gradient(circle at top, #020617 0, #000 100%);
+      padding: 10px 12px 12px;
     }
 
-    .card-title {
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
+    .chart-legend {
+      display: flex;
+      gap: 12px;
+      font-size: 11px;
       color: var(--text-sub);
       margin-bottom: 6px;
     }
 
-    .card-main-line {
-      font-size: 1rem;
-      font-weight: 600;
-    }
-
-    .card-sub-line {
-      font-size: 0.85rem;
-      color: var(--text-sub);
-      margin-top: 4px;
-    }
-
-    .summary-list {
-      font-size: 0.85rem;
-      color: var(--text-sub);
-      line-height: 1.6;
-      padding-left: 1.1rem;
-      margin: 4px 0 0;
-    }
-
-    /* ========= 圖表區 ========= */
-    .chart-wrapper {
-      padding-top: 8px;
-    }
-
-    .chart-placeholder {
-      width: 100%;
-      min-height: 220px;
-      border-radius: 14px;
-      background: radial-gradient(circle at top, rgba(56, 189, 248, 0.12) 0, rgba(15,23,42,0.95) 55%);
-      border: 1px dashed rgba(148, 163, 184, 0.5);
-      display: flex;
+    .legend-item {
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      color: var(--text-sub);
-      font-size: 0.85rem;
-      text-align: center;
-      padding: 8px;
+      gap: 6px;
     }
 
-    /* 之後你接 Chart.js 時，把這個改成 canvas */
-    /*
-    canvas#keyMetricsChart {
+    .swatch {
+      width: 14px;
+      height: 6px;
+      border-radius: 999px;
+    }
+
+    .swatch-player {
+      background: linear-gradient(to right, #22c55e, #4ade80);
+      box-shadow: 0 0 8px rgba(34,197,94,0.9);
+    }
+
+    .swatch-group {
+      background: linear-gradient(to right, #38bdf8, #0ea5e9);
+      box-shadow: 0 0 8px rgba(56,189,248,0.9);
+    }
+
+    .chart-box {
+      position: relative;
       width: 100%;
-      max-height: 260px;
+      height: 220px;
     }
-    */
 
-    /* ========= 教練建議 ========= */
-    .coach-notes {
-      font-size: 0.9rem;
+    /* 教練短評 */
+    .coach-section {
+      margin-top: 10px;
+    }
+
+    .coach-box {
+      background: rgba(15,23,42,0.98);
+      border-radius: 14px;
+      border: 1px solid rgba(148,163,184,0.35);
+      padding: 10px 12px;
+      font-size: 12px;
       color: var(--text-sub);
       line-height: 1.7;
     }
 
-    .coach-notes strong {
-      color: var(--text-main);
+    .coach-box strong {
+      color: var(--accent-soft);
     }
 
-    .bullet-list {
-      margin-top: 4px;
-      padding-left: 1.1rem;
-    }
-
-    .bullet-list li {
-      margin-bottom: 2px;
-    }
-
-    /* ========= 成績表 ========= */
-    .table-wrap {
-      margin-top: 8px;
-      border-radius: 16px;
-      border: 1px solid rgba(148,163,184,0.5);
-      overflow: hidden;
-      background: rgba(15,23,42,0.98);
+    /* 完整檢測表（螢幕版） */
+    .table-section {
+      margin-top: 12px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.8rem;
+      font-size: 11px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(148,163,184,0.4);
+      background: rgba(15,23,42,0.98);
     }
 
-    thead {
-      background: rgba(15, 23, 42, 0.95);
-    }
-
-    thead th {
-      padding: 8px 10px;
+    th, td {
+      padding: 6px 8px;
+      border-bottom: 1px solid rgba(30,41,59,0.9);
       text-align: right;
-      font-weight: 500;
-      color: var(--text-sub);
-      border-bottom: 1px solid rgba(55, 65, 81, 0.9);
       white-space: nowrap;
     }
 
-    thead th:first-child {
+    th:first-child, td:first-child {
       text-align: left;
+      max-width: 140px;
+      white-space: normal;
     }
 
-    tbody tr:nth-child(odd) {
-      background: rgba(15, 23, 42, 0.96);
+    thead th {
+      background: radial-gradient(circle at top, #020617 0, #020617 70%);
+      color: var(--text-sub);
+      font-weight: 500;
     }
 
-    tbody tr:nth-child(even) {
-      background: rgba(15, 23, 42, 0.85);
+    tbody tr:nth-child(odd) td {
+      background: rgba(15,23,42,0.9);
     }
 
-    tbody td {
-      padding: 7px 10px;
-      border-bottom: 1px solid rgba(31, 41, 55, 0.7);
-      text-align: right;
-      color: var(--text-main);
+    tbody tr:nth-child(even) td {
+      background: rgba(15,23,42,1);
     }
 
-    tbody td:first-child {
-      text-align: left;
+    tbody tr:last-child td {
+      border-bottom: none;
     }
 
-    .badge {
-      display: inline-flex;
+    .tag {
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .tag.good {
+      border-color: rgba(34,197,94,0.85);
+      background: rgba(22,163,74,0.2);
+      color: #bbf7d0;
+    }
+
+    .tag.mid {
+      border-color: rgba(250,204,21,0.8);
+      background: rgba(133,77,14,0.28);
+      color: #facc15;
+    }
+
+    .tag.bad {
+      border-color: rgba(248,113,113,0.9);
+      background: rgba(127,29,29,0.4);
+      color: #fecaca;
+    }
+
+    .tag.key {
+      border-color: rgba(59,130,246,0.9);
+      background: rgba(30,64,175,0.4);
+      color: #bfdbfe;
+    }
+
+    .footer-row {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-pdf {
+      padding: 9px 16px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: linear-gradient(to right, #22c55e, #38bdf8);
+      color: #020617;
+      box-shadow: 0 10px 30px rgba(34,197,94,0.7);
+    }
+
+    .btn-pdf:disabled {
+      opacity: 0.6;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .small-note {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    #reportSection { display: none; }
+
+    /* ========= v3：PDF 專用白底版 ========= */
+    .pdf-layout-v3 {
+      width: 794px;    /* A4 寬度對應 px（@96dpi 約 210mm） */
+      background: #f3f4f6;
+      padding: 24px 0;
+      display: none;   /* 平常隱藏，只在匯出 PDF 時顯示 */
+    }
+
+    .pdf-a4 {
+      width: 744px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 24px 28px 26px;
+      color: #111827;
+      font-size: 11px;
+      line-height: 1.6;
+      box-shadow: 0 0 0 1px #e5e7eb;
+    }
+
+    .pdf-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    .pdf-brand {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .pdf-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: #22c55e;
+      color: #ffffff;
+      display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 999px;
-      padding: 2px 10px;
-      font-size: 0.72rem;
-      font-weight: 500;
-      color: var(--badge-text);
+      font-size: 18px;
     }
 
-    .badge-green {
-      background: linear-gradient(135deg, var(--badge-green), #22c55e);
+    .pdf-brand-name {
+      font-size: 11px;
+      color: #6b7280;
     }
 
-    .badge-blue {
-      background: linear-gradient(135deg, var(--badge-blue), #38bdf8);
+    .pdf-report-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-top: 2px;
     }
 
-    .badge-yellow {
-      background: linear-gradient(135deg, var(--badge-yellow), #facc15);
-      color: #1f2933;
+    .pdf-meta {
+      text-align: right;
+      font-size: 11px;
+      color: #374151;
     }
 
-    .badge-red {
-      background: linear-gradient(135deg, var(--badge-red), #fb7185);
+    .pdf-meta div + div {
+      margin-top: 2px;
     }
 
-    .footer-note {
-      margin-top: 8px;
-      font-size: 0.75rem;
-      color: var(--text-sub);
+    .pdf-section {
+      margin-top: 10px;
+    }
+
+    .pdf-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      margin: 0 0 4px;
+    }
+
+    .pdf-section-sub {
+      font-size: 10px;
+      color: #6b7280;
+      margin: 0 0 6px;
+    }
+
+    .pdf-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+      margin-top: 4px;
+    }
+
+    .pdf-table th,
+    .pdf-table td {
+      padding: 4px 6px;
+      border: 1px solid #e5e7eb;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .pdf-table th:first-child,
+    .pdf-table td:first-child {
+      text-align: left;
+      white-space: normal;
+    }
+
+    .pdf-table thead {
+      background: #f3f4f6;
+    }
+
+    .pdf-summary-box {
+      background: #f9fafb;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      padding: 8px 10px;
+      font-size: 10px;
+    }
+
+    .pdf-footer {
+      margin-top: 10px;
+      font-size: 9px;
+      color: #9ca3af;
       text-align: right;
     }
 
-    /* ========= PDF / 列印樣式 ========= */
-    @media print {
-      html, body {
-        background: #ffffff !important;
+    @media (max-width: 820px) {
+      body { padding: 0; }
+      .page-frame {
+        width: 100%;
+        margin: 16px auto;
+        padding: 0 8px;
       }
-
-      body {
-        padding: 0;
-      }
-
       .report-shell {
-        box-shadow: none;
-        border-radius: 0;
-        border: none;
-        background: #ffffff !important;
+        padding: 18px 14px 20px;
+        border-radius: 20px;
       }
-
-      .report-shell::before {
-        display: none;
-      }
-
-      .report-inner {
-        color: #111827 !important;
-      }
-
-      .section {
-        background: #ffffff !important;
-        border: 1px solid #e5e7eb;
-      }
-
-      .header-row,
-      .section-header h2,
-      .card-main-line,
-      .coach-notes strong,
-      tbody td {
-        color: #111827 !important;
-      }
-
-      .muted,
-      .card-sub-line,
-      .summary-list,
-      .coach-notes {
-        color: #4b5563 !important;
-      }
-
-      .table-wrap {
-        background: #ffffff;
-        border-color: #d1d5db;
-      }
-
-      thead {
-        background: #f3f4f6 !important;
-      }
-
-      thead th {
-        color: #374151 !important;
-        border-bottom-color: #d1d5db;
-      }
-
-      tbody tr:nth-child(odd),
-      tbody tr:nth-child(even) {
-        background: #ffffff !important;
-      }
-
-      .badge {
-        border: 1px solid #d1d5db;
-        background: #ffffff !important;
-        color: #111827 !important;
-      }
-
-      .btn,
-      .controls-row {
-        display: none !important; /* PDF 不要控制按鈕 */
-      }
-    }
-
-    /* ========= RWD ========= */
-    @media (max-width: 768px) {
-      body {
-        padding: 16px 8px;
-      }
-
-      .report-shell {
-        padding: 18px 16px 22px;
-        border-radius: 18px;
-      }
-
-      .header-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
-
-      .profile-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .profile-cards {
-        grid-template-columns: 1fr;
-      }
-
-      .section {
-        padding: 14px 14px;
-      }
-
-      thead {
-        font-size: 0.78rem;
-      }
-
-      tbody td {
-        font-size: 0.76rem;
+      .profile-row {
+        grid-template-columns: minmax(0,1fr);
       }
     }
   </style>
 </head>
 <body>
-  <main class="report-shell">
-    <div class="report-inner">
-      <!-- 頁首 -->
-      <header class="header-row">
+
+<!-- 螢幕版深色 UI -->
+<div class="page-frame" id="pdfArea">
+  <div class="report-shell">
+    <header>
+      <div class="top-row">
         <div class="title-block">
-          <div class="logo-row">
-            <span class="logo-circle"></span>
-            <span>Match Point Lab｜網球學院體能表現中心</span>
-          </div>
-          <h1 class="report-title">ACADEMY PERFORMANCE REPORT</h1>
-          <p class="muted">本報告用於協助球員及家長了解體能現況與訓練方向，非正式醫學檢測。</p>
+          <h1>
+            <span class="logo-mark">🎾</span>
+            <span>ACADEMY PERFORMANCE REPORT</span>
+          </h1>
+          <div class="brand-sub">Match Point Lab｜網球學院體能檢測中心</div>
         </div>
-        <div class="controls-row">
-          <button class="btn" type="button">
-            選擇學員 ▼
-          </button>
-          <button class="btn" type="button">
-            重新載入 Google Sheets
-          </button>
-          <button class="btn btn-primary" type="button">
-            產生 PDF 報告
-          </button>
-        </div>
-      </header>
-
-      <!-- 區塊：運動員基本資料 -->
-      <section class="section">
-        <div class="section-header">
+        <div class="pill-tag">
           <span class="dot"></span>
-          <h2>運動員基本資料</h2>
+          <span>連線試算表 · 自動更新學員檔案</span>
         </div>
-        <div class="profile-grid">
-          <div class="profile-cards">
-            <div class="card">
-              <div class="card-title">PLAYER PROFILE</div>
-              <div class="card-main-line">李威錦</div>
-              <div class="card-sub-line">分級：U16｜慣用手：右手</div>
-              <div class="card-sub-line">測驗日期：2025-11-30｜測驗地點：Match Point Lab</div>
+      </div>
+
+      <div class="control-row">
+        <label for="studentSelect">選擇學員：</label>
+        <select id="studentSelect" disabled onchange="loadStudentData()">
+          <option value="">資料載入中...</option>
+        </select>
+        <button class="btn" id="reloadBtn" onclick="reloadSheets()">🔄 重新從 Google Sheets 載入</button>
+        <span id="statusMsg" class="status-note"></span>
+      </div>
+    </header>
+
+    <!-- 報告本體：螢幕版 -->
+    <section id="reportSection" class="report-body">
+      <!-- 基本資料 -->
+      <h2 class="section-title">
+        <span class="dot"></span> 運動員基本資料
+      </h2>
+      <p class="section-sub">
+        本報告根據最新一次「體能檢測成績」與同一分級的學員資料，自動計算平均、標準差與 Z 分數，協助教練快速掌握學員目前的位置。
+      </p>
+
+      <div class="profile-row">
+        <div class="profile-card">
+          <h3>PLAYER PROFILE</h3>
+          <div class="profile-grid">
+            <div>
+              <div class="profile-item-title">姓名</div>
+              <div class="profile-item-value" id="dispName">—</div>
             </div>
-            <div class="card">
-              <div class="card-title">SESSION SUMMARY</div>
-              <p class="card-sub-line">
-                本次測驗以同級平均為基準，Z 分數落在 <strong>-0.5 ～ +0.5</strong> 視為區間內；<br>
-                <strong>&gt; +1.0</strong> 為優勢指標；<strong>&lt; -1.0</strong> 則需優先補強。
-              </p>
+            <div>
+              <div class="profile-item-title">分級</div>
+              <div class="profile-item-value" id="dispGroup">—</div>
             </div>
-            <div class="card">
-              <div class="card-title">COACH</div>
-              <div class="card-main-line">張教練</div>
-              <div class="card-sub-line">角色：體能總教練｜專長：速度、敏捷、傷害預防</div>
-            </div>
-            <div class="card">
-              <div class="card-title">TEST PACKAGE</div>
-              <div class="card-main-line">競技體能完整檢測</div>
-              <div class="card-sub-line">30m 速度、敏捷 T-test、跳躍、握力、核心穩定度等 18 項指標</div>
+            <div>
+              <div class="profile-item-title">最近檢測日</div>
+              <div class="profile-item-value" id="dispDate">—</div>
             </div>
           </div>
         </div>
-      </section>
 
-      <!-- 區塊：關鍵指標 + 圖表 -->
-      <section class="section">
-        <div class="section-header">
-          <span class="dot"></span>
-          <h2>關鍵指標：與同級平均的差距（最多 10 項）</h2>
-        </div>
-
-        <div class="chart-wrapper">
-          <!-- 之後你可以改成 canvas + Chart.js -->
-          <div class="chart-placeholder">
-            這裡預留給關鍵指標長條圖（例如 Z 分數前 10 名）。<br />
-            你可使用 Chart.js 將「本次成績 vs 同級平均」視覺化。
-          </div>
-          <!-- <canvas id="keyMetricsChart"></canvas> -->
-        </div>
-      </section>
-
-      <!-- 區塊：教練建議 -->
-      <section class="section">
-        <div class="section-header">
-          <span class="dot"></span>
-          <h2>教練建議與短評</h2>
-        </div>
-        <div class="coach-notes">
-          依照本次測驗結果，<strong>李威錦</strong> 與 U16 同級球員相比：
-          <ul class="bullet-list">
-            <li><strong>優勢指標：</strong> 短距離衝刺、握力、等長中段拉力，速度與力量具備競爭力。</li>
-            <li><strong>待加強指標：</strong> 反應測試次數、水平軸跳（左）、耐力相關項目略低於同級平均。</li>
-            <li><strong>整體評估：</strong> 已具備良好爆發力，若能強化下肢耐力與敏捷變向，將更有利於長局數拉鋸戰。</li>
-          </ul>
-          <p class="coach-notes">
-            訓練安排上，建議未來 4～6 週可將部分訓練時間轉為
-            <strong>耐力跑 + 多方向腳步訓練</strong>，並持續維持現有力量訓練頻率，以避免優勢指標下滑。
+        <div class="profile-card">
+          <h3>SESSION SUMMARY</h3>
+          <p class="summary-note">
+            數據只和<strong>同一分級</strong>的學員做比較。Z 分數約介於 -0.5 ～ +0.5 視為接近組內平均；
+            ≥ +1 為明顯優勢；≤ -0.5 建議列為優先補強項目。
           </p>
         </div>
-      </section>
+      </div>
 
-      <!-- 區塊：成績表 -->
-      <section class="section">
-        <div class="section-header">
-          <span class="dot"></span>
-          <h2>本次檢測成績與同分級平均對照</h2>
-        </div>
-        <p class="muted" style="margin-bottom:6px;">
-          下表列出所有體能指標的檢測成績，並與同一分級學員的平均值比較。Z 分數代表與同級平均的差距程度，
-          「關鍵指標」代表在本次測驗中與同級平均差距最大的項目（前十名）。
+      <!-- 關鍵指標 + 柱狀圖（最多 10 項） -->
+      <div class="key-metrics-section">
+        <h2 class="section-title">
+          <span class="dot"></span> 關鍵指標：與同級平均的差距（最多 10 項）
+        </h2>
+        <p class="section-sub">
+          從所有測驗中挑出「Z 分數絕對值最高」的前 10 項，柱狀圖顯示學員與同級平均的差距，方便教練一眼鎖定最關鍵的優勢與弱項。
         </p>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>指標</th>
-                <th>學生</th>
-                <th>同級平均</th>
-                <th>SD</th>
-                <th>Z 分數</th>
-                <th>評估</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>衝刺直線跑 (m)</td>
-                <td>8.7</td>
-                <td>6.08</td>
-                <td>1.09</td>
-                <td>2.41</td>
-                <td><span class="badge badge-green">優於同級・關鍵指標</span></td>
-              </tr>
-              <tr>
-                <td>握力 (kg)</td>
-                <td>51.9</td>
-                <td>43.49</td>
-                <td>5.56</td>
-                <td>1.51</td>
-                <td><span class="badge badge-blue">優於同級</span></td>
-              </tr>
-              <tr>
-                <td>等長中段拉力 (N)</td>
-                <td>2840</td>
-                <td>1940.63</td>
-                <td>390.65</td>
-                <td>2.30</td>
-                <td><span class="badge badge-green">優於同級・關鍵指標</span></td>
-              </tr>
-              <tr>
-                <td>反應測試次數 (次)</td>
-                <td>54</td>
-                <td>49.71</td>
-                <td>4.40</td>
-                <td>-0.97</td>
-                <td><span class="badge badge-red">建議補強</span></td>
-              </tr>
-              <tr>
-                <td>水平軸跳 (左) (m)</td>
-                <td>10.9</td>
-                <td>11.77</td>
-                <td>1.04</td>
-                <td>-0.84</td>
-                <td><span class="badge badge-yellow">接近同級</span></td>
-              </tr>
-              <tr>
-                <td>平均橫移 (秒)</td>
-                <td>121</td>
-                <td>148.86</td>
-                <td>50.04</td>
-                <td>-0.58</td>
-                <td><span class="badge badge-yellow">接近同級</span></td>
-              </tr>
-              <!-- 之後你可以用 JS 動態產生更多列 -->
-            </tbody>
-          </table>
+        <div class="chart-wrapper">
+          <div class="chart-legend">
+            <span class="legend-item">
+              <span class="swatch swatch-player"></span> 學員本次成績
+            </span>
+            <span class="legend-item">
+              <span class="swatch swatch-group"></span> 同級平均
+            </span>
+          </div>
+          <div class="chart-box">
+            <canvas id="barChart"></canvas>
+          </div>
         </div>
+      </div>
 
-        <p class="footer-note">
-          ※ 本報告僅供教練與學員溝通訓練方向之用，非正式醫學檢測。
+      <!-- 教練短評 -->
+      <div class="coach-section">
+        <h2 class="section-title">
+          <span class="dot"></span> 教練建議與短評
+        </h2>
+        <div class="coach-box" id="coachComment">
+          請先從上方選擇學員，系統會依同級平均與 Z 分數自動整理強項與建議補強方向。
+        </div>
+      </div>
+
+      <!-- 完整檢測表（螢幕版） -->
+      <div class="table-section">
+        <h2 class="section-title">
+          <span class="dot"></span> 本次檢測成績與同分級平均對照
+        </h2>
+        <p class="section-sub">
+          下表列出所有體能指標原始成績，並與同一分級學員的平均做比較。標記為「關鍵指標」者，代表在本次檢測中離同級平均的差距最大（前十名）。
         </p>
-      </section>
-    </div>
-  </main>
+        <table>
+          <thead>
+            <tr>
+              <th>指標</th>
+              <th>學生</th>
+              <th>同級平均</th>
+              <th>SD</th>
+              <th>Z 分數</th>
+              <th>評估</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
 
-  <!-- 這裡可以接你原本的 JS：讀取 Google Sheets、產生圖表、填入表格 -->
-  <script>
-    // TODO: 之後接上你的 Google Sheets / Chart.js 程式
-    // 範例：
-    // fetch(...).then(data => updateTable(data));
-  </script>
+      <div class="footer-row">
+        <span class="small-note">※ 本報告僅供教練與學員溝通訓練方向之用，非正式醫學檢測。</span>
+        <button class="btn-pdf" id="pdfBtn" onclick="exportPDF()">📄 下載 PDF 報告</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- v3：PDF 專用白底模板（只給匯出 PDF 用） -->
+<div id="pdfLayoutV3" class="pdf-layout-v3">
+  <div class="pdf-a4">
+    <header class="pdf-header">
+      <div class="pdf-brand">
+        <div class="pdf-logo">🎾</div>
+        <div>
+          <div class="pdf-brand-name">Match Point Lab｜網球學院體能檢測中心</div>
+          <div class="pdf-report-title">運動員訓練成效報告 Athlete Performance Report</div>
+        </div>
+      </div>
+      <div class="pdf-meta">
+        <div>球員：<span id="pdfName">—</span></div>
+        <div>分級：<span id="pdfGroup">—</span></div>
+        <div>檢測日期：<span id="pdfDate">—</span></div>
+      </div>
+    </header>
+
+    <section class="pdf-section">
+      <h2 class="pdf-section-title">一、整體摘要</h2>
+      <p class="pdf-section-sub">
+        以同一分級學員為比較樣本，計算各項體能指標的平均值與標準差，並轉換為 Z 分數，用於判斷優勢與待補強項目。
+      </p>
+      <div class="pdf-summary-box" id="pdfSummaryText">
+        請先從網頁上方選擇學員。
+      </div>
+    </section>
+
+    <section class="pdf-section">
+      <h2 class="pdf-section-title">二、關鍵指標（Z 分數絕對值最高之前 10 項）</h2>
+      <table class="pdf-table">
+        <thead>
+          <tr>
+            <th>指標</th>
+            <th>學生</th>
+            <th>同級平均</th>
+            <th>Z 分數</th>
+            <th>評語</th>
+          </tr>
+        </thead>
+        <tbody id="pdfKeyBody"></tbody>
+      </table>
+    </section>
+
+    <section class="pdf-section">
+      <h2 class="pdf-section-title">三、完整檢測成績一覽</h2>
+      <table class="pdf-table">
+        <thead>
+          <tr>
+            <th>指標</th>
+            <th>學生</th>
+            <th>同級平均</th>
+            <th>SD</th>
+            <th>Z 分數</th>
+          </tr>
+        </thead>
+        <tbody id="pdfFullBody"></tbody>
+      </table>
+    </section>
+
+    <footer class="pdf-footer">
+      ※ 本報告僅供教練與學員溝通訓練方向之用，非正式醫學檢測。
+    </footer>
+  </div>
+</div>
+
+<script>
+  // ============ 試算表設定 ============
+  const FILE_ID = "1N-8HQZaxHYj4vE824raG1fWyNxt5w7B9_m8oHn8f4As";
+  const SHEETS = {
+    players: "學員主資料表",
+    tests:   "檢測成績"
+  };
+
+  // 不拿來算平均 / SD 的欄位
+  const IDENTITY_KEYS = new Set([
+    "姓名","性別","年齡","年級","分級","生日","日期","測驗日期",
+    "傷病／限制","傷勢／限制","傷勢/限制","目標",
+    "一週可上課時段","聯絡方式","備註"
+  ]);
+
+  // 這些關鍵字視為「數值越小越好」（秒數、反應時間）
+  const LOWER_BETTER_KEYS = ["10","20","505","反應","敏捷","衝刺","s","S","秒"];
+
+  function isLowerBetter(metricName) {
+    return LOWER_BETTER_KEYS.some(k => metricName.includes(k));
+  }
+
+  function parseNumber(v) {
+    if (v == null || v === "") return null;
+    const n = Number(String(v).replace(/[^\d.\-]/g,""));
+    return isNaN(n) ? null : n;
+  }
+
+  let playersByName    = new Map();
+  let testsArray       = [];
+  let testsByName      = new Map();
+  let groupMetricStats = new Map(); // 分級 → {欄位名: {mean, sd}}
+  let barChart         = null;
+
+  function csvUrlForSheet(sheetName) {
+    return `https://docs.google.com/spreadsheets/d/${FILE_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+  }
+
+  function loadSheet(sheetName) {
+    const url = csvUrlForSheet(sheetName);
+    return new Promise((resolve, reject) => {
+      Papa.parse(url, {
+        download: true,
+        header: true,
+        complete: results => resolve(results.data),
+        error: err => reject(err)
+      });
+    });
+  }
+
+  // 依「分級 × 欄位」計算平均與 SD
+  function buildGroupMetricStats() {
+    const groupMetricValues = new Map(); // group → Map(metricName → {values:[]})
+
+    testsArray.forEach(row => {
+      const name = (row["姓名"] || "").trim();
+      if (!name) return;
+
+      const playerRow = playersByName.get(name) || {};
+      const group = (playerRow["分級"] || row["分級"] || "").trim() || "-";
+
+      let metricMap = groupMetricValues.get(group);
+      if (!metricMap) {
+        metricMap = new Map();
+        groupMetricValues.set(group, metricMap);
+      }
+
+      Object.keys(row).forEach(key => {
+        if (!key || IDENTITY_KEYS.has(key)) return;
+        const val = parseNumber(row[key]);
+        if (val == null) return;
+
+        let metric = metricMap.get(key);
+        if (!metric) {
+          metric = { values: [] };
+          metricMap.set(key, metric);
+        }
+        metric.values.push(val);
+      });
+    });
+
+    groupMetricStats = new Map();
+
+    groupMetricValues.forEach((metricMap, group) => {
+      const statMap = {};
+      metricMap.forEach((m, metricName) => {
+        const vals = m.values;
+        if (!vals.length) return;
+        const mean = vals.reduce((a,b)=>a+b,0) / vals.length;
+        const variance = vals.reduce((a,b)=>a+Math.pow(b-mean,2),0) / vals.length;
+        const sd = Math.sqrt(variance);
+        statMap[metricName] = { mean, sd };
+      });
+      groupMetricStats.set(group, statMap);
+    });
+  }
+
+  async function reloadSheets() {
+    const status = document.getElementById("statusMsg");
+    const select = document.getElementById("studentSelect");
+    const report = document.getElementById("reportSection");
+
+    status.textContent = "從 Google 試算表載入中…";
+    select.disabled = true;
+    select.innerHTML = '<option value="">資料載入中...</option>';
+    report.style.display = "none";
+
+    try {
+      const [players, tests] = await Promise.all([
+        loadSheet(SHEETS.players),
+        loadSheet(SHEETS.tests)
+      ]);
+
+      // 學員主資料
+      playersByName = new Map();
+      players.forEach(row => {
+        const n = (row["姓名"] || "").trim();
+        if (!n) return;
+        playersByName.set(n, row);
+      });
+
+      // 檢測成績
+      testsArray = tests;
+      testsByName = new Map();
+      testsArray.forEach(row => {
+        const n = (row["姓名"] || "").trim();
+        if (!n) return;
+        testsByName.set(n, row);
+      });
+
+      // 算好 各分級 × 指標 的平均與 SD
+      buildGroupMetricStats();
+
+      // 下拉選單
+      const names = Array.from(testsByName.keys()).sort((a,b) =>
+        a.localeCompare(b, "zh-Hant")
+      );
+      select.innerHTML = '<option value="">— 請選擇學員 —</option>';
+      names.forEach(n => {
+        const op = document.createElement("option");
+        op.value = n;
+        op.textContent = n;
+        select.appendChild(op);
+      });
+      select.disabled = false;
+
+      status.textContent = "載入完成，請從上方選擇學員。";
+    } catch (err) {
+      console.error(err);
+      status.textContent =
+        "載入失敗，請確認試算表已公開，且分頁名稱為「學員主資料表 / 檢測成績」。";
+    }
+  }
+
+  reloadSheets();
+
+  // v3：把資料灌進 PDF 專用模板
+  function renderPdfV3({ name, group, date, metricRows, keyMetrics, strengths, weaknesses }) {
+    // 基本資料
+    document.getElementById("pdfName").textContent  = name || "—";
+    document.getElementById("pdfGroup").textContent = group || "—";
+    document.getElementById("pdfDate").textContent  = date || "—";
+
+    const withZ = metricRows.filter(r => r.z != null);
+
+    const listText = arr =>
+      !arr.length
+        ? "目前各指標大致接近同級平均。"
+        : arr.map(r => `${r.label}（Z = ${r.z.toFixed(2)}）`).join("、");
+
+    let summary = "";
+    if (withZ.length) {
+      summary =
+        `與「${group || "目前分級"}」同級學員相比，` +
+        `主要優勢指標：${listText(strengths)}；` +
+        `建議優先補強指標：${listText(weaknesses)}。` +
+        `建議在每週課表中固定安排 2～3 個補強項目，持續追蹤後續檢測的變化。`;
+    } else {
+      summary =
+        "同級樣本數較少，暫時無法計算 Z 分數。建議教練先選出 2～3 個希望拉開差距的測驗項目作為訓練主軸，並定期安排追蹤檢測。";
+    }
+    document.getElementById("pdfSummaryText").textContent = summary;
+
+    // 關鍵指標表
+    const keyBody = document.getElementById("pdfKeyBody");
+    keyBody.innerHTML = "";
+    keyMetrics.forEach(r => {
+      const tr = document.createElement("tr");
+      const evalText =
+        r.z >= 1
+          ? "優於同級"
+          : r.z <= -0.5
+            ? "建議補強"
+            : "接近同級";
+      tr.innerHTML = `
+        <td>${r.label}</td>
+        <td>${r.latest ?? "—"}</td>
+        <td>${r.mean != null ? r.mean.toFixed(2) : "—"}</td>
+        <td>${r.z != null ? r.z.toFixed(2) : "—"}</td>
+        <td>${evalText}</td>
+      `;
+      keyBody.appendChild(tr);
+    });
+
+    // 完整表格
+    const fullBody = document.getElementById("pdfFullBody");
+    fullBody.innerHTML = "";
+    metricRows
+      .slice()
+      .sort((a,b) => {
+        if (a.z == null && b.z == null) return a.label.localeCompare(b.label,"zh-Hant");
+        if (a.z == null) return 1;
+        if (b.z == null) return -1;
+        return Math.abs(b.z) - Math.abs(a.z);
+      })
+      .forEach(r => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${r.label}</td>
+          <td>${r.latest ?? "—"}</td>
+          <td>${r.mean != null ? r.mean.toFixed(2) : "—"}</td>
+          <td>${r.sd   != null ? r.sd.toFixed(2)   : "—"}</td>
+          <td>${r.z    != null ? r.z.toFixed(2)    : "—"}</td>
+        `;
+        fullBody.appendChild(tr);
+      });
+  }
+
+  function loadStudentData() {
+    const name   = document.getElementById("studentSelect").value;
+    const report = document.getElementById("reportSection");
+    const status = document.getElementById("statusMsg");
+
+    if (!name) {
+      report.style.display = "none";
+      return;
+    }
+
+    const testRow   = testsByName.get(name);
+    const playerRow = playersByName.get(name) || {};
+    if (!testRow) {
+      status.textContent = `「${name}」找不到檢測成績。`;
+      report.style.display = "none";
+      return;
+    }
+
+    const group = (playerRow["分級"] || testRow["分級"] || "").trim() || "-";
+    const groupStats = groupMetricStats.get(group) || {};
+
+    // 基本資料（螢幕版）
+    document.getElementById("dispName").textContent  = name;
+    document.getElementById("dispGroup").textContent = group || "-";
+    const date =
+      playerRow["最新檢測日"] ||
+      testRow["日期"] ||
+      testRow["測驗日期"] ||
+      "";
+    document.getElementById("dispDate").textContent = date || "-";
+
+    // 整理每個測驗指標
+    const metricRows = [];
+    Object.keys(testRow).forEach(key => {
+      if (!key || IDENTITY_KEYS.has(key)) return;
+      const latest = parseNumber(testRow[key]);
+      if (latest == null) return;
+
+      const stat = groupStats[key] || {};
+      const mean = stat.mean ?? null;
+      const sd   = stat.sd   ?? null;
+
+      let z = null;
+      if (mean != null && sd != null && sd !== 0) {
+        const lowerBetter = isLowerBetter(key);
+        z = lowerBetter ? (mean - latest) / sd : (latest - mean) / sd;
+      }
+
+      metricRows.push({
+        label: key,
+        latest,
+        mean,
+        sd,
+        z
+      });
+    });
+
+    if (!metricRows.length) {
+      status.textContent =
+        `「${name}」目前沒有可用的數值欄位，請檢查「檢測成績」分頁。`;
+      report.style.display = "none";
+      return;
+    }
+
+    // ========= 關鍵指標：取 |Z| 最大的前 10 項 =========
+    const withZ = metricRows.filter(r => r.z != null);
+    withZ.sort((a,b) => Math.abs(b.z) - Math.abs(a.z));
+    const keyMetrics = withZ.slice(0,10);
+
+    // ========= 柱狀圖：學生 vs 同級平均（螢幕版） =========
+    const barCtx = document.getElementById("barChart").getContext("2d");
+    if (barChart) barChart.destroy();
+
+    if (keyMetrics.length) {
+      barChart = new Chart(barCtx, {
+        type: "bar",
+        data: {
+          labels: keyMetrics.map(r => r.label),
+          datasets: [
+            {
+              label: "學生",
+              data: keyMetrics.map(r => r.latest),
+              backgroundColor: "rgba(34,197,94,0.8)"
+            },
+            {
+              label: "同級平均",
+              data: keyMetrics.map(r => r.mean ?? null),
+              backgroundColor: "rgba(56,189,248,0.8)"
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                font: { size: 10 },
+                color: "#e5e7eb"
+              },
+              grid: { display: false }
+            },
+            y: {
+              ticks: {
+                font: { size: 10 },
+                color: "#9ca3af"
+              },
+              grid: { color: "#1f2937" }
+            }
+          }
+        }
+      });
+    } else {
+      barCtx.clearRect(0,0,barCtx.canvas.width,barCtx.canvas.height);
+    }
+
+    // ========= 完整表格（螢幕版） =========
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+
+    const keySet = new Set(keyMetrics.map(r => r.label));
+
+    metricRows
+      .slice()
+      .sort((a,b) => {
+        if (a.z == null && b.z == null) return a.label.localeCompare(b.label,"zh-Hant");
+        if (a.z == null) return 1;
+        if (b.z == null) return -1;
+        return Math.abs(b.z) - Math.abs(a.z);
+      })
+      .forEach(row => {
+        const tr = document.createElement("tr");
+
+        let evalTag = "—";
+        if (row.z != null) {
+          if (row.z >= 1) evalTag = '<span class="tag good">優於同級</span>';
+          else if (row.z <= -0.5)
+            evalTag = '<span class="tag bad">建議補強</span>';
+          else evalTag = '<span class="tag mid">接近同級</span>';
+
+          if (keySet.has(row.label)) {
+            evalTag += ' <span class="tag key">關鍵指標</span>';
+          }
+        }
+
+        tr.innerHTML = `
+          <td>${row.label}</td>
+          <td>${row.latest ?? "—"}</td>
+          <td>${row.mean != null ? row.mean.toFixed(2) : "—"}</td>
+          <td>${row.sd   != null ? row.sd.toFixed(2)   : "—"}</td>
+          <td>${row.z    != null ? row.z.toFixed(2)    : "—"}</td>
+          <td>${evalTag}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+    // ========= 教練短評（螢幕版 + PDF 摘要共用） =========
+    const strengths = withZ
+      .filter(r => r.z >= 1)
+      .sort((a,b) => b.z - a.z)
+      .slice(0,3);
+
+    const weaknesses = withZ
+      .filter(r => r.z <= -0.5)
+      .sort((a,b) => a.z - b.z)
+      .slice(0,3);
+
+    const listText = arr =>
+      !arr.length
+        ? "目前各指標大致接近同級平均，沒有特別突出的強項或弱項。"
+        : arr.map(r => `${r.label}（Z = ${r.z.toFixed(2)}）`).join("、");
+
+    let commentHtml = "";
+    if (withZ.length) {
+      commentHtml = `
+        根據本次檢測數據，<strong>${name}</strong> 與「${group || "目前分級"}」同級學員相比：
+        <br><br>
+        ・主要<strong>優勢指標</strong>：${listText(strengths)}。<br>
+        ・建議優先<strong>補強指標</strong>：${listText(weaknesses)}。<br><br>
+        訓練安排上，可以把補強指標排進每週固定課表（例如熱身後的專項體能段落），
+        同時維持優勢指標的穩定度，讓選手在比賽中更容易把優勢能力打出來。
+      `;
+    } else {
+      commentHtml = `
+        同級樣本數較少，暫時無法計算 Z 分數。<br><br>
+        就本次檢測原始成績來看，<strong>${name}</strong> 在多數項目上的表現穩定，
+        建議教練先選 2～3 個希望明顯拉開差距的測驗項目，
+        作為下一階段訓練主軸，並持續追蹤後續檢測結果的變化。
+      `;
+    }
+    document.getElementById("coachComment").innerHTML = commentHtml;
+
+    // v3：同一組資料灌進 PDF 模板
+    renderPdfV3({ name, group, date, metricRows, keyMetrics, strengths, weaknesses });
+
+    status.textContent = "";
+    report.style.display = "block";
+  }
+
+  // ============ 產生 PDF：使用 v3 白底模板 ============
+  async function exportPDF() {
+    const report = document.getElementById("reportSection");
+    if (report.style.display === "none" || !report.innerText.trim()) {
+      alert("請先選擇一位學員並產生報告，再下載 PDF。");
+      return;
+    }
+
+    const btn  = document.getElementById("pdfBtn");
+    const name = document.getElementById("dispName").textContent || "report";
+    btn.disabled = true;
+    btn.textContent = "產生 PDF 中…";
+
+    const screenArea = document.getElementById("pdfArea");
+    const pdfAreaV3  = document.getElementById("pdfLayoutV3");
+
+    // 暫時切換成 PDF 模板
+    const prevScreenDisplay = screenArea.style.display || "";
+    const prevPdfDisplay    = pdfAreaV3.style.display || "";
+
+    screenArea.style.display = "none";
+    pdfAreaV3.style.display  = "block";
+
+    try {
+      const canvas = await html2canvas(pdfAreaV3, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const { jsPDF } = window.jspdf;
+
+      // A4 直式
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth  = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const imgWidth  = pageWidth;
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+
+      let position   = 0;
+      let heightLeft = imgHeight;
+
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, "", "FAST");
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position -= pageHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, "", "FAST");
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`AthleteReport-${name}.pdf`);
+    } catch (err) {
+      console.error(err);
+      alert("產生 PDF 時發生錯誤，請稍後再試。");
+    } finally {
+      // 還原畫面
+      screenArea.style.display = prevScreenDisplay;
+      pdfAreaV3.style.display  = prevPdfDisplay || "none";
+
+      btn.disabled = false;
+      btn.textContent = "📄 下載 PDF 報告";
+    }
+  }
+</script>
 </body>
 </html>
