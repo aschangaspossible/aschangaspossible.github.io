@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -39,11 +40,10 @@
         radial-gradient(circle at 10% 0, #0f172a 0, #020617 45%, #000 100%);
       color: var(--text-main);
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      justify-content: center;
     }
 
-    /* A4 直式比例的報告容器：螢幕版 */
+    /* A4 直式比例的報告容器：專門給 PDF 用 */
     .page-frame {
       width: 800px;             /* 接近 A4 寬度 */
       margin: 32px auto;
@@ -223,7 +223,7 @@
       margin-left: auto;
     }
 
-    /* 報告內容區（螢幕版） */
+    /* 報告內容區（給 PDF 用，寬度固定） */
     .report-body {
       position: relative;
       z-index: 1;
@@ -372,7 +372,7 @@
       color: var(--accent-soft);
     }
 
-    /* 完整檢測表（螢幕版） */
+    /* 完整檢測表 */
     .table-section {
       margin-top: 12px;
     }
@@ -485,130 +485,6 @@
 
     #reportSection { display: none; }
 
-    /* ========= v3：PDF 專用白底版 ========= */
-    .pdf-layout-v3 {
-      width: 794px;    /* A4 寬度對應 px（@96dpi 約 210mm） */
-      background: #f3f4f6;
-      padding: 24px 0;
-      display: none;   /* 平常隱藏，只在匯出 PDF 時顯示 */
-    }
-
-    .pdf-a4 {
-      width: 744px;
-      margin: 0 auto;
-      background: #ffffff;
-      border-radius: 8px;
-      padding: 24px 28px 26px;
-      color: #111827;
-      font-size: 11px;
-      line-height: 1.6;
-      box-shadow: 0 0 0 1px #e5e7eb;
-    }
-
-    .pdf-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      border-bottom: 1px solid #e5e7eb;
-      padding-bottom: 10px;
-      margin-bottom: 10px;
-    }
-
-    .pdf-brand {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .pdf-logo {
-      width: 32px;
-      height: 32px;
-      border-radius: 999px;
-      background: #22c55e;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-    }
-
-    .pdf-brand-name {
-      font-size: 11px;
-      color: #6b7280;
-    }
-
-    .pdf-report-title {
-      font-size: 15px;
-      font-weight: 700;
-      margin-top: 2px;
-    }
-
-    .pdf-meta {
-      text-align: right;
-      font-size: 11px;
-      color: #374151;
-    }
-
-    .pdf-meta div + div {
-      margin-top: 2px;
-    }
-
-    .pdf-section {
-      margin-top: 10px;
-    }
-
-    .pdf-section-title {
-      font-size: 12px;
-      font-weight: 700;
-      margin: 0 0 4px;
-    }
-
-    .pdf-section-sub {
-      font-size: 10px;
-      color: #6b7280;
-      margin: 0 0 6px;
-    }
-
-    .pdf-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 10px;
-      margin-top: 4px;
-    }
-
-    .pdf-table th,
-    .pdf-table td {
-      padding: 4px 6px;
-      border: 1px solid #e5e7eb;
-      text-align: right;
-      white-space: nowrap;
-    }
-
-    .pdf-table th:first-child,
-    .pdf-table td:first-child {
-      text-align: left;
-      white-space: normal;
-    }
-
-    .pdf-table thead {
-      background: #f3f4f6;
-    }
-
-    .pdf-summary-box {
-      background: #f9fafb;
-      border-radius: 6px;
-      border: 1px solid #e5e7eb;
-      padding: 8px 10px;
-      font-size: 10px;
-    }
-
-    .pdf-footer {
-      margin-top: 10px;
-      font-size: 9px;
-      color: #9ca3af;
-      text-align: right;
-    }
-
     @media (max-width: 820px) {
       body { padding: 0; }
       .page-frame {
@@ -627,8 +503,6 @@
   </style>
 </head>
 <body>
-
-<!-- 螢幕版深色 UI -->
 <div class="page-frame" id="pdfArea">
   <div class="report-shell">
     <header>
@@ -656,7 +530,7 @@
       </div>
     </header>
 
-    <!-- 報告本體：螢幕版 -->
+    <!-- 報告本體：這一塊會被輸出成 PDF -->
     <section id="reportSection" class="report-body">
       <!-- 基本資料 -->
       <h2 class="section-title">
@@ -727,7 +601,7 @@
         </div>
       </div>
 
-      <!-- 完整檢測表（螢幕版） -->
+      <!-- 完整檢測表 -->
       <div class="table-section">
         <h2 class="section-title">
           <span class="dot"></span> 本次檢測成績與同分級平均對照
@@ -755,72 +629,6 @@
         <button class="btn-pdf" id="pdfBtn" onclick="exportPDF()">📄 下載 PDF 報告</button>
       </div>
     </section>
-  </div>
-</div>
-
-<!-- v3：PDF 專用白底模板（只給匯出 PDF 用） -->
-<div id="pdfLayoutV3" class="pdf-layout-v3">
-  <div class="pdf-a4">
-    <header class="pdf-header">
-      <div class="pdf-brand">
-        <div class="pdf-logo">🎾</div>
-        <div>
-          <div class="pdf-brand-name">Match Point Lab｜網球學院體能檢測中心</div>
-          <div class="pdf-report-title">運動員訓練成效報告 Athlete Performance Report</div>
-        </div>
-      </div>
-      <div class="pdf-meta">
-        <div>球員：<span id="pdfName">—</span></div>
-        <div>分級：<span id="pdfGroup">—</span></div>
-        <div>檢測日期：<span id="pdfDate">—</span></div>
-      </div>
-    </header>
-
-    <section class="pdf-section">
-      <h2 class="pdf-section-title">一、整體摘要</h2>
-      <p class="pdf-section-sub">
-        以同一分級學員為比較樣本，計算各項體能指標的平均值與標準差，並轉換為 Z 分數，用於判斷優勢與待補強項目。
-      </p>
-      <div class="pdf-summary-box" id="pdfSummaryText">
-        請先從網頁上方選擇學員。
-      </div>
-    </section>
-
-    <section class="pdf-section">
-      <h2 class="pdf-section-title">二、關鍵指標（Z 分數絕對值最高之前 10 項）</h2>
-      <table class="pdf-table">
-        <thead>
-          <tr>
-            <th>指標</th>
-            <th>學生</th>
-            <th>同級平均</th>
-            <th>Z 分數</th>
-            <th>評語</th>
-          </tr>
-        </thead>
-        <tbody id="pdfKeyBody"></tbody>
-      </table>
-    </section>
-
-    <section class="pdf-section">
-      <h2 class="pdf-section-title">三、完整檢測成績一覽</h2>
-      <table class="pdf-table">
-        <thead>
-          <tr>
-            <th>指標</th>
-            <th>學生</th>
-            <th>同級平均</th>
-            <th>SD</th>
-            <th>Z 分數</th>
-          </tr>
-        </thead>
-        <tbody id="pdfFullBody"></tbody>
-      </table>
-    </section>
-
-    <footer class="pdf-footer">
-      ※ 本報告僅供教練與學員溝通訓練方向之用，非正式醫學檢測。
-    </footer>
   </div>
 </div>
 
@@ -980,78 +788,6 @@
 
   reloadSheets();
 
-  // v3：把資料灌進 PDF 專用模板
-  function renderPdfV3({ name, group, date, metricRows, keyMetrics, strengths, weaknesses }) {
-    // 基本資料
-    document.getElementById("pdfName").textContent  = name || "—";
-    document.getElementById("pdfGroup").textContent = group || "—";
-    document.getElementById("pdfDate").textContent  = date || "—";
-
-    const withZ = metricRows.filter(r => r.z != null);
-
-    const listText = arr =>
-      !arr.length
-        ? "目前各指標大致接近同級平均。"
-        : arr.map(r => `${r.label}（Z = ${r.z.toFixed(2)}）`).join("、");
-
-    let summary = "";
-    if (withZ.length) {
-      summary =
-        `與「${group || "目前分級"}」同級學員相比，` +
-        `主要優勢指標：${listText(strengths)}；` +
-        `建議優先補強指標：${listText(weaknesses)}。` +
-        `建議在每週課表中固定安排 2～3 個補強項目，持續追蹤後續檢測的變化。`;
-    } else {
-      summary =
-        "同級樣本數較少，暫時無法計算 Z 分數。建議教練先選出 2～3 個希望拉開差距的測驗項目作為訓練主軸，並定期安排追蹤檢測。";
-    }
-    document.getElementById("pdfSummaryText").textContent = summary;
-
-    // 關鍵指標表
-    const keyBody = document.getElementById("pdfKeyBody");
-    keyBody.innerHTML = "";
-    keyMetrics.forEach(r => {
-      const tr = document.createElement("tr");
-      const evalText =
-        r.z >= 1
-          ? "優於同級"
-          : r.z <= -0.5
-            ? "建議補強"
-            : "接近同級";
-      tr.innerHTML = `
-        <td>${r.label}</td>
-        <td>${r.latest ?? "—"}</td>
-        <td>${r.mean != null ? r.mean.toFixed(2) : "—"}</td>
-        <td>${r.z != null ? r.z.toFixed(2) : "—"}</td>
-        <td>${evalText}</td>
-      `;
-      keyBody.appendChild(tr);
-    });
-
-    // 完整表格
-    const fullBody = document.getElementById("pdfFullBody");
-    fullBody.innerHTML = "";
-    metricRows
-      .slice()
-      .sort((a,b) => {
-        if (a.z == null && b.z == null) return a.label.localeCompare(b.label,"zh-Hant");
-        if (a.z == null) return 1;
-        if (b.z == null) return -1;
-        return Math.abs(b.z) - Math.abs(a.z);
-      })
-      .forEach(r => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${r.label}</td>
-          <td>${r.latest ?? "—"}</td>
-          <td>${r.mean != null ? r.mean.toFixed(2) : "—"}</td>
-          <td>${r.sd   != null ? r.sd.toFixed(2)   : "—"}</td>
-          <td>${r.z    != null ? r.z.toFixed(2)    : "—"}</td>
-        `;
-        fullBody.appendChild(tr);
-      });
-  }
-
   function loadStudentData() {
     const name   = document.getElementById("studentSelect").value;
     const report = document.getElementById("reportSection");
@@ -1073,7 +809,7 @@
     const group = (playerRow["分級"] || testRow["分級"] || "").trim() || "-";
     const groupStats = groupMetricStats.get(group) || {};
 
-    // 基本資料（螢幕版）
+    // 基本資料
     document.getElementById("dispName").textContent  = name;
     document.getElementById("dispGroup").textContent = group || "-";
     const date =
@@ -1121,7 +857,7 @@
     withZ.sort((a,b) => Math.abs(b.z) - Math.abs(a.z));
     const keyMetrics = withZ.slice(0,10);
 
-    // ========= 柱狀圖：學生 vs 同級平均（螢幕版） =========
+    // ========= 柱狀圖：學生 vs 同級平均 =========
     const barCtx = document.getElementById("barChart").getContext("2d");
     if (barChart) barChart.destroy();
 
@@ -1170,13 +906,15 @@
         }
       });
     } else {
+      // 沒有 Z 的話就清空畫布
       barCtx.clearRect(0,0,barCtx.canvas.width,barCtx.canvas.height);
     }
 
-    // ========= 完整表格（螢幕版） =========
+    // ========= 完整表格 =========
     const tbody = document.getElementById("tableBody");
     tbody.innerHTML = "";
 
+    // 給表格標記哪些是「關鍵指標」
     const keySet = new Set(keyMetrics.map(r => r.label));
 
     metricRows
@@ -1185,7 +923,7 @@
         if (a.z == null && b.z == null) return a.label.localeCompare(b.label,"zh-Hant");
         if (a.z == null) return 1;
         if (b.z == null) return -1;
-        return Math.abs(b.z) - Math.abs(a.z);
+        return Math.abs(b.z) - Math.abs(a.z); // 先看關鍵
       })
       .forEach(row => {
         const tr = document.createElement("tr");
@@ -1213,7 +951,7 @@
         tbody.appendChild(tr);
       });
 
-    // ========= 教練短評（螢幕版 + PDF 摘要共用） =========
+    // ========= 教練短評 =========
     const strengths = withZ
       .filter(r => r.z >= 1)
       .sort((a,b) => b.z - a.z)
@@ -1249,14 +987,11 @@
     }
     document.getElementById("coachComment").innerHTML = commentHtml;
 
-    // v3：同一組資料灌進 PDF 模板
-    renderPdfV3({ name, group, date, metricRows, keyMetrics, strengths, weaknesses });
-
     status.textContent = "";
     report.style.display = "block";
   }
 
-  // ============ 產生 PDF：使用 v3 白底模板 ============
+  // ============ 產生 PDF：專門抓 A4 直式報告 ============
   async function exportPDF() {
     const report = document.getElementById("reportSection");
     if (report.style.display === "none" || !report.innerText.trim()) {
@@ -1269,20 +1004,12 @@
     btn.disabled = true;
     btn.textContent = "產生 PDF 中…";
 
-    const screenArea = document.getElementById("pdfArea");
-    const pdfAreaV3  = document.getElementById("pdfLayoutV3");
-
-    // 暫時切換成 PDF 模板
-    const prevScreenDisplay = screenArea.style.display || "";
-    const prevPdfDisplay    = pdfAreaV3.style.display || "";
-
-    screenArea.style.display = "none";
-    pdfAreaV3.style.display  = "block";
-
     try {
-      const canvas = await html2canvas(pdfAreaV3, {
+      const pdfArea = document.getElementById("pdfArea");
+
+      const canvas = await html2canvas(pdfArea, {
         scale: 2,
-        backgroundColor: "#ffffff",
+        backgroundColor: "#020617",
         useCORS: true
       });
 
@@ -1315,10 +1042,6 @@
       console.error(err);
       alert("產生 PDF 時發生錯誤，請稍後再試。");
     } finally {
-      // 還原畫面
-      screenArea.style.display = prevScreenDisplay;
-      pdfAreaV3.style.display  = prevPdfDisplay || "none";
-
       btn.disabled = false;
       btn.textContent = "📄 下載 PDF 報告";
     }
