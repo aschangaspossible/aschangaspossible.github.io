@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>網球學院｜運動員訓練成效報告</title>
 
-  <!-- Chart.js：做柱狀圖 -->
+  <!-- Chart.js：做柱狀圖 & 雷達圖 -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- PapaParse：抓 Google Sheets CSV -->
@@ -119,7 +119,7 @@
       gap: 10px;
     }
 
-    /* ✅ 改成給 <img> 用的 logo 樣式 */
+    /* Logo 改為 <img> 用 */
     .logo-mark {
       width: 32px;
       height: 32px;
@@ -351,7 +351,7 @@
       height: 220px;
     }
 
-    /* 教練短評 */
+    /* 教練短評（整體指標用） */
     .coach-section {
       margin-top: 10px;
     }
@@ -370,6 +370,103 @@
       color: var(--accent-soft);
     }
 
+    /* ✅ 下肢爆發力模組（新增） */
+    .lbp-card {
+      margin-top: 10px;
+      background: radial-gradient(circle at top left, rgba(34,197,94,0.12) 0, transparent 65%);
+      border-radius: 16px;
+      border: 1px solid rgba(148,163,184,0.5);
+      padding: 10px 12px;
+      display: grid;
+      grid-template-columns: 1.1fr 1.9fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .lbp-score-label {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-bottom: 2px;
+    }
+
+    .lbp-score-main {
+      font-size: 26px;
+      font-weight: 700;
+      color: #f9fafb;
+    }
+
+    .lbp-chip {
+      margin-top: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.96);
+      border: 1px solid rgba(234,179,8,0.6);
+      font-size: 11px;
+      color: #facc15;
+    }
+
+    .lbp-list {
+      font-size: 11px;
+      color: var(--text-sub);
+      line-height: 1.7;
+    }
+
+    .lbp-list em {
+      color: #e5e7eb;
+      font-style: normal;
+    }
+
+    .lbp-note {
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .radar-row {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 10px;
+    }
+
+    .radar-box {
+      background: rgba(15,23,42,0.96);
+      border-radius: 16px;
+      border: 1px solid rgba(148,163,184,0.4);
+      padding: 10px 12px 14px;
+    }
+
+    .radar-title {
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .radar-canvas-wrap {
+      position: relative;
+      width: 100%;
+      height: 240px;
+    }
+
+    .lbp-coach-card {
+      background: rgba(15,23,42,0.96);
+      border-radius: 16px;
+      border: 1px solid rgba(148,163,184,0.4);
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--text-sub);
+      line-height: 1.7;
+    }
+
+    .lbp-coach-card strong {
+      color: var(--accent-soft);
+    }
+
     /* 完整檢測表 */
     .table-section {
       margin-top: 12px;
@@ -383,7 +480,7 @@
       overflow: hidden;
       border: 1px solid rgba(148,163,184,0.6);
       background: #020617;
-      color: #f9fafb;         /* 直接指定整張表文字為白色 */
+      color: #f9fafb;
     }
 
     th, td {
@@ -391,7 +488,7 @@
       border-bottom: 1px solid rgba(30,41,59,0.9);
       text-align: right;
       white-space: nowrap;
-      color: #f9fafb;         /* 強制 th / td 文字都是白色，PDF 也看得清楚 */
+      color: #f9fafb;
     }
 
     th:first-child, td:first-child {
@@ -465,8 +562,7 @@
       cursor: pointer;
       font-size: 13px;
       font-weight: 600;
-      letter
-      -spacing: 0.08em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       background: linear-gradient(to right, #22c55e, #38bdf8);
       color: #020617;
@@ -497,7 +593,11 @@
         padding: 18px 14px 20px;
         border-radius: 20px;
       }
-      .profile-row {
+      .profile-row,
+      .radar-row {
+        grid-template-columns: minmax(0,1fr);
+      }
+      .lbp-card {
         grid-template-columns: minmax(0,1fr);
       }
     }
@@ -510,7 +610,6 @@
       <div class="top-row">
         <div class="title-block">
           <h1>
-            <!-- ✅ 這裡改成真正的圖片 logo -->
             <img
               class="logo-mark"
               src="https://aschangaspossible.github.io/logo.jpeg"
@@ -597,13 +696,50 @@
         </div>
       </div>
 
-      <!-- 教練短評 -->
+      <!-- 教練短評（整體） -->
       <div class="coach-section">
         <h2 class="section-title">
-          <span class="dot"></span> 教練建議與短評
+          <span class="dot"></span> 教練建議與短評（整體指標）
         </h2>
         <div class="coach-box" id="coachComment">
           請先從上方選擇學員，系統會依同級平均與 Z 分數自動整理強項與建議補強方向。
+        </div>
+      </div>
+
+      <!-- ✅ 下肢爆發力模組：綜合 Z + 雷達圖 + COACH NOTE -->
+      <div class="lbp-section">
+        <h2 class="section-title">
+          <span class="dot"></span> 下肢爆發力綜合指標（加權 Z-Score）
+        </h2>
+        <div class="lbp-card">
+          <div>
+            <div class="lbp-score-label">綜合 Z（Lower Body Power, Weighted）</div>
+            <div class="lbp-score-main" id="lbpCompositeZ">—</div>
+            <div class="lbp-chip" id="lbpChipText">下肢爆發力位置說明會顯示在這裡</div>
+          </div>
+          <div class="lbp-list" id="lbpPartsText">
+            IMTP（RFD 數據）Z = —<br/>
+            垂直跳（Vertical Jump）Z = —<br/>
+            立定跳遠（Broad Jump）Z = —<br/>
+            側向跳（Lateral Jump）Z = —
+          </div>
+        </div>
+        <div class="lbp-note">
+          雷達圖上的數值已轉換成 0～100 分，<strong>50 代表同級平均</strong>。
+          若某指標樣本數太少或 SD 為 0，Z 會顯示為「--」，雷達圖則暫時以 50 視為同級水準以保持圖形完整。
+        </div>
+
+        <div class="radar-row">
+          <div class="radar-box">
+            <div class="radar-title">LOWER BODY POWER · FOUR VECTORS</div>
+            <div class="radar-canvas-wrap">
+              <canvas id="lbpRadar"></canvas>
+            </div>
+          </div>
+          <div class="lbp-coach-card" id="lbpCoachNote">
+            請先從上方選擇學員，系統會依 IMTP、垂直跳、立定跳遠、側向跳四個向量的 Z 分數，
+            自動整理下肢爆發力的<strong>優勢向量</strong>與<strong>優先補強方向</strong>。
+          </div>
         </div>
       </div>
 
@@ -666,11 +802,40 @@
     return isNaN(n) ? null : n;
   }
 
+  // ✅ 下肢爆發力四個構面 + 權重 + 關鍵字
+  const LBP_CONFIG = [
+    {
+      id: "IMTP",
+      label: "IMTP（RFD 數據）",
+      weight: 0.35,
+      keywords: ["IMTP","RFD","等長","拉力"]
+    },
+    {
+      id: "VJ",
+      label: "垂直跳（Vertical Jump）",
+      weight: 0.25,
+      keywords: ["垂直跳","Vertical Jump","垂直"]
+    },
+    {
+      id: "BJ",
+      label: "立定跳遠（Broad Jump）",
+      weight: 0.25,
+      keywords: ["立定跳遠","Broad Jump","立定"]
+    },
+    {
+      id: "LJ",
+      label: "側向跳（Lateral Jump）",
+      weight: 0.15,
+      keywords: ["側向跳","Lateral Jump","側向"]
+    }
+  ];
+
   let playersByName    = new Map();
   let testsArray       = [];
   let testsByName      = new Map();
   let groupMetricStats = new Map(); // 分級 → {欄位名: {mean, sd}}
   let barChart         = null;
+  let lbpRadarChart    = null;
 
   function csvUrlForSheet(sheetName) {
     return `https://docs.google.com/spreadsheets/d/${FILE_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
@@ -688,7 +853,7 @@
     });
   }
 
-  // 依「分級 × 欄位」計算平均與 SD
+  // 依「分級 × 欄位」計算平均與 SD（給整體指標用）
   function buildGroupMetricStats() {
     const groupMetricValues = new Map(); // group → Map(metricName → {values:[]})
 
@@ -735,6 +900,45 @@
     });
   }
 
+  // 🔍 找出某構面對應的欄位名稱
+  function findMetricKeyForConfig(row, config) {
+    const keys = Object.keys(row);
+    for (const key of keys) {
+      if (!key || IDENTITY_KEYS.has(key)) continue;
+      if (config.keywords.some(kw => key.includes(kw))) {
+        return key;
+      }
+    }
+    return null;
+  }
+
+  // 依分級 + 欄位名稱重新算 mean / sd / 樣本數（給下肢模組用）
+  function getGroupStatsForMetric(group, metricKey) {
+    const values = [];
+
+    testsArray.forEach(row => {
+      const name = (row["姓名"] || "").trim();
+      if (!name) return;
+
+      const pRow = playersByName.get(name) || {};
+      const g = (pRow["分級"] || row["分級"] || "").trim() || "-";
+      if (g !== group) return;
+
+      const v = parseNumber(row[metricKey]);
+      if (v != null) values.push(v);
+    });
+
+    if (!values.length) {
+      return { mean: null, sd: null, n: 0 };
+    }
+
+    const mean = values.reduce((a,b)=>a+b,0) / values.length;
+    const variance = values.reduce((a,b)=>a + Math.pow(b-mean,2),0) / values.length;
+    const sd = Math.sqrt(variance);
+
+    return { mean, sd, n: values.length };
+  }
+
   async function reloadSheets() {
     const status = document.getElementById("statusMsg");
     const select = document.getElementById("studentSelect");
@@ -768,7 +972,7 @@
         testsByName.set(n, row);
       });
 
-      // 算好 各分級 × 指標 的平均與 SD
+      // 算好 各分級 × 指標 的平均與 SD（整體用）
       buildGroupMetricStats();
 
       // 下拉選單
@@ -825,7 +1029,7 @@
       "";
     document.getElementById("dispDate").textContent = date || "-";
 
-    // 整理每個測驗指標
+    // ========= 整體指標：整理每個測驗指標 =========
     const metricRows = [];
     Object.keys(testRow).forEach(key => {
       if (!key || IDENTITY_KEYS.has(key)) return;
@@ -957,7 +1161,7 @@
         tbody.appendChild(tr);
       });
 
-    // ========= 教練短評 =========
+    // ========= 教練短評（整體指標） =========
     const strengths = withZ
       .filter(r => r.z >= 1)
       .sort((a,b) => b.z - a.z)
@@ -992,6 +1196,203 @@
       `;
     }
     document.getElementById("coachComment").innerHTML = commentHtml;
+
+    // ========= 下肢爆發力模組 =========
+    const lbpDetails = {}; // id → {label, zRaw, zScaled, mean, sd, n, value}
+    LBP_CONFIG.forEach(cfg => {
+      const metricKey = findMetricKeyForConfig(testRow, cfg);
+      if (!metricKey) {
+        lbpDetails[cfg.id] = {
+          label: cfg.label,
+          zRaw: null,
+          zScaled: 50,
+          mean: null,
+          sd: null,
+          n: 0,
+          value: null
+        };
+        return;
+      }
+
+      const value = parseNumber(testRow[metricKey]);
+      if (value == null) {
+        lbpDetails[cfg.id] = {
+          label: cfg.label,
+          zRaw: null,
+          zScaled: 50,
+          mean: null,
+          sd: null,
+          n: 0,
+          value: null
+        };
+        return;
+      }
+
+      const stats = getGroupStatsForMetric(group, metricKey);
+      let z = null;
+      if (stats.mean != null && stats.sd != null && stats.sd !== 0 && stats.n >= 2) {
+        const lowerBetter = isLowerBetter(metricKey);
+        z = lowerBetter
+          ? (stats.mean - value) / stats.sd
+          : (value - stats.mean) / stats.sd;
+      }
+
+      // 雷達圖用：把 Z 轉成 0～100 分，50 = 同級平均
+      let zScaled = 50;
+      if (z != null) {
+        zScaled = 50 + z * 10;
+        if (zScaled < 0) zScaled = 0;
+        if (zScaled > 100) zScaled = 100;
+      }
+
+      lbpDetails[cfg.id] = {
+        label: cfg.label,
+        zRaw: z,
+        zScaled,
+        mean: stats.mean,
+        sd: stats.sd,
+        n: stats.n,
+        value
+      };
+    });
+
+    // 綜合 Z（加權）：只用有 Z 的構面，權重重新正規化
+    let weightedZ = null;
+    let wSum = 0;
+    LBP_CONFIG.forEach(cfg => {
+      const info = lbpDetails[cfg.id];
+      if (info.zRaw != null) {
+        weightedZ = (weightedZ ?? 0) + info.zRaw * cfg.weight;
+        wSum += cfg.weight;
+      }
+    });
+    if (weightedZ != null && wSum > 0) {
+      weightedZ = weightedZ / wSum;
+    }
+
+    const compositeEl = document.getElementById("lbpCompositeZ");
+    const chipEl      = document.getElementById("lbpChipText");
+    const partsEl     = document.getElementById("lbpPartsText");
+    const lbpCoachEl  = document.getElementById("lbpCoachNote");
+
+    if (weightedZ == null) {
+      compositeEl.textContent = "--";
+      chipEl.textContent = "目前樣本數不足，暫時無法計算綜合 Z。";
+    } else {
+      compositeEl.textContent = weightedZ.toFixed(2);
+      let chipText = "";
+      if (weightedZ >= 1) {
+        chipText = "下肢爆發力明顯優於同級（可以開始設計更進階的爆發訓練）";
+      } else if (weightedZ <= -0.5) {
+        chipText = "下肢爆發力略低於同級平均（建議列為優先補強目標）";
+      } else {
+        chipText = "下肢爆發力接近同級平均（可搭配技戰術訓練同步提升）";
+      }
+      chipEl.textContent = chipText;
+    }
+
+    // 各構面文字說明
+    const lines = LBP_CONFIG.map(cfg => {
+      const info = lbpDetails[cfg.id];
+      const zText = info.zRaw != null
+        ? info.zRaw.toFixed(2)
+        : "--（樣本不足，暫以同級水準處理）";
+      return `${info.label}　Z = <em>${zText}</em>`;
+    });
+    partsEl.innerHTML = lines.join("<br/>");
+
+    // 下肢專屬 COACH NOTE
+    const strengthsLBP = LBP_CONFIG
+      .map(cfg => ({ cfg, z: lbpDetails[cfg.id].zRaw }))
+      .filter(x => x.z != null && x.z >= 0.8)
+      .sort((a,b) => b.z - a.z)
+      .slice(0,2);
+
+    const weaknessesLBP = LBP_CONFIG
+      .map(cfg => ({ cfg, z: lbpDetails[cfg.id].zRaw }))
+      .filter(x => x.z != null && x.z <= -0.5)
+      .sort((a,b) => a.z - b.z)
+      .slice(0,2);
+
+    const listTextLBP = arr =>
+      !arr.length
+        ? "目前各向量大致接近同級平均，沒有特別突出或明顯落後的面向。"
+        : arr.map(x => `${x.cfg.label}（Z = ${x.z.toFixed(2)}）`).join("、");
+
+    if (weightedZ == null) {
+      lbpCoachEl.innerHTML = `
+        目前同級樣本數較少，無法穩定計算 Z 分數。<br/><br/>
+        就原始成績來看，<strong>${name}</strong> 在多數跳躍能力上的表現穩定，
+        建議先選擇 1～2 個你最在意的項目作為訓練主軸，並持續追蹤後續檢測變化。
+      `;
+    } else {
+      lbpCoachEl.innerHTML = `
+        綜合 Z 來看，<strong>${name}</strong> 的下肢爆發力大約位在同級的目前位置：
+        <strong>${weightedZ.toFixed(2)}</strong>。<br/><br/>
+        ・主要<strong>優勢向量</strong>：${listTextLBP(strengthsLBP)}。<br/>
+        ・建議<strong>優先補強向量</strong>：${listTextLBP(weaknessesLBP)}。<br/><br/>
+        實務上可以把「補強向量」排進每週固定訓練（例如週二、週四的體能課），
+        其餘時間維持優勢向量的穩定度，避免因訓練內容偏移而流失原本的爆發能力。
+      `;
+    }
+
+    // 雷達圖：四軸固定，數值 0–100，50 = 同級平均
+    const radarLabels = LBP_CONFIG.map(cfg => cfg.label);
+    const radarPlayer = LBP_CONFIG.map(cfg => lbpDetails[cfg.id].zScaled);
+    const radarAvg    = LBP_CONFIG.map(() => 50);
+
+    const ctxRadar = document.getElementById("lbpRadar").getContext("2d");
+    if (lbpRadarChart) lbpRadarChart.destroy();
+
+    lbpRadarChart = new Chart(ctxRadar, {
+      type: "radar",
+      data: {
+        labels: radarLabels,
+        datasets: [
+          {
+            label: "學員指標分數（50 = 同級平均）",
+            data: radarPlayer,
+            backgroundColor: "rgba(34,197,94,0.25)",
+            borderColor: "rgba(34,197,94,1)",
+            pointBackgroundColor: "rgba(56,189,248,1)",
+            borderWidth: 2,
+            pointRadius: 3
+          },
+          {
+            label: "同級平均（固定 50）",
+            data: radarAvg,
+            backgroundColor: "rgba(148,163,184,0.05)",
+            borderColor: "rgba(148,163,184,0.7)",
+            pointBackgroundColor: "rgba(148,163,184,0.7)",
+            borderWidth: 1,
+            pointRadius: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            suggestedMin: 20,
+            suggestedMax: 80,
+            ticks: {
+              stepSize: 10,
+              color: "#9ca3af",
+              showLabelBackdrop: false
+            },
+            grid: { color: "#1f2937" },
+            angleLines: { color: "#1f2937" },
+            pointLabels: { font: { size: 10 }, color: "#e5e7eb" }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: { font: { size: 10 }, color: "#e5e7eb" }
+          }
+        }
+      }
+    });
 
     status.textContent = "";
     report.style.display = "block";
