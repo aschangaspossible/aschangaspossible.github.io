@@ -181,12 +181,18 @@
       color: var(--muted);
     }
 
+    /* ✅ 主內容改成「主卡一整列 + 加權卡在最下面」 */
     .grid{
       margin-top: 14px;
       display:grid;
-      grid-template-columns: 1.15fr .85fr;
+      grid-template-columns: 1fr;              /* 永遠單欄 */
+      grid-template-areas:
+        "main"
+        "weights";
       gap: 14px;
     }
+    #mainSurface{ grid-area: main; }
+    #weightPanel{ grid-area: weights; }
 
     .card{
       border-radius: var(--radius);
@@ -266,12 +272,6 @@
     .radar-wrap{
       height: 360px;
       padding: 10px 6px 0;
-    }
-
-    .list{
-      display:flex;
-      flex-direction:column;
-      gap: 10px;
     }
 
     .todo{
@@ -382,12 +382,46 @@
 
     .hide{ display:none !important; }
 
+    /* ✅ 加權區塊：更像「總教練備忘錄」的排版 */
+    .memo{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 12px;
+      align-items:start;
+    }
+    .memo .panel{
+      border: 1px solid rgba(148,163,184,.18);
+      background: rgba(2,6,23,.22);
+      border-radius: 16px;
+      padding: 12px 12px;
+    }
+    .memo h3{
+      margin: 0 0 8px;
+      font-size: 13px;
+      letter-spacing:.08em;
+      color: rgba(226,232,240,.92);
+    }
+    .memo p{
+      margin: 0;
+      color: rgba(226,232,240,.82);
+      line-height: 1.85;
+      font-size: 13px;
+    }
+    .memo ul{
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: rgba(226,232,240,.82);
+      line-height: 1.85;
+      font-size: 13px;
+    }
+    .memo li{ margin: 6px 0; }
+
     @media (max-width: 980px){
-      .grid{ grid-template-columns: 1fr; }
       .player-hero{ grid-template-columns: 1fr; }
       .two-cols{ grid-template-columns: 1fr; }
       .coach-grid{ grid-template-columns: 1fr; }
       .status{ width: 100%; margin-left:0; }
+      .memo{ grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -428,7 +462,7 @@
     <!-- 主內容 -->
     <div class="grid">
 
-      <!-- LEFT: 內容區（切換球員/教練） -->
+      <!-- MAIN：內容區（切換球員/教練） -->
       <div class="card pdf-surface" id="mainSurface">
         <div class="card-h">
           <b id="viewTitle">PLAYER VERSION</b>
@@ -617,28 +651,67 @@
         </div>
       </div>
 
-      <!-- RIGHT: 小面板（可放權重說明 / 你之後要加的加權表） -->
-      <div class="card">
+      <!-- ✅ WEIGHTS：加權說明卡（永遠在最下面） -->
+      <div class="card" id="weightPanel">
         <div class="card-h">
-          <b>指標加權（教練資訊）</b>
-          <span>你給的權重已套用</span>
+          <b>總教練備忘錄｜指標加權與判讀規則</b>
+          <span>不是算漂亮，是拿來「下週就能改訓練」</span>
         </div>
         <div class="card-b">
-          <div class="muted" style="line-height:1.8">
-            <b>下肢肌力</b>：硬拉 100%<br/>
-            <b>下肢爆發力</b>：IMTP 35%｜CMJ 25%｜Broad Jump 25%｜Lateral Jump 15%<br/>
-            <b>上肢肌力</b>：Inverted Row 30%｜Push-up 30%｜Grip 25%｜Plank 15%<br/>
-            <b>上肢爆發力</b>：站姿過頭拋 30%｜晚姿過頭拋 20%｜站姿水平拋 30%｜晚姿水平拋 20%<br/>
-            <b>速度</b>：10m 60%｜20m 40%（越小越好）<br/>
-            <b>變向能力</b>：5-10-5 45%｜Spider 35%（越小越好）｜Hop test 20%<br/>
-            <b>反應</b>：反應燈 100%<br/>
-            <b>代謝能力</b>：目前未提供欄位 → 暫以 50 顯示（可之後接 YoYo / 1.2K / Beep）
+
+          <div class="memo">
+            <div class="panel">
+              <h3>我怎麼看這張雷達圖（教練決策版）</h3>
+              <p>
+                這份報告不是「誰比較厲害」，而是用同級基準把重點拉回來：<b>這位選手下一階段，該先把哪個短板補到不拖累</b>。
+                你會看到系統把各測驗轉成 Z，再換成 0–100（50=同級平均）。
+              </p>
+              <ul>
+                <li><b>先救短板：</b>任何一個大項長期低於平均，會直接拖慢技術學習速度（你會看到「練很勤但進步很慢」）。</li>
+                <li><b>再保留優勢：</b>優勢每週留 1 次刺激就夠，別讓優勢消失，但也別把週課表全塞滿。</li>
+                <li><b>別被單項騙：</b>單一測驗飆高不代表能力完整，<b>大項分數</b>才是「可訓練方向」的指北針。</li>
+              </ul>
+              <div class="muted" style="margin-top:10px">
+                0–100 轉換方式：<b>Score = clamp(50 + Z×15)</b>（Z=+1 約 65 分）。  
+                速度/敏捷類為「越小越好」，系統已自動反轉方向。
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>指標加權（目前採用）</h3>
+              <div class="muted" style="line-height:1.9">
+                <b>下肢肌力</b>：硬拉 100%<br/>
+                <b>下肢爆發力</b>：IMTP 35%｜CMJ 25%｜Broad Jump 25%｜Lateral Jump 15%<br/>
+                <b>上肢肌力</b>：Inverted Row 30%｜Push-up 30%｜Grip 25%｜Plank 15%<br/>
+                <b>上肢爆發力</b>：站姿過頭拋 30%｜晚姿過頭拋 20%｜站姿水平拋 30%｜晚姿水平拋 20%<br/>
+                <b>速度</b>：10m 60%｜20m 40%（越小越好）<br/>
+                <b>變向能力</b>：5-10-5 45%｜Spider 35%（越小越好）｜Hop test 20%<br/>
+                <b>反應</b>：反應燈 100%<br/>
+                <b>代謝能力</b>：目前未提供欄位 → 暫以 50 顯示（可之後接 YoYo / 1.2K / Beep）
+              </div>
+
+              <div class="muted" style="margin-top:10px">
+                總教練提醒：權重的目的不是「公平」，而是讓你能穩定做決策。  
+                如果某項測驗缺值，系統會自動重算權重總和，避免缺欄位把分數硬拉低。
+              </div>
+            </div>
           </div>
-          <div class="muted" style="margin-top:10px">
-            0–100 轉換方式：<b>Score = clamp(50 + Z×15)</b>（Z=+1 約 65 分）。
+
+          <div class="panel" style="margin-top:12px">
+            <h3>最常見的 3 種誤判（先講在前面）</h3>
+            <ul>
+              <li><b>把配速當爆發：</b>10m/20m 是加速能力，跟「跳得高」不是同一件事；要分開練。</li>
+              <li><b>把肌力當技術：</b>力量好不代表擊球效率高；力量只是讓你能更穩定地學技術。</li>
+              <li><b>想一次補滿：</b>報告出現 3–4 個弱項很正常，但課表只抓 1–2 個先拉回平均，進步更快。</li>
+            </ul>
+            <div class="muted" style="margin-top:10px">
+              這一塊放在最下面，就是要你每次看完數字，都回來問一句：<b>「下週，我到底要改哪三件事？」</b>
+            </div>
           </div>
+
         </div>
       </div>
+
     </div>
   </div>
 
@@ -787,7 +860,6 @@
   function groupKeyOf(playerRow, testRow){
     const sex = (getVal(playerRow, COL.sex) || getVal(testRow, COL.sex) || "").trim() || "-";
     const level = (getVal(playerRow, COL.level) || getVal(testRow, COL.level) || "").trim() || "-";
-    // 若你未來真的有「年齡數字」再加進來：`${sex}|${age}|${level}`
     return `${sex}|${level}`;
   }
 
@@ -819,7 +891,6 @@
 
       Object.keys(row).forEach(k=>{
         if(!k) return;
-        // 忽略非數值欄位：姓名/性別/分級/日期等
         if (COL.name.includes(k) || COL.sex.includes(k) || COL.level.includes(k) || COL.date.includes(k)) return;
 
         const v = toNum(row[k]);
@@ -844,7 +915,6 @@
     });
   }
 
-  // 找出 row 裡對應欄位的「實際欄名」+ 數值
   function pickMetric(row, keyList){
     for (const k of keyList){
       const v = toNum(row[k]);
@@ -853,7 +923,6 @@
     return { col: null, val: null };
   }
 
-  // 取得某測驗項目 Z（以實際欄名的 mean/sd 算）
   function zOfMetric(testRow, gk, colName, val){
     if(val == null || !colName) return null;
     const stats = groupStats.get(gk) || {};
@@ -871,15 +940,6 @@
   function calcCompositeZ(testRow, playerRow){
     const gk = groupKeyOf(playerRow, testRow);
 
-    // helper：取左右平均
-    const avg2 = (a,b)=>{
-      if(a == null && b == null) return null;
-      if(a == null) return b;
-      if(b == null) return a;
-      return (a+b)/2;
-    };
-
-    // 先把常用值取出來（包含實際欄名）
     const deadlift = pickMetric(testRow, COL.deadlift);
 
     const imtp  = pickMetric(testRow, COL.imtp);
@@ -888,8 +948,6 @@
     const latL  = pickMetric(testRow, COL.lateralL);
     const latR  = pickMetric(testRow, COL.lateralR);
 
-    // lateral 可能左右兩欄：以數值平均，但 Z 要用“同一欄”的 mean/sd 才精準
-    // 這裡採務實作法：如果左右都存在，就先用左右各自 Z 再平均；若只有一邊就用那邊。
     const lateralZ = (()=>{
       const zl = zOfMetric(testRow, gk, latL.col, latL.val);
       const zr = zOfMetric(testRow, gk, latR.col, latR.val);
@@ -919,7 +977,6 @@
 
     const react = pickMetric(testRow, COL.react);
 
-    // 505：左右平均，Z 用左右 Z 平均（比較合理）
     const z505 = (()=>{
       const zl = zOfMetric(testRow, gk, t505L.col, t505L.val);
       const zr = zOfMetric(testRow, gk, t505R.col, t505R.val);
@@ -929,7 +986,6 @@
       return (zl+zr)/2;
     })();
 
-    // 各項 Z
     const z_deadlift = zOfMetric(testRow, gk, deadlift.col, deadlift.val);
 
     const z_imtp  = zOfMetric(testRow, gk, imtp.col,  imtp.val);
@@ -954,7 +1010,6 @@
 
     const z_react = zOfMetric(testRow, gk, react.col, react.val);
 
-    // 加權合成（只加有值的項目，並重算權重總和避免缺欄位拉低分數）
     const wsum = (pairs)=>{
       let num = 0, den = 0;
       for(const [z,w] of pairs){
@@ -1001,7 +1056,6 @@
 
     const z_reaction = wsum([[z_react, WEIGHTS.reaction.react]]);
 
-    // 代謝：先佔位（50）
     const z_metabolic = null;
 
     return {
@@ -1067,7 +1121,6 @@
     }
   }
 
-  // 切換 view
   let currentView = "player"; // player | coach
 
   function setView(view){
@@ -1087,7 +1140,6 @@
     }
   }
 
-  // 產生「本週3件事」：優先補強 2 個 + 維持 1 個優勢
   function buildThreeThings(bestAxis, weakAxis){
     const axisTitle = (k)=> (RADAR_AXES.find(a=>a.key===k)?.label || k);
 
@@ -1223,10 +1275,8 @@
       return;
     }
 
-    // group key
     const gk = groupKeyOf(playerRow, testRow);
 
-    // 基本資料（player sheet 優先）
     const sex = (getVal(playerRow, COL.sex) || getVal(testRow, COL.sex) || "-").trim() || "-";
     const level = (getVal(playerRow, COL.level) || getVal(testRow, COL.level) || "-").trim() || "-";
     const date = (getVal(playerRow, COL.date) || getVal(testRow, COL.date) || "-").trim() || "-";
@@ -1235,7 +1285,6 @@
     const weight = (getVal(playerRow, COL.weight) || "-").toString().trim() || "-";
     const photo  = (getVal(playerRow, COL.photo) || "").toString().trim();
 
-    // 計算 8 大指標
     const comp = calcCompositeZ(testRow, playerRow);
     const zByAxis = comp.zByAxis;
 
@@ -1244,7 +1293,6 @@
       scores[k] = zToScore(zByAxis[k]);
     });
 
-    // 找最強/最弱（以 Z）
     const { best, worst } = rankAxes(zByAxis);
     const weakPick = worst.slice(0,2);
     const bestAxis = best;
@@ -1252,7 +1300,6 @@
     const bestLabel = (RADAR_AXES.find(a=>a.key===bestAxis)?.label || bestAxis);
     const weakLabels = weakPick.map(k=>RADAR_AXES.find(a=>a.key===k)?.label || k);
 
-    // ====== 球員版渲染 ======
     el("p_name").textContent = name;
     el("p_sex").textContent = sex;
     el("p_level").textContent = level;
@@ -1268,11 +1315,9 @@
       ? weakLabels.map((lbl,i)=> `${lbl}（Z=${(zByAxis[weakPick[i]] ?? 0).toFixed(2)}）`).join("、")
       : "目前沒有顯著弱項（接近同級平均）";
 
-    // 本週 3 件事
     const todo = buildThreeThings(bestAxis, weakPick.length?weakPick:["speed","changeDir"]);
     el("p_todoList").innerHTML = todo.map(x=>`<li>${x.text}<span class="tag">${x.tag}</span></li>`).join("");
 
-    // Coach note（player version）— 獨立框
     el("p_coachNote").innerHTML = `
       綜合來看，<b>${name}</b> 在同組（${sex}・${level}）中：<br/><br/>
       ・最強方向：<b>${bestLabel}</b>（Z=${(zByAxis[bestAxis] ?? 0).toFixed(2)}）<br/>
@@ -1280,11 +1325,9 @@
       這份球員版只要記住一句：<b>本週先把 1–2 個弱項拉回平均線附近</b>，穩定度會先上來。
     `;
 
-    // Radar（player）
     if(radarPlayerChart) radarPlayerChart.destroy();
     radarPlayerChart = renderRadar("playerRadar", scores, true);
 
-    // ====== 教練版渲染 ======
     el("c_name").textContent = name;
     el("c_groupKey").textContent = `${sex}・${level}`;
     el("c_sex").textContent = sex;
@@ -1295,10 +1338,8 @@
     if(radarCoachChart) radarCoachChart.destroy();
     radarCoachChart = renderRadar("coachRadar", scores, true);
 
-    // 組內 mean/sd（用於表格與 bar）
     const stats = groupStats.get(gk) || {};
 
-    // 建表：把 testRow 的數值欄位整理出來（排除姓名/性別/分級/日期）
     const rows = [];
     Object.keys(testRow).forEach(k=>{
       if(!k) return;
@@ -1319,11 +1360,9 @@
       rows.push({ label:k, latest, mean, sd, z });
     });
 
-    // 關鍵指標前 10（|Z| 最大）
     const keyMetrics = rows.filter(r=>r.z!=null).sort((a,b)=>Math.abs(b.z)-Math.abs(a.z)).slice(0,10);
     renderCoachBar(keyMetrics);
 
-    // 表格：先放關鍵再放其他
     const keySet = new Set(keyMetrics.map(r=>r.label));
     const sorted = rows.slice().sort((a,b)=>{
       const ak = keySet.has(a.label), bk = keySet.has(b.label);
@@ -1349,7 +1388,6 @@
       `;
     }).join("");
 
-    // 教練短評（完整版）
     const strengths = rows.filter(r=>r.z!=null && r.z>=1).sort((a,b)=>b.z-a.z).slice(0,3);
     const weaknesses = rows.filter(r=>r.z!=null && r.z<=-0.5).sort((a,b)=>a.z-b.z).slice(0,3);
 
@@ -1374,15 +1412,13 @@
     const { jsPDF } = window.jspdf;
     const name = (el("studentSelect").value || "report").trim() || "report";
 
-    // 暫時切換到要輸出的 view（避免截錯）
     const original = currentView;
     if(mode==="player") setView("player");
     if(mode==="coach") setView("coach");
 
-    // 讓 DOM 完整刷新（很重要）
     await new Promise(r=>setTimeout(r, 80));
 
-    const surface = document.getElementById("mainSurface"); // 只截主內容
+    const surface = document.getElementById("mainSurface"); // 只截主內容（不含總教練備忘錄）
     const canvas = await html2canvas(surface, {
       scale: 3,
       backgroundColor: "#020617",
@@ -1413,7 +1449,6 @@
     const suffix = mode==="player" ? "Player" : "Coach";
     pdf.save(`MatchPointLab-${suffix}-${name}.pdf`);
 
-    // 切回原 view
     setView(original);
   }
 
@@ -1436,7 +1471,6 @@
     await exportPDF("coach");
   });
 
-  // 初始
   setView("player");
   reloadAll();
 </script>
