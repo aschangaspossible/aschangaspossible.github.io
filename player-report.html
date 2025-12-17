@@ -181,7 +181,6 @@
       color: var(--muted);
     }
 
-    /* ✅ 改為單欄：右側卡片移除，主內容更舒服 */
     .grid{
       margin-top: 14px;
       display:grid;
@@ -219,7 +218,6 @@
 
     .muted{ color: var(--sub); font-size: 12px; line-height:1.65; }
 
-    /* Player layout */
     .player-hero{
       display:grid;
       grid-template-columns: 220px 1fr;
@@ -267,12 +265,6 @@
     .radar-wrap{
       height: 360px;
       padding: 10px 6px 0;
-    }
-
-    .list{
-      display:flex;
-      flex-direction:column;
-      gap: 10px;
     }
 
     .todo{
@@ -331,7 +323,6 @@
     }
     .coach-note-box b{ color: #bbf7d0; }
 
-    /* Coach layout */
     .coach-grid{
       display:grid;
       grid-template-columns: 1fr 1fr;
@@ -375,7 +366,6 @@
     .tagpill.bad{ border-color: rgba(248,113,113,.55); color:#fecaca; }
     .tagpill.key{ border-color: rgba(59,130,246,.55); color:#bfdbfe; }
 
-    /* PDF areas */
     .pdf-surface{
       border-radius: 22px;
       overflow:hidden;
@@ -383,7 +373,6 @@
 
     .hide{ display:none !important; }
 
-    /* ✅ 匯出 PDF 時：把編輯區藏掉、只留乾淨文字 */
     .print-only{ display:none !important; }
     body.exporting .no-print{ display:none !important; }
     body.exporting .print-only{ display:block !important; }
@@ -462,10 +451,7 @@
       </div>
     </div>
 
-    <!-- 主內容（單欄） -->
     <div class="grid">
-
-      <!-- 內容區（切換球員/教練） -->
       <div class="card pdf-surface" id="mainSurface">
         <div class="card-h">
           <b id="viewTitle">PLAYER VERSION</b>
@@ -519,7 +505,6 @@
             </div>
 
             <div class="two-cols">
-              <!-- Radar -->
               <div class="card" style="box-shadow:none">
                 <div class="card-h">
                   <b>8 大指標雷達圖</b>
@@ -535,7 +520,6 @@
                 </div>
               </div>
 
-              <!-- ✅ 球員版：只顯示「教練填寫的簡版 3 點」（唯讀） -->
               <div class="card" style="box-shadow:none">
                 <div class="card-h">
                   <b>訓練建議（只做 3 件事）</b>
@@ -554,7 +538,6 @@
               </div>
             </div>
 
-            <!-- Coach Note (Player Version) -->
             <div class="card" style="box-shadow:none; margin-top:14px">
               <div class="card-h">
                 <b>COACH NOTE</b>
@@ -605,7 +588,6 @@
               </div>
             </div>
 
-            <!-- ✅ 教練可編輯：雙版本 3 點（簡版給球員 / 完整版給教練） -->
             <div class="card" style="box-shadow:none; margin-top:14px">
               <div class="card-h">
                 <b>本週訓練處方（3 點｜教練可編輯）</b>
@@ -648,7 +630,6 @@
                   </div>
                 </div>
 
-                <!-- 匯出 PDF 用（乾淨唯讀） -->
                 <div class="print-only">
                   <div class="muted" style="margin-bottom:8px">球員簡版（3 點）</div>
                   <div class="todo"><ol id="printPlanSimple"></ol></div>
@@ -708,7 +689,6 @@
       </div>
     </div>
 
-    <!-- ✅ 指標加權：移到整頁最底 + 預設收合 -->
     <div class="card" id="weightCard" style="margin-top:16px">
       <div class="card-h" style="cursor:pointer" id="weightToggle">
         <b>📊 指標加權與計算方式（教練資訊）</b>
@@ -718,12 +698,12 @@
         <div class="muted" style="line-height:1.9">
           <b>下肢肌力</b>：硬拉 100%<br/>
           <b>下肢爆發力</b>：IMTP 35%｜CMJ 25%｜Broad Jump 25%｜Lateral Jump 15%<br/>
-          <b>上肢肌力</b>：Inverted Row 30%｜Push-up 30%｜Grip 25%｜Plank 15%<br/>
-          <b>上肢爆發力</b>：站姿過頭拋 30%｜跪姿過頭拋 20%｜站姿水平拋 30%｜跪姿水平拋 20%<br/>
+          <b>上肢肌力</b>：Inverted Row 25%｜Push-up 25%｜Grip 35%｜Plank 15%<br/>
+          <b>上肢爆發力</b>：跪姿水平拋 30%｜跪姿過頭拋 30%｜站姿過頭拋 20%｜站姿水平拋 20%<br/>
           <b>速度</b>：10m 60%｜20m 40%（越小越好）<br/>
           <b>變向能力</b>：5-10-5 45%｜Spider 35%（越小越好）｜Hop test 20%<br/>
           <b>反應</b>：反應燈 100%<br/>
-          <b>代謝能力</b>：目前未提供 → 暫以 50 顯示（可接 YoYo / 1.2K / Beep）
+          <b>代謝能力</b>：最大有氧 50%｜無氧代謝 50%（未填則維持 50 分）
         </div>
         <div class="muted" style="margin-top:12px">
           0–100 轉換方式：<b>Score = clamp(50 + Z×15)</b>（Z=+1 約 65 分）
@@ -733,9 +713,6 @@
   </div>
 
 <script>
-  // ==============================
-  // 0) 你的試算表設定（要改）
-  // ==============================
   const FILE_ID = "1N-8HQZaxHYj4vE824raG1fWyNxt5w7B9_m8oHn8f4As";
   const SHEETS = {
     players: "學員主資料表",
@@ -782,7 +759,11 @@
     spider:["蜘蛛跑(秒)","蜘蛛跑","Spider test(秒)","Spider test","Spider"],
     hop:["Hop test(m/s)","Hop test","Hop"],
 
-    react:["反應燈測試(次數)","反應燈測試","反應燈測試(次數) ","Reaction(次數)","Reaction"]
+    react:["反應燈測試(次數)","反應燈測試","反應燈測試(次數) ","Reaction(次數)","Reaction"],
+
+    // ✅ 代謝能力（新增）
+    aerobic:["最大有氧","最大有氧(ml/kg/min)","VO2max","VO2 max","Max Aerobic","Aerobic"],
+    anaerobic:["無氧代謝","Anaerobic","Anaerobic capacity","無氧能力"]
   };
 
   function isLowerBetterMetric(label){
@@ -797,17 +778,24 @@
   }
 
   // ==============================
-  // 2) 加權設定（你給的）
+  // 2) 加權設定（依你紅字版更新）
   // ==============================
   const WEIGHTS = {
     lowerStrength: { deadlift: 1.00 },
     lowerPower: { imtp: .35, cmj: .25, broad: .25, lateral: .15 },
-    upperStrength: { invRow: .30, pushup: .30, grip: .25, plank: .15 },
-    upperPower: { sohm: .30, kohm: .20, shmb: .30, khmb: .20 },
+
+    // ✅ 上肢肌力：25 / 25 / 35 / 15
+    upperStrength: { invRow: .25, pushup: .25, grip: .35, plank: .15 },
+
+    // ✅ 上肢爆發力：跪姿水平 30｜跪姿過頭 30｜站姿過頭 20｜站姿水平 20
+    upperPower: { sohm: .20, kohm: .30, shmb: .20, khmb: .30 },
+
     speed: { sprint10: .60, sprint20: .40 },
     changeDir: { t505: .45, spider: .35, hop: .20 },
     reaction: { react: 1.00 },
-    metabolic: { placeholder: 1.00 }
+
+    // ✅ 代謝能力：最大有氧 50｜無氧代謝 50
+    metabolic: { aerobic: .50, anaerobic: .50 }
   };
 
   const RADAR_AXES = [
@@ -827,9 +815,6 @@
     return Math.max(0, Math.min(100, v));
   }
 
-  // ==============================
-  // 3) 讀 Sheet + 建索引
-  // ==============================
   function csvUrlForSheet(sheetName){
     return `https://docs.google.com/spreadsheets/d/${FILE_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
   }
@@ -967,6 +952,10 @@
 
     const react = pickMetric(testRow, COL.react);
 
+    // ✅ 代謝能力（新增）
+    const aerobic = pickMetric(testRow, COL.aerobic);
+    const anaerobic = pickMetric(testRow, COL.anaerobic);
+
     const z505 = (()=>{
       const zl = zOfMetric(testRow, gk, t505L.col, t505L.val);
       const zr = zOfMetric(testRow, gk, t505R.col, t505R.val);
@@ -999,6 +988,10 @@
     const z_hop    = zOfMetric(testRow, gk, hop.col, hop.val);
 
     const z_react = zOfMetric(testRow, gk, react.col, react.val);
+
+    // ✅ 代謝 Z
+    const z_aerobic = zOfMetric(testRow, gk, aerobic.col, aerobic.val);
+    const z_anaerobic = zOfMetric(testRow, gk, anaerobic.col, anaerobic.val);
 
     const wsum = (pairs)=>{
       let num = 0, den = 0;
@@ -1045,7 +1038,12 @@
     ]);
 
     const z_reaction = wsum([[z_react, WEIGHTS.reaction.react]]);
-    const z_metabolic = null;
+
+    // ✅ 代謝：最大有氧 50 / 無氧代謝 50（若兩者都沒填，回傳 null → 顯示 50 分）
+    const z_metabolic = wsum([
+      [z_aerobic, WEIGHTS.metabolic.aerobic],
+      [z_anaerobic, WEIGHTS.metabolic.anaerobic]
+    ]);
 
     return {
       groupKey: gk,
@@ -1062,9 +1060,6 @@
     };
   }
 
-  // ==============================
-  // 6) UI：載入、切換、渲染
-  // ==============================
   const el = (id)=>document.getElementById(id);
 
   async function reloadAll(){
@@ -1230,9 +1225,6 @@
     });
   }
 
-  // ==============================
-  // ✅ 教練處方：雙版本 3 點（localStorage）
-  // ==============================
   let currentPlanKey = null;
 
   function planStorageKey(name, date){
@@ -1287,16 +1279,13 @@
   }
 
   function renderPlanToPlayerAndPrint(){
-    // 取簡版 / 完整版（若簡版沒寫，球員端顯示提示）
     const simpleList = normalize3Lines(el("coachPlanSimple")?.value || "");
     const fullList   = normalize3Lines(el("coachPlanFull")?.value || "");
 
-    // 球員版：簡版
     el("p_todoList").innerHTML = simpleList.length
       ? simpleList.map((t,i)=>`<li>${t}<span class="tag">${i===0?"主軸":i===1?"次優先":"維持"}</span></li>`).join("")
       : `<li>尚未填寫（教練會在教練版填寫）</li>`;
 
-    // PDF（教練版）印用
     el("printPlanSimple").innerHTML = simpleList.length
       ? simpleList.map(t=>`<li>${t}</li>`).join("")
       : `<li>（尚未填寫）</li>`;
@@ -1343,7 +1332,6 @@
     const bestLabel = (RADAR_AXES.find(a=>a.key===bestAxis)?.label || bestAxis);
     const weakLabels = weakPick.map(k=>RADAR_AXES.find(a=>a.key===k)?.label || k);
 
-    // 球員版
     el("p_name").textContent = name;
     el("p_sex").textContent = sex;
     el("p_level").textContent = level;
@@ -1368,7 +1356,6 @@
     if(radarPlayerChart) radarPlayerChart.destroy();
     radarPlayerChart = renderRadar("playerRadar", scores, true);
 
-    // 教練版
     el("c_name").textContent = name;
     el("c_groupKey").textContent = `${sex}・${level}`;
     el("c_sex").textContent = sex;
@@ -1440,30 +1427,23 @@
       建議：補強項目排入每週固定節點（熱身後 10–15 分鐘），並保留優勢項目每週 1 次刺激，避免優勢流失。
     `;
 
-    // ✅ 切換到該學員的「教練處方」存取 key，並載入到編輯器
     currentPlanKey = planStorageKey(name, date);
     loadPlanToEditors();
 
     el("statusMsg").textContent = "";
   }
 
-  // ==============================
-  // 7) PDF 輸出（球員版 / 教練版）
-  // ==============================
   async function exportPDF(mode){
     const { jsPDF } = window.jspdf;
     const name = (el("studentSelect").value || "report").trim() || "report";
 
-    // 匯出前：同步渲染一次（避免最新文字沒進去）
     renderPlanToPlayerAndPrint();
 
     const original = currentView;
     if(mode==="player") setView("player");
     if(mode==="coach") setView("coach");
 
-    // ✅ 匯出時切「exporting」模式：隱藏 textarea/按鈕，改成乾淨唯讀列表
     document.body.classList.add("exporting");
-
     await new Promise(r=>setTimeout(r, 120));
 
     const surface = document.getElementById("mainSurface");
@@ -1501,9 +1481,6 @@
     setView(original);
   }
 
-  // ==============================
-  // 8) 綁事件
-  // ==============================
   el("reloadBtn").addEventListener("click", reloadAll);
   el("studentSelect").addEventListener("change", loadStudent);
 
@@ -1520,7 +1497,6 @@
     await exportPDF("coach");
   });
 
-  // ✅ 教練處方：儲存/清空
   el("savePlanBtn").addEventListener("click", ()=>{
     if(!el("studentSelect").value){ alert("請先選擇學員"); return; }
     savePlanFromEditors();
@@ -1530,7 +1506,6 @@
     if(confirm("確定要清空這位學員這次檢測的處方嗎？")) resetPlan();
   });
 
-  // ✅ 指標加權收合
   (function(){
     const toggle = document.getElementById("weightToggle");
     const content = document.getElementById("weightContent");
@@ -1543,7 +1518,6 @@
     });
   })();
 
-  // 初始
   setView("player");
   reloadAll();
 </script>
