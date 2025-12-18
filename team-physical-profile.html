@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>奕晉網球學院｜全隊體能儀表板（匿名/去比較化）</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- PapaParse -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+  <style>
+    :root{
+      --bg0:#020617;
+      --bg1:#071024;
+      --card:#0b1226;
+      --card2:#0b1a2f;
+      --line:rgba(148,163,184,.22);
+      --text:#e5e7eb;
+      --sub:#94a3b8;
+      --muted:#64748b;
+      --good:#22c55e;
+      --warn:#facc15;
+      --bad:#f87171;
+      --blue:#38bdf8;
+      --radius:18px;
+      --shadow: 0 24px 70px rgba(0,0,0,.55);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 20% 0%, rgba(56,189,248,.18) 0, transparent 55%),
+        radial-gradient(circle at 80% 0%, rgba(34,197,94,.18) 0, transparent 55%),
+        radial-gradient(circle at 50% 120%, #020617 0, #000 62%);
+      min-height:100vh;
+    }
+    .wrap{
+      max-width: 1180px;
+      margin: 22px auto 60px;
+      padding: 0 14px;
+    }
+    .topbar{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(10,18,38,.92), rgba(6,10,20,.92));
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+    .topbar::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(circle at 15% 0, rgba(56,189,248,.22), transparent 55%),
+        radial-gradient(circle at 85% 0, rgba(34,197,94,.22), transparent 55%);
+      pointer-events:none;
+      opacity:.9;
+    }
+    .topbar-inner{
+      position:relative;
+      padding: 16px 16px 14px;
+    }
+    .brand{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:14px;
+      margin-bottom: 12px;
+    }
+    .brand-left{
+      display:flex; align-items:center; gap:12px;
+    }
+    .logo{
+      width:38px; height:38px; border-radius:999px;
+      border:2px solid rgba(34,197,94,.85);
+      box-shadow: 0 0 24px rgba(34,197,94,.5);
+      object-fit:cover;
+      background: radial-gradient(circle at 30% 30%, #22c55e, #16a34a);
+    }
+    .brand-title{display:flex; flex-direction:column; gap:2px;}
+    .brand-title b{font-size: 16px; letter-spacing:.12em;}
+    .brand-title span{font-size: 12px; color: var(--sub); line-height:1.55;}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,.35);
+      background: rgba(2,6,23,.55);
+      color: var(--sub);
+      font-size: 12px;
+      white-space: nowrap;
+      height: fit-content;
+    }
+    .pill .dot{
+      width:8px; height:8px; border-radius:999px;
+      background: var(--good);
+      box-shadow: 0 0 12px var(--good);
+    }
+
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      padding-top: 6px;
+    }
+    label{ color: var(--sub); font-size: 13px; }
+    select{
+      min-width: 220px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,.35);
+      background: rgba(2,6,23,.45);
+      color: var(--text);
+      outline:none;
+    }
+    .btn{
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(148,163,184,.35);
+      background: rgba(2,6,23,.45);
+      color: var(--sub);
+      cursor:pointer;
+      font-size: 13px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:hover{ border-color: rgba(248,250,252,.65); color: var(--text); }
+    .btn-primary{
+      border: none;
+      background: linear-gradient(90deg, rgba(34,197,94,.95), rgba(56,189,248,.95));
+      color:#021018;
+      font-weight: 800;
+      box-shadow: 0 14px 40px rgba(34,197,94,.25);
+    }
+    .status{
+      margin-left:auto;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .grid{
+      margin-top: 14px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    .card{
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(11,18,38,.92), rgba(6,10,20,.92));
+      box-shadow: 0 18px 52px rgba(0,0,0,.35);
+      overflow:hidden;
+    }
+    .card-h{
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid rgba(148,163,184,.16);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .card-h b{
+      font-size: 13px;
+      letter-spacing:.16em;
+      color: rgba(226,232,240,.92);
+      text-transform: uppercase;
+    }
+    .card-h span{
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .card-b{ padding: 14px 16px 16px; }
+
+    .muted{ color: var(--sub); font-size: 12px; line-height:1.65; }
+
+    .two-cols{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .radar-wrap{ height: 360px; padding: 8px 6px 0; }
+    .chart-wrap{ height: 320px; }
+    .mini{ font-size:12px; color: var(--muted); line-height:1.75; }
+
+    .kpi-row{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .kpi{
+      border: 1px solid rgba(148,163,184,.18);
+      background: rgba(2,6,23,.22);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .kpi .t{ font-size:12px; color: var(--sub); }
+    .kpi .v{ font-size:18px; font-weight:900; margin-top:6px; letter-spacing:.04em; }
+    .kpi .s{ font-size:12px; color: var(--muted); margin-top:4px; line-height:1.55; }
+
+    .table{
+      width:100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      overflow:hidden;
+      border-radius: 16px;
+      border: 1px solid rgba(148,163,184,.22);
+      background: rgba(2,6,23,.25);
+    }
+    .table th,.table td{
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(148,163,184,.12);
+      text-align:right;
+      color: rgba(226,232,240,.9);
+      white-space: nowrap;
+    }
+    .table th:first-child,.table td:first-child{ text-align:left; white-space: normal; width: 30%; }
+    .table thead th{ color: rgba(226,232,240,.8); font-weight: 700; background: rgba(2,6,23,.35); }
+
+    .tagpill{
+      display:inline-flex;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid rgba(148,163,184,.22);
+      background: rgba(2,6,23,.35);
+      color: var(--sub);
+      align-items:center;
+      gap:8px;
+      justify-content:center;
+    }
+    .tagpill.good{ border-color: rgba(34,197,94,.55); color:#bbf7d0; }
+    .tagpill.mid{ border-color: rgba(250,204,21,.55); color:#fde68a; }
+    .tagpill.bad{ border-color: rgba(248,113,113,.55); color:#fecaca; }
+
+    .note{
+      border: 1px solid rgba(148,163,184,.18);
+      background: rgba(2,6,23,.22);
+      border-radius: 16px;
+      padding: 12px;
+      line-height:1.75;
+      color: rgba(226,232,240,.88);
+      font-size: 13px;
+    }
+    .note b{ color: #bbf7d0; }
+    .hr{ height:1px; background: rgba(148,163,184,.16); margin: 10px 0; }
+
+    @media (max-width: 980px){
+      .two-cols{ grid-template-columns: 1fr; }
+      .kpi-row{ grid-template-columns: 1fr 1fr; }
+      .status{ width:100%; margin-left:0; }
+    }
+    @media (max-width: 520px){
+      .kpi-row{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-left">
+            <img class="logo" src="https://aschangaspossible.github.io/logo.jpeg" alt="logo" />
+            <div class="brand-title">
+              <b>奕晉網球學院｜全隊體能儀表板</b>
+              <span>匿名（不含任何個人資料）｜只看「全隊輪廓」與「分布」｜0–100：50=同級平均（同組=性別×分級）</span>
+            </div>
+          </div>
+          <div class="pill"><span class="dot"></span><span>連線試算表 · 自動更新</span></div>
+        </div>
+
+        <div class="controls">
+          <button class="btn" id="reloadBtn">🔄 重新載入</button>
+
+          <label for="groupSelect">查看組別：</label>
+          <select id="groupSelect" disabled>
+            <option value="">資料載入中...</option>
+          </select>
+
+          <button class="btn btn-primary" id="viewAllBtn">👥 全隊（全部）</button>
+
+          <span class="status" id="statusMsg">—</span>
+        </div>
+
+        <div class="note" style="margin-top:12px">
+          <b>使用說明（去比較化）</b><br/>
+          1) 這頁不呈現任何個人排名或個人數據，避免落入比較心態。<br/>
+          2) 我們只看「全隊結構」：平均線、分布、優先改善方向。<br/>
+          3) 組別人數 <b>少於 5 人</b> 會自動隱藏（隱私保護：避免被推測是誰）。<br/>
+          <div class="hr"></div>
+          <span class="mini">分數轉換：Score = clamp(50 + Z×15)，Z 由同組（性別×分級）平均與 SD 計算（速度/敏捷等「越小越好」已反向處理）。</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-h">
+          <b>TEAM SNAPSHOT</b>
+          <span id="scopeText">範圍：全隊</span>
+        </div>
+        <div class="card-b">
+          <div class="kpi-row">
+            <div class="kpi">
+              <div class="t">有效樣本數</div>
+              <div class="v" id="kpiN">—</div>
+              <div class="s">有參與檢測且可計算 Z 的人數</div>
+            </div>
+            <div class="kpi">
+              <div class="t">優勢面（全隊）</div>
+              <div class="v" id="kpiBest">—</div>
+              <div class="s">平均分數最高的指標</div>
+            </div>
+            <div class="kpi">
+              <div class="t">優先補強（全隊）</div>
+              <div class="v" id="kpiWeak">—</div>
+              <div class="s">平均分數最低的指標</div>
+            </div>
+            <div class="kpi">
+              <div class="t">整體狀態</div>
+              <div class="v" id="kpiMood">—</div>
+              <div class="s">看分布，而不是看名次</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-cols">
+        <div class="card">
+          <div class="card-h">
+            <b>8 大指標｜全隊平均雷達圖</b>
+            <span>藍=全隊平均｜灰=同級平均 50</span>
+          </div>
+          <div class="card-b">
+            <div class="radar-wrap">
+              <canvas id="teamRadar"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-h">
+            <b>分布圖｜強/中/弱人數</b>
+            <span>綠(>55)｜黃(45–55)｜紅(<45)</span>
+          </div>
+          <div class="card-b">
+            <div class="chart-wrap">
+              <canvas id="distChart"></canvas>
+            </div>
+            <div class="mini" style="margin-top:8px">
+              這張圖的目的是：讓教練快速知道「哪幾項是全隊共同弱項」，安排團隊訓練資源。不是讓球員互相比。
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <b>8 大指標｜全隊摘要表</b>
+          <span>平均分 / 分布 / 建議</span>
+        </div>
+        <div class="card-b">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>指標</th>
+                <th>平均分</th>
+                <th>綠(>55)</th>
+                <th>黃(45–55)</th>
+                <th>紅(<45)</th>
+                <th>判讀</th>
+              </tr>
+            </thead>
+            <tbody id="axisTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">
+          <b>組別摘要（隱私保護）</b>
+          <span>只顯示人數 ≥ 5 的組別</span>
+        </div>
+        <div class="card-b">
+          <div class="mini" style="margin-bottom:10px">
+            組別摘要用來讓教練看「不同組別資源怎麼分配」，不是拿來貼標籤。人數太少的組別會自動隱藏。
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>組別（性別×分級）</th>
+                <th>人數</th>
+                <th>優勢面</th>
+                <th>補強面</th>
+                <th>備註</th>
+              </tr>
+            </thead>
+            <tbody id="groupTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+  // ==============================
+  // 0) 你的試算表設定（要改）
+  // ==============================
+  const FILE_ID = "1N-8HQZaxHYj4vE824raG1fWyNxt5w7B9_m8oHn8f4As";
+  const SHEETS = {
+    players: "學員主資料表",
+    tests: "檢測成績"
+  };
+
+  // 隱私保護門檻：組別至少幾人才能顯示
+  const K_ANON = 5;
+
+  // ==============================
+  // 1) 欄位辨識（容錯）
+  // ==============================
+  const COL = {
+    name: ["姓名"],
+    sex:  ["性別"],
+    level:["分級","年級","年齡"],
+    date:["最新檢測日","日期","測驗日期","檢測日期"],
+
+    deadlift:["硬拉(kg)","硬拉","Deadlift","Deadlift(kg)"],
+
+    imtp:["IMTP(N)","IMTP","IMTP (RFD 200ms)","IMTP(RFD200ms)","IMTP RFD","RFD","IMTP(N) "],
+    cmj:["CMJ(cm)","CMJ","垂直跳(cm)","垂直跳","Vertical Jump","VerticalJump"],
+    broad:["立定跳(m)","立定跳","Broad jump (m)","Broad jump","BroadJump","Broad Jump"],
+    lateralL:["側向跳(左)(m)","側向跳(左)","Lateral jump (L)","LateralJumpL","側向跳(左)(cm)"],
+    lateralR:["側向跳(右)(m)","側向跳(右)","Lateral jump (R)","LateralJumpR","側向跳(右)(cm)"],
+
+    invRow:["反向划船(次數)","Inverted row(次數)","Inverted row","Inverted Rows","反向划船"],
+    pushup:["俯臥撐(次數)","Push up(次數)","Push-ups(次數)","Push up","Push-ups","俯臥撐"],
+    grip:["握力(kg)","握力","Grip strength(kg)","Grip strength","Grip"],
+    plank:["平板撐(秒)","平板撐","Plank(時間)","Plank","Plank(s)","平板撐(時間)"],
+
+    sohm:["站姿過頭拋","站姿過頭拋(距離)","Standing OH MB Throw"],
+    kohm:["晚姿過頭拋","跪姿過頭拋","Kneeling OH MB Throw"],
+    shmb:["站姿水平拋","Standing Horizontal MB Throw"],
+    khmb:["晚姿水平拋","跪姿水平拋","Kneeling Horizontal MB Throw"],
+
+    sprint10:["10米衝刺(秒)","10m sprint","10m Sprint","10m"],
+    sprint20:["20米衝刺(秒)","20m sprint","20m Sprint","20m"],
+
+    t505L:["505敏捷跑(左)(秒)","505敏捷跑(左)","505左","505 L","505 (L)"],
+    t505R:["505敏捷跑(右)(秒)","505敏捷跑(右)","505右","505 R","505 (R)"],
+    spider:["蜘蛛跑(秒)","蜘蛛跑","Spider test(秒)","Spider test","Spider"],
+    hop:["Hop test(m/s)","Hop test","Hop"],
+
+    react:["反應燈測試(次數)","反應燈測試","反應燈測試(次數) ","Reaction(次數)","Reaction"]
+  };
+
+  function isLowerBetterMetric(label){
+    const s = String(label || "");
+    return (
+      s.includes("秒") ||
+      /sprint/i.test(s) ||
+      s.includes("505") ||
+      s.includes("蜘蛛") ||
+      s.includes("Spider")
+    );
+  }
+
+  // ==============================
+  // 2) 加權設定（沿用你既有的八大指標）
+  // ==============================
+  const WEIGHTS = {
+    lowerStrength: { deadlift: 1.00 },
+    lowerPower: { imtp: .35, cmj: .25, broad: .25, lateral: .15 },
+    upperStrength: { invRow: .30, pushup: .30, grip: .25, plank: .15 },
+    upperPower: { sohm: .30, kohm: .20, shmb: .30, khmb: .20 },
+    speed: { sprint10: .60, sprint20: .40 },
+    changeDir: { t505: .45, spider: .35, hop: .20 },
+    reaction: { react: 1.00 },
+    metabolic: { placeholder: 1.00 } // 目前不算，顯示固定 50
+  };
+
+  const RADAR_AXES = [
+    { key:"lowerStrength", label:"下肢肌力" },
+    { key:"lowerPower",    label:"下肢爆發力" },
+    { key:"upperStrength", label:"上肢肌力" },
+    { key:"upperPower",    label:"上肢爆發力" },
+    { key:"speed",         label:"速度" },
+    { key:"changeDir",     label:"變向能力" },
+    { key:"reaction",      label:"反應" },
+    { key:"metabolic",     label:"代謝能力" }
+  ];
+
+  function zToScore(z){
+    if (z == null || isNaN(z)) return 50;
+    const v = 50 + z * 15;
+    return Math.max(0, Math.min(100, v));
+  }
+
+  // ==============================
+  // 3) 讀 Sheet
+  // ==============================
+  function csvUrlForSheet(sheetName){
+    return `https://docs.google.com/spreadsheets/d/${FILE_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+  }
+  function loadSheet(sheetName){
+    return new Promise((resolve,reject)=>{
+      Papa.parse(csvUrlForSheet(sheetName),{
+        download:true,
+        header:true,
+        complete:r=>resolve(r.data || []),
+        error:reject
+      });
+    });
+  }
+  function getVal(row, keys){
+    for (const k of keys){
+      if (row && row[k] != null && String(row[k]).trim() !== "") return row[k];
+    }
+    return "";
+  }
+  function toNum(v){
+    if (v == null || v === "") return null;
+    const n = Number(String(v).replace(/[^\d.\-]/g,""));
+    return isNaN(n) ? null : n;
+  }
+  function groupKeyOf(playerRow, testRow){
+    const sex = (getVal(playerRow, COL.sex) || getVal(testRow, COL.sex) || "").trim() || "-";
+    const level = (getVal(playerRow, COL.level) || getVal(testRow, COL.level) || "").trim() || "-";
+    return `${sex}|${level}`;
+  }
+
+  // ==============================
+  // 4) 建 groupStats（同組平均/SD）
+  // ==============================
+  let playersByName = new Map();
+  let testsArray = [];
+  let testsByName = new Map();
+  let groupStats = new Map();
+
+  function buildGroupStats(){
+    const bucket = new Map();
+    testsArray.forEach(row=>{
+      const name = String(getVal(row, COL.name) || "").trim();
+      if(!name) return;
+      const playerRow = playersByName.get(name) || {};
+      const gk = groupKeyOf(playerRow, row);
+      if(!bucket.has(gk)) bucket.set(gk, new Map());
+      const m = bucket.get(gk);
+
+      Object.keys(row).forEach(k=>{
+        if(!k) return;
+        if (COL.name.includes(k) || COL.sex.includes(k) || COL.level.includes(k) || COL.date.includes(k)) return;
+        const v = toNum(row[k]);
+        if(v == null) return;
+        if(!m.has(k)) m.set(k, []);
+        m.get(k).push(v);
+      });
+    });
+
+    groupStats = new Map();
+    bucket.forEach((m,gk)=>{
+      const stat = {};
+      m.forEach((arr,metricName)=>{
+        if(!arr.length) return;
+        const mean = arr.reduce((a,b)=>a+b,0)/arr.length;
+        const variance = arr.reduce((a,b)=>a+Math.pow(b-mean,2),0)/arr.length;
+        const sd = Math.sqrt(variance);
+        stat[metricName] = { mean, sd, n: arr.length };
+      });
+      groupStats.set(gk, stat);
+    });
+  }
+
+  function pickMetric(row, keyList){
+    for (const k of keyList){
+      const v = toNum(row[k]);
+      if(v != null) return { col: k, val: v };
+    }
+    return { col: null, val: null };
+  }
+
+  function zOfMetric(testRow, gk, colName, val){
+    if(val == null || !colName) return null;
+    const stats = groupStats.get(gk) || {};
+    const s = stats[colName];
+    if(!s || s.sd == null || s.sd === 0) return null;
+
+    const lowerBetter = isLowerBetterMetric(colName);
+    return lowerBetter ? (s.mean - val) / s.sd : (val - s.mean) / s.sd;
+  }
+
+  function wsum(pairs){
+    let num = 0, den = 0;
+    for(const [z,w] of pairs){
+      if(z == null || isNaN(z)) continue;
+      num += z*w;
+      den += w;
+    }
+    return den ? (num/den) : null;
+  }
+
+  function calcCompositeZ(testRow, playerRow){
+    const gk = groupKeyOf(playerRow, testRow);
+
+    const deadlift = pickMetric(testRow, COL.deadlift);
+
+    const imtp  = pickMetric(testRow, COL.imtp);
+    const cmj   = pickMetric(testRow, COL.cmj);
+    const broad = pickMetric(testRow, COL.broad);
+    const latL  = pickMetric(testRow, COL.lateralL);
+    const latR  = pickMetric(testRow, COL.lateralR);
+
+    const lateralZ = (()=>{
+      const zl = zOfMetric(testRow, gk, latL.col, latL.val);
+      const zr = zOfMetric(testRow, gk, latR.col, latR.val);
+      if(zl == null && zr == null) return null;
+      if(zl == null) return zr;
+      if(zr == null) return zl;
+      return (zl+zr)/2;
+    })();
+
+    const invRow = pickMetric(testRow, COL.invRow);
+    const pushup = pickMetric(testRow, COL.pushup);
+    const grip   = pickMetric(testRow, COL.grip);
+    const plank  = pickMetric(testRow, COL.plank);
+
+    const sohm = pickMetric(testRow, COL.sohm);
+    const kohm = pickMetric(testRow, COL.kohm);
+    const shmb = pickMetric(testRow, COL.shmb);
+    const khmb = pickMetric(testRow, COL.khmb);
+
+    const s10 = pickMetric(testRow, COL.sprint10);
+    const s20 = pickMetric(testRow, COL.sprint20);
+
+    const t505L = pickMetric(testRow, COL.t505L);
+    const t505R = pickMetric(testRow, COL.t505R);
+    const spider = pickMetric(testRow, COL.spider);
+    const hop = pickMetric(testRow, COL.hop);
+
+    const react = pickMetric(testRow, COL.react);
+
+    const z505 = (()=>{
+      const zl = zOfMetric(testRow, gk, t505L.col, t505L.val);
+      const zr = zOfMetric(testRow, gk, t505R.col, t505R.val);
+      if(zl == null && zr == null) return null;
+      if(zl == null) return zr;
+      if(zr == null) return zl;
+      return (zl+zr)/2;
+    })();
+
+    const z_deadlift = zOfMetric(testRow, gk, deadlift.col, deadlift.val);
+
+    const z_imtp  = zOfMetric(testRow, gk, imtp.col,  imtp.val);
+    const z_cmj   = zOfMetric(testRow, gk, cmj.col,   cmj.val);
+    const z_broad = zOfMetric(testRow, gk, broad.col, broad.val);
+
+    const z_invRow = zOfMetric(testRow, gk, invRow.col, invRow.val);
+    const z_pushup = zOfMetric(testRow, gk, pushup.col, pushup.val);
+    const z_grip   = zOfMetric(testRow, gk, grip.col,   grip.val);
+    const z_plank  = zOfMetric(testRow, gk, plank.col,  plank.val);
+
+    const z_sohm = zOfMetric(testRow, gk, sohm.col, sohm.val);
+    const z_kohm = zOfMetric(testRow, gk, kohm.col, kohm.val);
+    const z_shmb = zOfMetric(testRow, gk, shmb.col, shmb.val);
+    const z_khmb = zOfMetric(testRow, gk, khmb.col, khmb.val);
+
+    const z_s10 = zOfMetric(testRow, gk, s10.col, s10.val);
+    const z_s20 = zOfMetric(testRow, gk, s20.col, s20.val);
+
+    const z_spider = zOfMetric(testRow, gk, spider.col, spider.val);
+    const z_hop    = zOfMetric(testRow, gk, hop.col, hop.val);
+
+    const z_react = zOfMetric(testRow, gk, react.col, react.val);
+
+    const z_lowerStrength = wsum([[z_deadlift, WEIGHTS.lowerStrength.deadlift]]);
+    const z_lowerPower = wsum([
+      [z_imtp,  WEIGHTS.lowerPower.imtp],
+      [z_cmj,   WEIGHTS.lowerPower.cmj],
+      [z_broad, WEIGHTS.lowerPower.broad],
+      [lateralZ,WEIGHTS.lowerPower.lateral]
+    ]);
+    const z_upperStrength = wsum([
+      [z_invRow, WEIGHTS.upperStrength.invRow],
+      [z_pushup, WEIGHTS.upperStrength.pushup],
+      [z_grip,   WEIGHTS.upperStrength.grip],
+      [z_plank,  WEIGHTS.upperStrength.plank]
+    ]);
+    const z_upperPower = wsum([
+      [z_sohm, WEIGHTS.upperPower.sohm],
+      [z_kohm, WEIGHTS.upperPower.kohm],
+      [z_shmb, WEIGHTS.upperPower.shmb],
+      [z_khmb, WEIGHTS.upperPower.khmb]
+    ]);
+    const z_speed = wsum([
+      [z_s10, WEIGHTS.speed.sprint10],
+      [z_s20, WEIGHTS.speed.sprint20]
+    ]);
+    const z_changeDir = wsum([
+      [z505,     WEIGHTS.changeDir.t505],
+      [z_spider, WEIGHTS.changeDir.spider],
+      [z_hop,    WEIGHTS.changeDir.hop]
+    ]);
+    const z_reaction = wsum([[z_react, WEIGHTS.reaction.react]]);
+    const z_metabolic = null; // 未提供
+
+    return {
+      groupKey: gk,
+      zByAxis: {
+        lowerStrength: z_lowerStrength,
+        lowerPower: z_lowerPower,
+        upperStrength: z_upperStrength,
+        upperPower: z_upperPower,
+        speed: z_speed,
+        changeDir: z_changeDir,
+        reaction: z_reaction,
+        metabolic: z_metabolic
+      }
+    };
+  }
+
+  // ==============================
+  // 5) 匿名化：組別清單、全隊統計
+  // ==============================
+  function mean(arr){
+    const xs = arr.filter(x=>x!=null && !isNaN(x));
+    if(!xs.length) return null;
+    return xs.reduce((a,b)=>a+b,0)/xs.length;
+  }
+
+  function tagOfScore(avgScore){
+    if(avgScore == null) return `<span class="tagpill">—</span>`;
+    if(avgScore >= 55) return `<span class="tagpill good">整體偏強</span>`;
+    if(avgScore <= 45) return `<span class="tagpill bad">整體偏弱</span>`;
+    return `<span class="tagpill mid">接近平均</span>`;
+  }
+
+  function distBucket(score){
+    if(score == null || isNaN(score)) return null;
+    if(score > 55) return "good";
+    if(score < 45) return "bad";
+    return "mid";
+  }
+
+  // ==============================
+  // 6) 圖表渲染
+  // ==============================
+  let radarChart = null;
+  let distChart = null;
+
+  function renderRadar(avgScores){
+    const ctx = document.getElementById("teamRadar").getContext("2d");
+    if(radarChart) radarChart.destroy();
+
+    const labels = RADAR_AXES.map(a=>a.label);
+    const dataAvg = RADAR_AXES.map(a=>avgScores[a.key] ?? 50);
+    const avgLine = labels.map(_=>50);
+
+    radarChart = new Chart(ctx, {
+      type: "radar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "全隊平均",
+            data: dataAvg,
+            borderColor: "rgba(56,189,248,.95)",
+            backgroundColor: "rgba(56,189,248,.18)",
+            pointBackgroundColor: "rgba(56,189,248,.95)",
+            pointRadius: 3,
+            borderWidth: 2
+          },
+          {
+            label: "同級平均（固定 50）",
+            data: avgLine,
+            borderColor: "rgba(148,163,184,.55)",
+            backgroundColor: "rgba(148,163,184,.06)",
+            pointRadius: 0,
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{
+          legend:{ labels:{ color:"#cbd5e1", boxWidth:18, font:{ size: 12 } } }
+        },
+        scales:{
+          r:{
+            min:0, max:100,
+            ticks:{ color:"#94a3b8", backdropColor:"transparent", stepSize:10, font:{ size: 10 } },
+            grid:{ color:"rgba(148,163,184,.16)" },
+            angleLines:{ color:"rgba(148,163,184,.14)" },
+            pointLabels:{ color:"#e2e8f0", font:{ size: 12 } }
+          }
+        }
+      }
+    });
+  }
+
+  function renderDistribution(distByAxis){
+    const ctx = document.getElementById("distChart").getContext("2d");
+    if(distChart) distChart.destroy();
+
+    const labels = RADAR_AXES.map(a=>a.label);
+    const good = RADAR_AXES.map(a=>distByAxis[a.key]?.good ?? 0);
+    const mid  = RADAR_AXES.map(a=>distByAxis[a.key]?.mid  ?? 0);
+    const bad  = RADAR_AXES.map(a=>distByAxis[a.key]?.bad  ?? 0);
+
+    distChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          { label: "綠(>55)", data: good, backgroundColor: "rgba(34,197,94,.78)", stack: "s" },
+          { label: "黃(45–55)", data: mid, backgroundColor: "rgba(250,204,21,.72)", stack: "s" },
+          { label: "紅(<45)", data: bad, backgroundColor: "rgba(248,113,113,.75)", stack: "s" }
+        ]
+      },
+      options: {
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{ legend:{ labels:{ color:"#cbd5e1", font:{ size: 12 } } } },
+        scales:{
+          x:{ stacked:true, ticks:{ color:"#cbd5e1", font:{ size: 11 } }, grid:{ display:false } },
+          y:{ stacked:true, ticks:{ color:"#94a3b8", font:{ size: 11 } }, grid:{ color:"rgba(148,163,184,.14)" } }
+        }
+      }
+    });
+  }
+
+  // ==============================
+  // 7) 計算全隊/組別統計（不輸出任何個人）
+  // ==============================
+  function computeScopeStats(scopeGroupKey=null){
+    // 蒐集每位球員的 8 軸分數（匿名，不留姓名）
+    const scoreRows = [];
+
+    testsByName.forEach((testRow, name)=>{
+      const playerRow = playersByName.get(name) || {};
+      const comp = calcCompositeZ(testRow, playerRow);
+      const gk = comp.groupKey;
+
+      if(scopeGroupKey && gk !== scopeGroupKey) return;
+
+      const axisScores = {};
+      let okCount = 0;
+
+      for(const a of RADAR_AXES){
+        const z = comp.zByAxis[a.key];
+        const s = zToScore(z);
+        axisScores[a.key] = s;
+        if(z != null && !isNaN(z)) okCount++;
+      }
+
+      // 至少要有 3 軸可算，才算有效樣本（避免噪音）
+      if(okCount >= 3){
+        scoreRows.push({ groupKey: gk, scores: axisScores });
+      }
+    });
+
+    // 平均分
+    const avgScores = {};
+    for(const a of RADAR_AXES){
+      avgScores[a.key] = mean(scoreRows.map(r=>r.scores[a.key]));
+    }
+
+    // 分布（good/mid/bad）
+    const distByAxis = {};
+    for(const a of RADAR_AXES){
+      distByAxis[a.key] = { good:0, mid:0, bad:0 };
+      scoreRows.forEach(r=>{
+        const b = distBucket(r.scores[a.key]);
+        if(!b) return;
+        distByAxis[a.key][b]++;
+      });
+    }
+
+    // 找強/弱（依平均）
+    const axisList = RADAR_AXES
+      .map(a=>({key:a.key, label:a.label, avg: avgScores[a.key]}))
+      .filter(x=>x.avg!=null && !isNaN(x.avg))
+      .sort((a,b)=>b.avg-a.avg);
+
+    const best = axisList[0];
+    const weak = axisList[axisList.length-1];
+
+    // mood：看「紅的比例」
+    const totalN = scoreRows.length;
+    let redTotal = 0, cellTotal = 0;
+    for(const a of RADAR_AXES){
+      const d = distByAxis[a.key];
+      redTotal += (d.bad || 0);
+      cellTotal += ((d.good||0)+(d.mid||0)+(d.bad||0));
+    }
+    const redRate = cellTotal ? (redTotal / cellTotal) : 0;
+    let mood = "穩定發展";
+    if(redRate > 0.28) mood = "優先補強期";
+    if(redRate < 0.12) mood = "維持＋進階期";
+
+    return { totalN, avgScores, distByAxis, best, weak, mood, scoreRows };
+  }
+
+  // 組別列表（只顯示 n>=K_ANON）
+  function buildGroupOptions(){
+    const counts = new Map();
+    testsByName.forEach((testRow, name)=>{
+      const playerRow = playersByName.get(name) || {};
+      const gk = groupKeyOf(playerRow, testRow);
+      counts.set(gk, (counts.get(gk)||0) + 1);
+    });
+
+    // 只留下可顯示的組別
+    const eligible = Array.from(counts.entries())
+      .filter(([gk,n])=>n >= K_ANON)
+      .sort((a,b)=>b[1]-a[1]);
+
+    const sel = document.getElementById("groupSelect");
+    sel.innerHTML = `<option value="">— 只看全隊（預設）—</option>`;
+    eligible.forEach(([gk,n])=>{
+      const [sex, level] = gk.split("|");
+      const op = document.createElement("option");
+      op.value = gk;
+      op.textContent = `${sex}・${level}（${n}人）`;
+      sel.appendChild(op);
+    });
+
+    sel.disabled = false;
+  }
+
+  function renderAxisTable(avgScores, distByAxis){
+    const tbody = document.getElementById("axisTable");
+    tbody.innerHTML = RADAR_AXES.map(a=>{
+      const avg = avgScores[a.key];
+      const d = distByAxis[a.key] || {good:0,mid:0,bad:0};
+      const verdict = tagOfScore(avg);
+      return `
+        <tr>
+          <td>${a.label}</td>
+          <td>${avg!=null ? avg.toFixed(1) : "—"}</td>
+          <td>${d.good ?? 0}</td>
+          <td>${d.mid ?? 0}</td>
+          <td>${d.bad ?? 0}</td>
+          <td>${verdict}</td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  function axisLabel(key){
+    return (RADAR_AXES.find(a=>a.key===key)?.label) || key;
+  }
+
+  function renderGroupTable(){
+    const tbody = document.getElementById("groupTable");
+
+    // counts
+    const counts = new Map();
+    testsByName.forEach((testRow, name)=>{
+      const playerRow = playersByName.get(name) || {};
+      const gk = groupKeyOf(playerRow, testRow);
+      counts.set(gk, (counts.get(gk)||0) + 1);
+    });
+
+    // eligible
+    const eligible = Array.from(counts.entries())
+      .filter(([gk,n])=>n >= K_ANON)
+      .sort((a,b)=>b[1]-a[1]);
+
+    if(!eligible.length){
+      tbody.innerHTML = `<tr><td colspan="5">目前沒有符合隱私門檻（≥${K_ANON}）的組別可顯示。</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = eligible.map(([gk,n])=>{
+      const stats = computeScopeStats(gk);
+      const [sex, level] = gk.split("|");
+      const best = stats.best ? axisLabel(stats.best.key) : "—";
+      const weak = stats.weak ? axisLabel(stats.weak.key) : "—";
+      const note = (stats.totalN < K_ANON) ? "（隱私保護：未顯示）" : "只做資源配置參考";
+      return `
+        <tr>
+          <td>${sex}・${level}</td>
+          <td>${n}</td>
+          <td>${best}</td>
+          <td>${weak}</td>
+          <td>${note}</td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  function applyScope(scopeGroupKey=null){
+    const scopeText = document.getElementById("scopeText");
+    if(scopeGroupKey){
+      const [sex, level] = scopeGroupKey.split("|");
+      scopeText.textContent = `範圍：${sex}・${level}（匿名組別摘要）`;
+    }else{
+      scopeText.textContent = "範圍：全隊";
+    }
+
+    const stats = computeScopeStats(scopeGroupKey);
+
+    document.getElementById("kpiN").textContent = stats.totalN ?? "—";
+    document.getElementById("kpiBest").textContent = stats.best ? axisLabel(stats.best.key) : "—";
+    document.getElementById("kpiWeak").textContent = stats.weak ? axisLabel(stats.weak.key) : "—";
+    document.getElementById("kpiMood").textContent = stats.mood || "—";
+
+    renderRadar(stats.avgScores);
+    renderDistribution(stats.distByAxis);
+    renderAxisTable(stats.avgScores, stats.distByAxis);
+
+    // 組別表固定渲染（只顯示 eligible）
+    renderGroupTable();
+  }
+
+  // ==============================
+  // 8) 初始化載入
+  // ==============================
+  async function reloadAll(){
+    const status = document.getElementById("statusMsg");
+    const groupSelect = document.getElementById("groupSelect");
+    status.textContent = "從 Google Sheets 載入中…";
+    groupSelect.disabled = true;
+    groupSelect.innerHTML = `<option value="">資料載入中...</option>`;
+
+    try{
+      const [players, tests] = await Promise.all([
+        loadSheet(SHEETS.players),
+        loadSheet(SHEETS.tests)
+      ]);
+
+      // players index
+      playersByName = new Map();
+      players.forEach(r=>{
+        const n = String(getVal(r, COL.name) || "").trim();
+        if(n) playersByName.set(n, r);
+      });
+
+      // tests: 這裡採「同名最後一筆」為最新（若你表內是按日期排序，會吃到最後）
+      testsArray = (tests || []).filter(r=>Object.keys(r||{}).length);
+      const tmp = new Map();
+      testsArray.forEach(r=>{
+        const n = String(getVal(r, COL.name) || "").trim();
+        if(n) tmp.set(n, r);
+      });
+      testsByName = tmp;
+
+      buildGroupStats();
+      buildGroupOptions();
+
+      applyScope(null);
+      status.textContent = "載入完成（匿名儀表板）";
+    }catch(err){
+      console.error(err);
+      status.textContent = "載入失敗：請確認試算表已公開、分頁名稱正確（學員主資料表 / 檢測成績）。";
+    }
+  }
+
+  // ==============================
+  // 9) 綁事件
+  // ==============================
+  document.getElementById("reloadBtn").addEventListener("click", reloadAll);
+  document.getElementById("viewAllBtn").addEventListener("click", ()=>{
+    document.getElementById("groupSelect").value = "";
+    applyScope(null);
+  });
+  document.getElementById("groupSelect").addEventListener("change", (e)=>{
+    const gk = e.target.value || null;
+    applyScope(gk);
+  });
+
+  // 初始
+  reloadAll();
+</script>
+</body>
+</html>
