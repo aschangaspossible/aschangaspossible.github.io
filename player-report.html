@@ -9,7 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- PapaParse -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.3.0/papaparse.min.js"></script>
 
   <!-- PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -413,6 +413,30 @@
       .two-cols{ grid-template-columns: 1fr; }
       .coach-grid{ grid-template-columns: 1fr; }
       .status{ width: 100%; margin-left:0; }
+    }
+
+    /* =========================================================
+       ✅ PDF導出：A4滿版 + 文字更清楚（只影響 exporting 狀態）
+       ========================================================= */
+    body.exporting #playerView{ transform:none; }
+
+    body.exporting .card-h b{ font-size: 14px; }
+    body.exporting .card-h span{ font-size: 12px; }
+
+    body.exporting .player-info h2{ font-size: 26px; }
+    body.exporting .chip{ font-size: 13px; }
+    body.exporting .muted{ font-size: 12.5px; }
+
+    body.exporting .todo li{ font-size: 13px; }
+    body.exporting .coach-note-box{ font-size: 13.5px; }
+
+    body.exporting .table th,
+    body.exporting .table td{ font-size: 12px; }
+
+    body.exporting .card,
+    body.exporting .topbar,
+    body.exporting .table{
+      border-color: rgba(226,232,240,.22);
     }
   </style>
 </head>
@@ -952,7 +976,7 @@
 
     const react = pickMetric(testRow, COL.react);
 
-    // ✅ 代謝能力（新增）
+    // ✅ 代謝能力
     const aerobic = pickMetric(testRow, COL.aerobic);
     const anaerobic = pickMetric(testRow, COL.anaerobic);
 
@@ -989,7 +1013,6 @@
 
     const z_react = zOfMetric(testRow, gk, react.col, react.val);
 
-    // ✅ 代謝 Z
     const z_aerobic = zOfMetric(testRow, gk, aerobic.col, aerobic.val);
     const z_anaerobic = zOfMetric(testRow, gk, anaerobic.col, anaerobic.val);
 
@@ -1039,7 +1062,6 @@
 
     const z_reaction = wsum([[z_react, WEIGHTS.reaction.react]]);
 
-    // ✅ 代謝：最大有氧 50 / 無氧代謝 50（若兩者都沒填，回傳 null → 顯示 50 分）
     const z_metabolic = wsum([
       [z_aerobic, WEIGHTS.metabolic.aerobic],
       [z_anaerobic, WEIGHTS.metabolic.anaerobic]
@@ -1433,50 +1455,73 @@
     el("statusMsg").textContent = "";
   }
 
+  // =========================================================
+  // ✅ PDF輸出：A4滿版（cover）+ 更清楚
+  // =========================================================
   async function exportPDF(mode){
     const { jsPDF } = window.jspdf;
     const name = (el("studentSelect").value || "report").trim() || "report";
 
+    // 先同步印刷清單（教練版用得到）
     renderPlanToPlayerAndPrint();
 
+    // 切到要輸出的視圖
     const original = currentView;
     if(mode==="player") setView("player");
     if(mode==="coach") setView("coach");
 
+    // 開啟導出模式：字級放大、隱藏不需要的UI
     document.body.classList.add("exporting");
-    await new Promise(r=>setTimeout(r, 120));
+
+    // 讓瀏覽器完成重排（不然會截到舊畫面）
+    await new Promise(r=>setTimeout(r, 200));
 
     const surface = document.getElementById("mainSurface");
+
+    // ✅ 提升清晰度：scale 拉高（建議 4；若檔案太大再降 3）
     const canvas = await html2canvas(surface, {
-      scale: 3,
+      scale: 4,
       backgroundColor: "#020617",
-      useCORS: true
+      useCORS: true,
+      allowTaint: true
     });
 
+    // PNG 保持銳利
     const imgData = canvas.toDataURL("image/png");
+
+    // A4 直式
     const pdf = new jsPDF("p","mm","a4");
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
 
-    const imgWidth = pageWidth;
-    const imgHeight = canvas.height * imgWidth / canvas.width;
+    // ✅ 「滿版 cover」：等比例放大到填滿整張A4（必要時裁切）
+    const imgW_px = canvas.width;
+    const imgH_px = canvas.height;
+    const imgAspect = imgW_px / imgH_px;
+    const pageAspect = pageW / pageH;
 
-    let position = 0;
-    let heightLeft = imgHeight;
+    let drawW, drawH, offsetX, offsetY;
 
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, "", "FAST");
-    heightLeft -= pageHeight;
-
-    while(heightLeft > 0){
-      position -= pageHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, "", "FAST");
-      heightLeft -= pageHeight;
+    if(imgAspect > pageAspect){
+      // 圖比較寬：以高度為基準，左右裁切
+      drawH = pageH;
+      drawW = pageH * imgAspect;
+      offsetX = (pageW - drawW) / 2;
+      offsetY = 0;
+    }else{
+      // 圖比較高：以寬度為基準，上下裁切
+      drawW = pageW;
+      drawH = pageW / imgAspect;
+      offsetX = 0;
+      offsetY = (pageH - drawH) / 2;
     }
+
+    pdf.addImage(imgData, "PNG", offsetX, offsetY, drawW, drawH, "", "FAST");
 
     const suffix = mode==="player" ? "Player" : "Coach";
     pdf.save(`MatchPointLab-${suffix}-${name}.pdf`);
 
+    // 還原狀態
     document.body.classList.remove("exporting");
     setView(original);
   }
