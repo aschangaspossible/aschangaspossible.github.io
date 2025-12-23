@@ -59,6 +59,7 @@
       overflow:hidden;
       position:relative;
     }
+
     .topbar::before{
       content:"";
       position:absolute; inset:-2px;
@@ -68,6 +69,7 @@
       pointer-events:none;
       opacity:.9;
     }
+
     .topbar-inner{
       position:relative;
       padding: 16px 16px 14px;
@@ -77,35 +79,29 @@
       display:flex; align-items:center; justify-content:space-between; gap:14px;
       margin-bottom: 12px;
     }
+
     .brand-left{
       display:flex; align-items:center; gap:12px;
-      min-width: 0;
     }
+
     .logo{
       width:38px; height:38px; border-radius:999px;
       border:2px solid rgba(34,197,94,.85);
       box-shadow: 0 0 24px rgba(34,197,94,.5);
       object-fit:cover;
       background: radial-gradient(circle at 30% 30%, #22c55e, #16a34a);
-      flex: 0 0 auto;
     }
+
     .brand-title{
       display:flex; flex-direction:column; gap:2px;
-      min-width: 0;
     }
     .brand-title b{
       font-size: 16px;
       letter-spacing:.12em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
     .brand-title span{
       font-size: 12px;
       color: var(--sub);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     .pill{
@@ -117,7 +113,6 @@
       color: var(--sub);
       font-size: 12px;
       white-space: nowrap;
-      flex: 0 0 auto;
     }
     .pill .dot{
       width:8px; height:8px; border-radius:999px;
@@ -184,10 +179,6 @@
       margin-left:auto;
       font-size: 12px;
       color: var(--muted);
-      max-width: 100%;
-      overflow:hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     .grid{
@@ -221,7 +212,9 @@
       color: var(--muted);
     }
 
-    .card-b{ padding: 14px 16px 16px; }
+    .card-b{
+      padding: 14px 16px 16px;
+    }
 
     .muted{ color: var(--sub); font-size: 12px; line-height:1.65; }
 
@@ -250,7 +243,6 @@
       font-size: 22px;
       letter-spacing: .06em;
     }
-
     .chips{ display:flex; flex-wrap:wrap; gap:8px; margin: 8px 0 10px; }
     .chip{
       padding: 6px 10px;
@@ -270,7 +262,10 @@
       margin-top: 14px;
     }
 
-    .radar-wrap{ height: 360px; padding: 10px 6px 0; }
+    .radar-wrap{
+      height: 360px;
+      padding: 10px 6px 0;
+    }
 
     .todo{
       border:1px solid rgba(148,163,184,.18);
@@ -335,7 +330,6 @@
     }
 
     .chart-box{ height: 260px; }
-
     .table{
       width:100%;
       border-collapse: collapse;
@@ -372,7 +366,11 @@
     .tagpill.bad{ border-color: rgba(248,113,113,.55); color:#fecaca; }
     .tagpill.key{ border-color: rgba(59,130,246,.55); color:#bfdbfe; }
 
-    .pdf-surface{ border-radius: 22px; overflow:hidden; }
+    .pdf-surface{
+      border-radius: 22px;
+      overflow:hidden;
+    }
+
     .hide{ display:none !important; }
 
     .print-only{ display:none !important; }
@@ -404,40 +402,11 @@
     .editor-actions .left{
       display:flex; gap:10px; flex-wrap:wrap; align-items:center;
     }
-    .hint{ font-size: 12px; color: var(--muted); }
 
-    /* ==============================
-       ✅ PDF A4 滿版：固定版面寬度 + 字更清楚
-       A4 portrait @96dpi ≈ 794 x 1123 px（我們固定寬度，讓 html2canvas 解析更穩）
-    ============================== */
-    body.exporting .wrap{ max-width:none; margin:0; padding:0; }
-    body.exporting .topbar,
-    body.exporting #weightCard{ display:none !important; }
-
-    body.exporting #mainSurface{
-      width: 794px !important;
-      margin: 0 !important;
-      border-radius: 0 !important;
-      border: none !important;
-      box-shadow: none !important;
-      background: #020617 !important;
+    .hint{
+      font-size: 12px;
+      color: var(--muted);
     }
-    body.exporting .card-h{
-      padding: 18px 22px 14px !important;
-    }
-    body.exporting .card-b{
-      padding: 18px 22px 22px !important;
-    }
-    body.exporting .player-info h2{
-      font-size: 26px !important;
-    }
-    body.exporting .chip{ font-size: 13px !important; }
-    body.exporting .badge,
-    body.exporting .coach-note-box{
-      font-size: 14px !important;
-    }
-    body.exporting .muted{ font-size: 12.5px !important; }
-    body.exporting .radar-wrap{ height: 420px !important; }
 
     @media (max-width: 980px){
       .player-hero{ grid-template-columns: 1fr; }
@@ -628,7 +597,7 @@
 
                 <div class="no-print">
                   <div class="muted" style="margin-bottom:10px; line-height:1.8">
-                    建議寫法：<b>「目的 → 劑量 → 品質標準」</b><br/>
+                    建議寫法：<b>「目的 → 功量 → 品質標準」</b><br/>
                     例：下肢爆發力｜CMJ 3×5｜落地安靜、膝蓋對齊、休息 60–90s
                   </div>
 
@@ -739,19 +708,45 @@
         <div class="muted" style="margin-top:12px">
           0–100 轉換方式：<b>Score = clamp(50 + Z×15)</b>（Z=+1 約 65 分）
         </div>
+        <div class="muted" style="margin-top:10px">
+          無氧代謝欄位支援：<b>無氧代謝(%)</b>（AC）/ 無氧代謝分數 / Anaerobic Score / FRI（會自動轉成 0–100）
+        </div>
       </div>
     </div>
   </div>
 
 <script>
-  // ✅ 你的試算表（就是你貼的連結）
   const FILE_ID = "1N-8HQZaxHYj4vE824raG1fWyNxt5w7B9_m8oHn8f4As";
-
-  // ✅ 請確認分頁名稱完全一致（包含空白、大小寫）
   const SHEETS = {
     players: "學員主資料表",
     tests: "檢測成績"
   };
+
+  // ==============================
+  // 0) 無氧代謝：FRI → 0–100 新分數（50=平均）
+  // - 若表內填的是 FRI（約 0.90~1.10），會自動轉換
+  // - 若表內已是 0–100，就直接用
+  // ==============================
+  const ANA_FRI_TO_SCORE_MULT = 400; // 0.01 ≈ 4 分（想更敏感可調 450，想更保守 300）
+
+  function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+  function anaerobicNormalize(raw){
+    const v = toNum(raw);
+    if(v == null) return null;
+
+    // Case A: already a 0–100 score
+    if(v >= 0 && v <= 100) return v;
+
+    // Case B: looks like FRI (ratio around 1.0)
+    if(v >= 0.75 && v <= 1.35){
+      const score = 50 + (1 - v) * ANA_FRI_TO_SCORE_MULT;
+      return clamp(score, 0, 100);
+    }
+
+    // Otherwise: unknown scale -> ignore
+    return null;
+  }
 
   // ==============================
   // 1) 欄位辨識（容錯：同一概念可能不同欄名）
@@ -795,8 +790,15 @@
 
     react:["反應燈測試(次數)","反應燈測試","反應燈測試(次數) ","Reaction(次數)","Reaction"],
 
+    // ✅ 代謝能力
     aerobic:["最大有氧","最大有氧(ml/kg/min)","VO2max","VO2 max","Max Aerobic","Aerobic"],
-    anaerobic:["無氧代謝","Anaerobic","Anaerobic capacity","無氧能力"]
+
+    // ✅ 無氧代謝：支援 0–100 分數 or FRI
+    anaerobic:[
+      "無氧代謝(%)","無氧代謝","無氧代謝分數",
+      "Anaerobic","Anaerobic Score","Anaerobic capacity",
+      "FRI","疲勞調節指數","Fatigue Regulation Index"
+    ]
   };
 
   function isLowerBetterMetric(label){
@@ -823,6 +825,8 @@
     speed: { sprint10: .60, sprint20: .40 },
     changeDir: { t505: .45, spider: .35, hop: .20 },
     reaction: { react: 1.00 },
+
+    // ✅ 代謝：最大有氧 50 / 無氧代謝 50
     metabolic: { aerobic: .50, anaerobic: .50 }
   };
 
@@ -843,51 +847,17 @@
     return Math.max(0, Math.min(100, v));
   }
 
-  // ==============================
-  // ✅ 下載 CSV：fetch → PapaParse（更穩，且錯誤清楚）
-  // ==============================
   function csvUrlForSheet(sheetName){
-    const a = `https://docs.google.com/spreadsheets/d/${FILE_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}&t=${Date.now()}`;
-    const b = `https://docs.google.com/spreadsheets/d/${FILE_ID}/export?format=csv&sheet=${encodeURIComponent(sheetName)}&t=${Date.now()}`;
-    return { a, b };
+    return `https://docs.google.com/spreadsheets/d/${FILE_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
   }
 
-  async function fetchText(url){
-    const res = await fetch(url, { cache: "no-store" });
-    const text = await res.text();
-    return { ok: res.ok, status: res.status, text };
-  }
-
-  function looksLikeLoginPage(text){
-    const t = (text || "").toLowerCase();
-    return t.includes("<html") && (t.includes("accounts.google.com") || t.includes("service login") || t.includes("signin"));
-  }
-
-  async function loadSheet(sheetName){
-    const { a, b } = csvUrlForSheet(sheetName);
-
-    let r = await fetchText(a);
-    if(!r.ok || looksLikeLoginPage(r.text) || r.text.trim().startsWith("<!doctype html")){
-      const r2 = await fetchText(b);
-      if(!r2.ok || looksLikeLoginPage(r2.text) || r2.text.trim().startsWith("<!doctype html")){
-        throw new Error(
-          `CSV 下載失敗。\n` +
-          `A(${r.status}) ${a}\n` +
-          `B(${r2.status}) ${b}\n\n` +
-          `常見原因：\n` +
-          `1) 試算表權限不是「知道連結的人可檢視」\n` +
-          `2) 分頁名稱不一致（含空白）`
-        );
-      }
-      r = r2;
-    }
-
+  function loadSheet(sheetName){
     return new Promise((resolve,reject)=>{
-      Papa.parse(r.text,{
+      Papa.parse(csvUrlForSheet(sheetName),{
+        download:true,
         header:true,
-        skipEmptyLines:true,
-        complete: res => resolve(res.data || []),
-        error: err => reject(err)
+        complete:r=>resolve(r.data || []),
+        error:reject
       });
     });
   }
@@ -934,7 +904,12 @@
       Object.keys(row).forEach(k=>{
         if(!k) return;
         if (COL.name.includes(k) || COL.sex.includes(k) || COL.level.includes(k) || COL.date.includes(k)) return;
-        const v = toNum(row[k]);
+
+        // ✅ 無氧代謝：若是 FRI/分數欄位，就先 normalize 成 0–100 再做群組統計
+        const isAna = COL.anaerobic.includes(k);
+        const raw = row[k];
+        const v = isAna ? anaerobicNormalize(raw) : toNum(raw);
+
         if(v == null) return;
         if(!m.has(k)) m.set(k, []);
         m.get(k).push(v);
@@ -957,7 +932,17 @@
 
   function pickMetric(row, keyList){
     for (const k of keyList){
-      const v = toNum(row[k]);
+      if(!(k in row)) continue;
+      const raw = row[k];
+
+      // ✅ 無氧代謝：自動 normalize
+      if(keyList === COL.anaerobic){
+        const v = anaerobicNormalize(raw);
+        if(v != null) return { col:k, val:v };
+        continue;
+      }
+
+      const v = toNum(raw);
       if(v != null) return { col: k, val: v };
     }
     return { col: null, val: null };
@@ -1014,6 +999,7 @@
 
     const react = pickMetric(testRow, COL.react);
 
+    // ✅ 代謝能力（最大有氧 + 無氧代謝）
     const aerobic = pickMetric(testRow, COL.aerobic);
     const anaerobic = pickMetric(testRow, COL.anaerobic);
 
@@ -1050,6 +1036,7 @@
 
     const z_react = zOfMetric(testRow, gk, react.col, react.val);
 
+    // ✅ 代謝 Z：注意 val 可能是已 normalize 的 0–100（若你存的是分數）
     const z_aerobic = zOfMetric(testRow, gk, aerobic.col, aerobic.val);
     const z_anaerobic = zOfMetric(testRow, gk, anaerobic.col, anaerobic.val);
 
@@ -1099,6 +1086,7 @@
 
     const z_reaction = wsum([[z_react, WEIGHTS.reaction.react]]);
 
+    // ✅ 代謝：最大有氧 50 / 無氧代謝 50（兩者都沒填 → null → 分數顯示 50）
     const z_metabolic = wsum([
       [z_aerobic, WEIGHTS.metabolic.aerobic],
       [z_anaerobic, WEIGHTS.metabolic.anaerobic]
@@ -1156,16 +1144,16 @@
       });
 
       el("studentSelect").disabled = false;
-      el("statusMsg").textContent = `載入完成：${names.length} 位學員`;
+      el("statusMsg").textContent = "載入完成：請選學員。";
 
     }catch(err){
       console.error(err);
-      el("statusMsg").textContent = "載入失敗（會跳出原因）";
-      alert(String(err.message || err));
+      el("statusMsg").textContent = "載入失敗：請確認試算表已公開、分頁名稱正確（學員主資料表 / 檢測成績）。";
     }
   }
 
   let currentView = "player";
+
   function setView(view){
     currentView = view;
     el("tabPlayer").classList.toggle("active", view==="player");
@@ -1234,7 +1222,9 @@
         responsive:true,
         maintainAspectRatio:false,
         plugins:{
-          legend:{ labels:{ color:"#cbd5e1", boxWidth:18, font:{ size: 12 } } }
+          legend:{
+            labels:{ color:"#cbd5e1", boxWidth:18, font:{ size: 12 } }
+          }
         },
         scales:{
           r:{
@@ -1266,8 +1256,8 @@
       data:{
         labels: keyMetrics.map(x=>x.label),
         datasets:[
-          { label:"學員", data:keyMetrics.map(x=>x.latest) },
-          { label:"同級平均", data:keyMetrics.map(x=>x.mean) }
+          { label:"學員", data:keyMetrics.map(x=>x.latest), backgroundColor:"rgba(34,197,94,.80)" },
+          { label:"同級平均", data:keyMetrics.map(x=>x.mean), backgroundColor:"rgba(56,189,248,.80)" }
         ]
       },
       options:{
@@ -1430,7 +1420,9 @@
     Object.keys(testRow).forEach(k=>{
       if(!k) return;
       if (COL.name.includes(k) || COL.sex.includes(k) || COL.level.includes(k) || COL.date.includes(k)) return;
-      const latest = toNum(testRow[k]);
+
+      const isAna = COL.anaerobic.includes(k);
+      const latest = isAna ? anaerobicNormalize(testRow[k]) : toNum(testRow[k]);
       if(latest == null) return;
 
       const s = stats[k] || {};
@@ -1490,7 +1482,6 @@
     el("statusMsg").textContent = "";
   }
 
-  // ✅ PDF：A4 滿版 + 更高解析 + 0 邊界
   async function exportPDF(mode){
     const { jsPDF } = window.jspdf;
     const name = (el("studentSelect").value || "report").trim() || "report";
@@ -1502,25 +1493,20 @@
     if(mode==="coach") setView("coach");
 
     document.body.classList.add("exporting");
-    await new Promise(r=>setTimeout(r, 180));
+    await new Promise(r=>setTimeout(r, 120));
 
     const surface = document.getElementById("mainSurface");
-
     const canvas = await html2canvas(surface, {
-      scale: 4,                 // ✅ 解析度提高：字更清楚
+      scale: 3,
       backgroundColor: "#020617",
-      useCORS: true,
-      logging: false
+      useCORS: true
     });
 
-    const imgData = canvas.toDataURL("image/png", 1.0);
-
-    // A4：210×297 mm
+    const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF("p","mm","a4");
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
-    // ✅ 滿版：不留邊界
     const imgWidth = pageWidth;
     const imgHeight = canvas.height * imgWidth / canvas.width;
 
@@ -1530,7 +1516,6 @@
     pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, "", "FAST");
     heightLeft -= pageHeight;
 
-    // ✅ 如果高度超過一頁：自動分頁（仍然滿版）
     while(heightLeft > 0){
       position -= pageHeight;
       pdf.addPage();
