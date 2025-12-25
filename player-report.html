@@ -408,6 +408,71 @@
       color: var(--muted);
     }
 
+    /* =========================================================
+       ✅ 你要的：訓練建議深色欄位 → 全白字
+       直接鎖住 .todo / .todo * 讓它不會被其他樣式陰到
+    ========================================================= */
+    #playerView .todo,
+    #playerView .todo *{
+      color: rgba(255,255,255,.96) !important;
+    }
+    #playerView .todo{
+      border-color: rgba(255,255,255,.22);
+      background: rgba(0,0,0,.22);
+    }
+    #playerView .todo .tag{
+      border-color: rgba(255,255,255,.30);
+      background: rgba(0,0,0,.18);
+      color: rgba(255,255,255,.92) !important;
+    }
+
+    /* =========================================================
+       ✅ A4 展板用：匯出 PDF 時的字體、間距、雷達高度縮短
+       目標：單頁 A4 不超出
+    ========================================================= */
+    body.exporting{
+      background:#ffffff !important;
+    }
+    body.exporting .wrap{ max-width: 980px !important; margin: 0 auto !important; padding: 0 !important; }
+    body.exporting .topbar{ display:none !important; } /* 展板 PDF 不需要上方工具列 */
+    body.exporting #weightCard{ display:none !important; } /* 教練資訊不要進球員展板 */
+    body.exporting .card{
+      box-shadow: none !important;
+    }
+    body.exporting .card-h b{
+      font-size: 14px !important;
+      letter-spacing:.14em !important;
+    }
+    body.exporting .player-info h2{
+      font-size: 30px !important;
+      letter-spacing:.04em !important;
+    }
+    body.exporting .chip{
+      font-size: 13px !important;
+      padding: 7px 11px !important;
+    }
+    body.exporting .badge{
+      font-size: 14px !important;
+    }
+    body.exporting .coach-note-box{
+      font-size: 14px !important;
+      line-height: 1.8 !important;
+    }
+    body.exporting .radar-wrap{
+      height: 280px !important; /* 重要：縮高度，避免 A4 超出 */
+      padding-top: 0 !important;
+    }
+    body.exporting .card-b{
+      padding: 14px 16px !important;
+    }
+    body.exporting .player-hero{
+      grid-template-columns: 240px 1fr !important;
+      gap: 12px !important;
+    }
+    body.exporting .photo{
+      min-height: 240px !important;
+    }
+
     @media (max-width: 980px){
       .player-hero{ grid-template-columns: 1fr; }
       .two-cols{ grid-template-columns: 1fr; }
@@ -443,7 +508,7 @@
           <button class="btn btn-tab active" id="tabPlayer">🟢 球員版（含家長）</button>
           <button class="btn btn-tab" id="tabCoach">📊 教練版（完整版）</button>
 
-          <button class="btn btn-primary" id="pdfPlayerBtn">📄 球員版 PDF</button>
+          <button class="btn btn-primary" id="pdfPlayerBtn">📄 球員版 PDF（A4滿版）</button>
           <button class="btn btn-primary" id="pdfCoachBtn">📄 教練版 PDF</button>
 
           <span class="status" id="statusMsg">—</span>
@@ -528,7 +593,7 @@
                 <div class="card-b">
                   <div class="todo">
                     <ol id="p_todoList">
-                      <li>請先選擇學員（教練會在教練版填寫）</li>
+                      <li>請先選擇學員（教練會在教練版填寫）<span class="tag">主軸</span></li>
                     </ol>
                   </div>
                   <div class="muted" style="margin-top:10px">
@@ -703,13 +768,13 @@
           <b>速度</b>：10m 60%｜20m 40%（越小越好）<br/>
           <b>變向能力</b>：5-10-5 45%｜Spider 35%（越小越好）｜Hop test 20%<br/>
           <b>反應</b>：反應燈 100%<br/>
-          <b>代謝能力</b>：最大有氧 50%｜無氧代謝 50%（未填則維持 50 分）
+          <b>代謝能力</b>：最大有氧 40%｜無氧代謝 40%｜速度衰退 20%（未填則維持 50 分）<br/>
         </div>
         <div class="muted" style="margin-top:12px">
           0–100 轉換方式：<b>Score = clamp(50 + Z×15)</b>（Z=+1 約 65 分）
         </div>
         <div class="muted" style="margin-top:10px">
-          無氧代謝欄位支援：<b>無氧代謝(%)</b>（AC）/ 無氧代謝分數 / Anaerobic Score / FRI（會自動轉成 0–100）
+          無氧代謝欄位支援：<b>檢測成績 AC 無氧代謝(%)</b> / 無氧代謝分頁 Q 無氧代謝(%) / P FRI（疲勞調節指數）
         </div>
       </div>
     </div>
@@ -719,37 +784,69 @@
   const FILE_ID = "1N-8HQZaxHYj4vE824raG1fWyNxt5w7B9_m8oHn8f4As";
   const SHEETS = {
     players: "學員主資料表",
-    tests: "檢測成績"
+    tests: "檢測成績",
+    anaerobic: "無氧代謝" // ✅ 新增分頁
   };
 
   // ==============================
-  // 0) 無氧代謝：FRI → 0–100 新分數（50=平均）
-  // - 若表內填的是 FRI（約 0.90~1.10），會自動轉換
-  // - 若表內已是 0–100，就直接用
+  // 小工具
   // ==============================
-  const ANA_FRI_TO_SCORE_MULT = 400; // 0.01 ≈ 4 分（想更敏感可調 450，想更保守 300）
-
   function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+  function toNum(v){
+    if (v == null || v === "") return null;
+    const n = Number(String(v).replace(/[^\d.\-]/g,""));
+    return isNaN(n) ? null : n;
+  }
 
-  function anaerobicNormalize(raw){
+  // ==============================
+  // ✅ 無氧代謝/FRI/無氧代謝% normalize
+  // - Q 無氧代謝(%) 或 AC 無氧代謝(%): 0~100 (或 0~1 → 自動*100)
+  // - P FRI: 常見 0.75~1.35（越低越好，照你之前設計）
+  // ==============================
+  const ANA_FRI_TO_SCORE_MULT = 400; // 0.01 ≈ 4 分（可自行調整）
+  function normalizePct(raw){
     const v = toNum(raw);
     if(v == null) return null;
-
-    // Case A: already a 0–100 score
+    // 0~1 → 當作比例
+    if(v > 0 && v <= 1.5) return clamp(v * 100, 0, 100);
+    // 0~100 直接用
     if(v >= 0 && v <= 100) return v;
-
-    // Case B: looks like FRI (ratio around 1.0)
+    return null;
+  }
+  function friToScore(raw){
+    const v = toNum(raw);
+    if(v == null) return null;
     if(v >= 0.75 && v <= 1.35){
       const score = 50 + (1 - v) * ANA_FRI_TO_SCORE_MULT;
       return clamp(score, 0, 100);
     }
-
-    // Otherwise: unknown scale -> ignore
+    // 如果有人填成 0~100 就當作分數
+    if(v >= 0 && v <= 100) return v;
     return null;
   }
 
+  function csvUrlForSheet(sheetName){
+    return `https://docs.google.com/spreadsheets/d/${FILE_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+  }
+  function loadSheet(sheetName){
+    return new Promise((resolve,reject)=>{
+      Papa.parse(csvUrlForSheet(sheetName),{
+        download:true,
+        header:true,
+        complete:r=>resolve((r.data || []).filter(x=>x && Object.keys(x).some(k=>String(x[k]||"").trim()!==""))),
+        error:reject
+      });
+    });
+  }
+  function getVal(row, keys){
+    for (const k of keys){
+      if (row && row[k] != null && String(row[k]).trim() !== "") return row[k];
+    }
+    return "";
+  }
+
   // ==============================
-  // 1) 欄位辨識（容錯：同一概念可能不同欄名）
+  // 欄位辨識（容錯）
   // ==============================
   const COL = {
     name: ["姓名"],
@@ -790,30 +887,40 @@
 
     react:["反應燈測試(次數)","反應燈測試","反應燈測試(次數) ","Reaction(次數)","Reaction"],
 
-    // ✅ 代謝能力
+    // 代謝
     aerobic:["最大有氧","最大有氧(ml/kg/min)","VO2max","VO2 max","Max Aerobic","Aerobic"],
 
-    // ✅ 無氧代謝：支援 0–100 分數 or FRI
-    anaerobic:[
-      "無氧代謝(%)","無氧代謝","無氧代謝分數",
-      "Anaerobic","Anaerobic Score","Anaerobic capacity",
-      "FRI","疲勞調節指數","Fatigue Regulation Index"
-    ]
+    // ✅ 檢測成績 AC 欄 無氧代謝(%)
+    anaerobicPctTests:["無氧代謝(%)","無氧代謝%","Anaerobic(%)","Anaerobic %","Anaerobic Percent","AC 無氧代謝(%)"],
+
+    // ✅ 無氧代謝分頁
+    anaerName:["姓名"],
+    speedDecay:["速度衰退(%)","速度衰退%","Speed Decay(%)","Speed decay(%)","Speed decay %"],
+    fri:["FRI(疲勞調節指數)","FRI","Fatigue Regulation Index","疲勞調節指數"],
+    anaerobicPctSheet:["無氧代謝(%)","無氧代謝%","Anaerobic(%)","Anaerobic %","Anaerobic Percent"]
   };
 
   function isLowerBetterMetric(label){
     const s = String(label || "");
+    // 速度/敏捷（秒）越小越好 + 速度衰退越小越好
     return (
       s.includes("秒") ||
       /sprint/i.test(s) ||
       s.includes("505") ||
       s.includes("蜘蛛") ||
-      s.includes("Spider")
+      s.includes("Spider") ||
+      s.includes("速度衰退")
     );
   }
 
+  function groupKeyOf(playerRow, testRow){
+    const sex = (getVal(playerRow, COL.sex) || getVal(testRow, COL.sex) || "").trim() || "-";
+    const level = (getVal(playerRow, COL.level) || getVal(testRow, COL.level) || "").trim() || "-";
+    return `${sex}|${level}`;
+  }
+
   // ==============================
-  // 2) 加權設定
+  // 加權設定
   // ==============================
   const WEIGHTS = {
     lowerStrength: { deadlift: 1.00 },
@@ -826,8 +933,8 @@
     changeDir: { t505: .45, spider: .35, hop: .20 },
     reaction: { react: 1.00 },
 
-    // ✅ 代謝：最大有氧 50 / 無氧代謝 50
-    metabolic: { aerobic: .50, anaerobic: .50 }
+    // ✅ 代謝：最大有氧 40 / 無氧代謝% 40 / 速度衰退 20
+    metabolic: { aerobic: .40, anaerobicPct: .40, speedDecay: .20 }
   };
 
   const RADAR_AXES = [
@@ -838,82 +945,109 @@
     { key:"speed",         label:"速度" },
     { key:"changeDir",     label:"變向能力" },
     { key:"reaction",      label:"反應" },
-    { key:"metabolic",     label:"代謝能力" }
+    { key:"metabolic",     label:"代謝能力" } // ✅ 這條已提升：會吃 AC/Q + 速度衰退 +（FRI 會用於補強說明/表格）
   ];
 
   function zToScore(z){
     if (z == null || isNaN(z)) return 50;
-    const v = 50 + z * 15;
-    return Math.max(0, Math.min(100, v));
+    return clamp(50 + z * 15, 0, 100);
   }
 
-  function csvUrlForSheet(sheetName){
-    return `https://docs.google.com/spreadsheets/d/${FILE_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
-  }
-
-  function loadSheet(sheetName){
-    return new Promise((resolve,reject)=>{
-      Papa.parse(csvUrlForSheet(sheetName),{
-        download:true,
-        header:true,
-        complete:r=>resolve(r.data || []),
-        error:reject
-      });
-    });
-  }
-
-  function getVal(row, keys){
-    for (const k of keys){
-      if (row && row[k] != null && String(row[k]).trim() !== "") return row[k];
-    }
-    return "";
-  }
-
-  function toNum(v){
-    if (v == null || v === "") return null;
-    const n = Number(String(v).replace(/[^\d.\-]/g,""));
-    return isNaN(n) ? null : n;
-  }
-
-  function groupKeyOf(playerRow, testRow){
-    const sex = (getVal(playerRow, COL.sex) || getVal(testRow, COL.sex) || "").trim() || "-";
-    const level = (getVal(playerRow, COL.level) || getVal(testRow, COL.level) || "").trim() || "-";
-    return `${sex}|${level}`;
-  }
-
+  // ==============================
+  // 全域資料
+  // ==============================
   let playersByName = new Map();
   let testsByName = new Map();
   let testsArray = [];
+  let anaerByName = new Map();        // ✅ 無氧代謝分頁 map
   let groupStats = new Map();
 
   let radarPlayerChart = null;
   let radarCoachChart  = null;
   let barChart = null;
 
+  // ==============================
+  // 取值：檢測成績 + 無氧代謝分頁（可補上）
+  // ==============================
+  function getAnaRow(name){
+    return anaerByName.get(String(name||"").trim()) || null;
+  }
+
+  function pickMetric(row, keyList, mode="num"){
+    // mode: "num" | "pct" | "friScore"
+    for (const k of keyList){
+      if(!row || !(k in row)) continue;
+      const raw = row[k];
+
+      if(mode === "pct"){
+        const v = normalizePct(raw);
+        if(v != null) return { col:k, val:v };
+        continue;
+      }
+      if(mode === "friScore"){
+        const v = friToScore(raw);
+        if(v != null) return { col:k, val:v };
+        continue;
+      }
+
+      const v = toNum(raw);
+      if(v != null) return { col:k, val:v };
+    }
+    return { col:null, val:null };
+  }
+
+  // ==============================
+  // 群組統計：把「無氧代謝分頁」欄位一起丟進去算 mean/sd
+  // 這樣 Z 才合理（同組比較）
+  // ==============================
   function buildGroupStats(){
     const bucket = new Map();
-    testsArray.forEach(row=>{
-      const name = String(getVal(row, COL.name) || "").trim();
+
+    testsArray.forEach(testRow=>{
+      const name = String(getVal(testRow, COL.name) || "").trim();
       if(!name) return;
 
       const playerRow = playersByName.get(name) || {};
-      const gk = groupKeyOf(playerRow, row);
+      const gk = groupKeyOf(playerRow, testRow);
       if(!bucket.has(gk)) bucket.set(gk, new Map());
       const m = bucket.get(gk);
 
-      Object.keys(row).forEach(k=>{
+      // 1) 檢測成績的每個數值欄位
+      Object.keys(testRow).forEach(k=>{
         if(!k) return;
         if (COL.name.includes(k) || COL.sex.includes(k) || COL.level.includes(k) || COL.date.includes(k)) return;
 
-        // ✅ 無氧代謝：若是 FRI/分數欄位，就先 normalize 成 0–100 再做群組統計
-        const isAna = COL.anaerobic.includes(k);
-        const raw = row[k];
-        const v = isAna ? anaerobicNormalize(raw) : toNum(raw);
-
+        // 檢測成績 AC 無氧代謝(%)
+        const isAnaPct = COL.anaerobicPctTests.includes(k) || /無氧代謝/.test(k);
+        const v = isAnaPct ? normalizePct(testRow[k]) : toNum(testRow[k]);
         if(v == null) return;
+
         if(!m.has(k)) m.set(k, []);
         m.get(k).push(v);
       });
+
+      // 2) 無氧代謝分頁（O/P/Q）
+      const anaRow = getAnaRow(name);
+      if(anaRow){
+        // 速度衰退(%)
+        const sd = pickMetric(anaRow, COL.speedDecay, "num");
+        if(sd.val != null){
+          if(!m.has(sd.col)) m.set(sd.col, []);
+          m.get(sd.col).push(sd.val);
+        }
+        // FRI → 轉成 0–100 分數（用於表格/教練判讀）
+        const fri = pickMetric(anaRow, COL.fri, "friScore");
+        if(fri.val != null){
+          if(!m.has(fri.col)) m.set(fri.col, []);
+          m.get(fri.col).push(fri.val);
+        }
+        // 無氧代謝(%) Q
+        const ap = pickMetric(anaRow, COL.anaerobicPctSheet, "pct");
+        if(ap.val != null){
+          if(!m.has(ap.col)) m.set(ap.col, []);
+          m.get(ap.col).push(ap.val);
+        }
+      }
     });
 
     groupStats = new Map();
@@ -930,36 +1064,20 @@
     });
   }
 
-  function pickMetric(row, keyList){
-    for (const k of keyList){
-      if(!(k in row)) continue;
-      const raw = row[k];
-
-      // ✅ 無氧代謝：自動 normalize
-      if(keyList === COL.anaerobic){
-        const v = anaerobicNormalize(raw);
-        if(v != null) return { col:k, val:v };
-        continue;
-      }
-
-      const v = toNum(raw);
-      if(v != null) return { col: k, val: v };
-    }
-    return { col: null, val: null };
-  }
-
-  function zOfMetric(testRow, gk, colName, val){
+  function zOfMetric(gk, colName, val){
     if(val == null || !colName) return null;
     const stats = groupStats.get(gk) || {};
     const s = stats[colName];
     if(!s || s.sd == null || s.sd === 0) return null;
 
     const lowerBetter = isLowerBetterMetric(colName);
-    const z = lowerBetter ? (s.mean - val) / s.sd : (val - s.mean) / s.sd;
-    return z;
+    return lowerBetter ? (s.mean - val) / s.sd : (val - s.mean) / s.sd;
   }
 
-  function calcCompositeZ(testRow, playerRow){
+  // ==============================
+  // 計算 8 軸 Z（含：代謝能力強化）
+  // ==============================
+  function calcCompositeZ(testRow, playerRow, anaRow){
     const gk = groupKeyOf(playerRow, testRow);
 
     const deadlift = pickMetric(testRow, COL.deadlift);
@@ -971,8 +1089,8 @@
     const latR  = pickMetric(testRow, COL.lateralR);
 
     const lateralZ = (()=>{
-      const zl = zOfMetric(testRow, gk, latL.col, latL.val);
-      const zr = zOfMetric(testRow, gk, latR.col, latR.val);
+      const zl = zOfMetric(gk, latL.col, latL.val);
+      const zr = zOfMetric(gk, latR.col, latR.val);
       if(zl == null && zr == null) return null;
       if(zl == null) return zr;
       if(zr == null) return zl;
@@ -999,46 +1117,54 @@
 
     const react = pickMetric(testRow, COL.react);
 
-    // ✅ 代謝能力（最大有氧 + 無氧代謝）
+    // ✅ 代謝能力：優先用「檢測成績 AC 無氧代謝(%)」，沒有才用「無氧代謝分頁 Q」
     const aerobic = pickMetric(testRow, COL.aerobic);
-    const anaerobic = pickMetric(testRow, COL.anaerobic);
+    const anaerPctFromTests = pickMetric(testRow, COL.anaerobicPctTests, "pct");
+    const anaerPctFromSheet = anaRow ? pickMetric(anaRow, COL.anaerobicPctSheet, "pct") : {col:null,val:null};
+    const anaerPct = (anaerPctFromTests.val != null) ? anaerPctFromTests : anaerPctFromSheet;
+
+    // 速度衰退(%)（越小越好）
+    const speedDecay = anaRow ? pickMetric(anaRow, COL.speedDecay, "num") : {col:null,val:null};
+
+    // FRI（用於教練表格與判讀，若你之後想併入代謝也可）
+    const friScore = anaRow ? pickMetric(anaRow, COL.fri, "friScore") : {col:null,val:null};
+
+    const z_deadlift = zOfMetric(gk, deadlift.col, deadlift.val);
+
+    const z_imtp  = zOfMetric(gk, imtp.col,  imtp.val);
+    const z_cmj   = zOfMetric(gk, cmj.col,   cmj.val);
+    const z_broad = zOfMetric(gk, broad.col, broad.val);
+
+    const z_invRow = zOfMetric(gk, invRow.col, invRow.val);
+    const z_pushup = zOfMetric(gk, pushup.col, pushup.val);
+    const z_grip   = zOfMetric(gk, grip.col,   grip.val);
+    const z_plank  = zOfMetric(gk, plank.col,  plank.val);
+
+    const z_sohm = zOfMetric(gk, sohm.col, sohm.val);
+    const z_kohm = zOfMetric(gk, kohm.col, kohm.val);
+    const z_shmb = zOfMetric(gk, shmb.col, shmb.val);
+    const z_khmb = zOfMetric(gk, khmb.col, khmb.val);
+
+    const z_s10 = zOfMetric(gk, s10.col, s10.val);
+    const z_s20 = zOfMetric(gk, s20.col, s20.val);
 
     const z505 = (()=>{
-      const zl = zOfMetric(testRow, gk, t505L.col, t505L.val);
-      const zr = zOfMetric(testRow, gk, t505R.col, t505R.val);
+      const zl = zOfMetric(gk, t505L.col, t505L.val);
+      const zr = zOfMetric(gk, t505R.col, t505R.val);
       if(zl == null && zr == null) return null;
       if(zl == null) return zr;
       if(zr == null) return zl;
       return (zl+zr)/2;
     })();
 
-    const z_deadlift = zOfMetric(testRow, gk, deadlift.col, deadlift.val);
+    const z_spider = zOfMetric(gk, spider.col, spider.val);
+    const z_hop    = zOfMetric(gk, hop.col, hop.val);
 
-    const z_imtp  = zOfMetric(testRow, gk, imtp.col,  imtp.val);
-    const z_cmj   = zOfMetric(testRow, gk, cmj.col,   cmj.val);
-    const z_broad = zOfMetric(testRow, gk, broad.col, broad.val);
+    const z_react = zOfMetric(gk, react.col, react.val);
 
-    const z_invRow = zOfMetric(testRow, gk, invRow.col, invRow.val);
-    const z_pushup = zOfMetric(testRow, gk, pushup.col, pushup.val);
-    const z_grip   = zOfMetric(testRow, gk, grip.col,   grip.val);
-    const z_plank  = zOfMetric(testRow, gk, plank.col,  plank.val);
-
-    const z_sohm = zOfMetric(testRow, gk, sohm.col, sohm.val);
-    const z_kohm = zOfMetric(testRow, gk, kohm.col, kohm.val);
-    const z_shmb = zOfMetric(testRow, gk, shmb.col, shmb.val);
-    const z_khmb = zOfMetric(testRow, gk, khmb.col, khmb.val);
-
-    const z_s10 = zOfMetric(testRow, gk, s10.col, s10.val);
-    const z_s20 = zOfMetric(testRow, gk, s20.col, s20.val);
-
-    const z_spider = zOfMetric(testRow, gk, spider.col, spider.val);
-    const z_hop    = zOfMetric(testRow, gk, hop.col, hop.val);
-
-    const z_react = zOfMetric(testRow, gk, react.col, react.val);
-
-    // ✅ 代謝 Z：注意 val 可能是已 normalize 的 0–100（若你存的是分數）
-    const z_aerobic = zOfMetric(testRow, gk, aerobic.col, aerobic.val);
-    const z_anaerobic = zOfMetric(testRow, gk, anaerobic.col, anaerobic.val);
+    const z_aerobic = zOfMetric(gk, aerobic.col, aerobic.val);
+    const z_anaPct  = zOfMetric(gk, anaerPct.col, anaerPct.val);
+    const z_speedDecay = zOfMetric(gk, speedDecay.col, speedDecay.val);
 
     const wsum = (pairs)=>{
       let num = 0, den = 0;
@@ -1086,10 +1212,12 @@
 
     const z_reaction = wsum([[z_react, WEIGHTS.reaction.react]]);
 
-    // ✅ 代謝：最大有氧 50 / 無氧代謝 50（兩者都沒填 → null → 分數顯示 50）
+    // ✅ 代謝能力（強化版）：有氧 + 無氧代謝% + 速度衰退
+    // 若三者皆沒填 → null → 分數回到 50
     const z_metabolic = wsum([
-      [z_aerobic, WEIGHTS.metabolic.aerobic],
-      [z_anaerobic, WEIGHTS.metabolic.anaerobic]
+      [z_aerobic,     WEIGHTS.metabolic.aerobic],
+      [z_anaPct,      WEIGHTS.metabolic.anaerobicPct],
+      [z_speedDecay,  WEIGHTS.metabolic.speedDecay]
     ]);
 
     return {
@@ -1103,73 +1231,17 @@
         changeDir: z_changeDir,
         reaction: z_reaction,
         metabolic: z_metabolic
+      },
+      metaExtra: {
+        aerobic,
+        anaerPct,
+        speedDecay,
+        friScore
       }
     };
   }
 
   const el = (id)=>document.getElementById(id);
-
-  async function reloadAll(){
-    el("statusMsg").textContent = "從 Google Sheets 載入中…";
-    el("studentSelect").disabled = true;
-    el("studentSelect").innerHTML = `<option value="">資料載入中...</option>`;
-
-    try{
-      const [players, tests] = await Promise.all([
-        loadSheet(SHEETS.players),
-        loadSheet(SHEETS.tests)
-      ]);
-
-      playersByName = new Map();
-      players.forEach(r=>{
-        const n = String(getVal(r, COL.name) || "").trim();
-        if(n) playersByName.set(n, r);
-      });
-
-      testsArray = tests || [];
-      testsByName = new Map();
-      testsArray.forEach(r=>{
-        const n = String(getVal(r, COL.name) || "").trim();
-        if(n) testsByName.set(n, r);
-      });
-
-      buildGroupStats();
-
-      const names = Array.from(testsByName.keys()).sort((a,b)=>a.localeCompare(b,"zh-Hant"));
-      el("studentSelect").innerHTML = `<option value="">— 請選擇學員 —</option>`;
-      names.forEach(n=>{
-        const op = document.createElement("option");
-        op.value = n; op.textContent = n;
-        el("studentSelect").appendChild(op);
-      });
-
-      el("studentSelect").disabled = false;
-      el("statusMsg").textContent = "載入完成：請選學員。";
-
-    }catch(err){
-      console.error(err);
-      el("statusMsg").textContent = "載入失敗：請確認試算表已公開、分頁名稱正確（學員主資料表 / 檢測成績）。";
-    }
-  }
-
-  let currentView = "player";
-
-  function setView(view){
-    currentView = view;
-    el("tabPlayer").classList.toggle("active", view==="player");
-    el("tabCoach").classList.toggle("active", view==="coach");
-
-    el("playerView").classList.toggle("hide", view!=="player");
-    el("coachView").classList.toggle("hide", view!=="coach");
-
-    if(view==="player"){
-      el("viewTitle").textContent = "PLAYER VERSION";
-      el("viewSubtitle").textContent = "看得懂、看得重點：照片 / 基本資料 / 雷達圖 / 本週 3 件事 / 教練提醒";
-    }else{
-      el("viewTitle").textContent = "COACH VERSION";
-      el("viewSubtitle").textContent = "完整數據：雷達圖 + 關鍵指標前 10 + 全表（含 Z）+ 教練處方（可編輯）";
-    }
-  }
 
   function renderPlayerPhoto(url){
     const box = el("playerPhotoBox");
@@ -1190,7 +1262,6 @@
   function renderRadar(canvasId, scores, avgLine=true){
     const ctx = document.getElementById(canvasId).getContext("2d");
     const labels = RADAR_AXES.map(a=>a.label);
-
     const yourData = RADAR_AXES.map(a=>scores[a.key] ?? 50);
     const avgData  = labels.map(_=>50);
 
@@ -1272,6 +1343,27 @@
     });
   }
 
+  let currentView = "player";
+  function setView(view){
+    currentView = view;
+    el("tabPlayer").classList.toggle("active", view==="player");
+    el("tabCoach").classList.toggle("active", view==="coach");
+
+    el("playerView").classList.toggle("hide", view!=="player");
+    el("coachView").classList.toggle("hide", view!=="coach");
+
+    if(view==="player"){
+      el("viewTitle").textContent = "PLAYER VERSION";
+      el("viewSubtitle").textContent = "看得懂、看得重點：照片 / 基本資料 / 雷達圖 / 本週 3 件事 / 教練提醒";
+    }else{
+      el("viewTitle").textContent = "COACH VERSION";
+      el("viewSubtitle").textContent = "完整數據：雷達圖 + 關鍵指標前 10 + 全表（含 Z）+ 教練處方（可編輯）";
+    }
+  }
+
+  // ==============================
+  // 教練處方 localStorage
+  // ==============================
   let currentPlanKey = null;
 
   function planStorageKey(name, date){
@@ -1287,6 +1379,23 @@
       .filter(Boolean)
       .slice(0,3)
       .map(s=>s.replace(/^\d+[.)、-]?\s*/,""));
+  }
+
+  function renderPlanToPlayerAndPrint(){
+    const simpleList = normalize3Lines(el("coachPlanSimple")?.value || "");
+    const fullList   = normalize3Lines(el("coachPlanFull")?.value || "");
+
+    el("p_todoList").innerHTML = simpleList.length
+      ? simpleList.map((t,i)=>`<li>${t}<span class="tag">${i===0?"主軸":i===1?"次優先":"維持"}</span></li>`).join("")
+      : `<li>尚未填寫（教練會在教練版填寫）<span class="tag">主軸</span></li>`;
+
+    el("printPlanSimple").innerHTML = simpleList.length
+      ? simpleList.map(t=>`<li>${t}</li>`).join("")
+      : `<li>（尚未填寫）</li>`;
+
+    el("printPlanFull").innerHTML = fullList.length
+      ? fullList.map(t=>`<li>${t}</li>`).join("")
+      : `<li>（尚未填寫）</li>`;
   }
 
   function loadPlanToEditors(){
@@ -1325,21 +1434,61 @@
     renderPlanToPlayerAndPrint();
   }
 
-  function renderPlanToPlayerAndPrint(){
-    const simpleList = normalize3Lines(el("coachPlanSimple")?.value || "");
-    const fullList   = normalize3Lines(el("coachPlanFull")?.value || "");
+  // ==============================
+  // Reload
+  // ==============================
+  async function reloadAll(){
+    el("statusMsg").textContent = "從 Google Sheets 載入中…";
+    el("studentSelect").disabled = true;
+    el("studentSelect").innerHTML = `<option value="">資料載入中...</option>`;
 
-    el("p_todoList").innerHTML = simpleList.length
-      ? simpleList.map((t,i)=>`<li>${t}<span class="tag">${i===0?"主軸":i===1?"次優先":"維持"}</span></li>`).join("")
-      : `<li>尚未填寫（教練會在教練版填寫）</li>`;
+    try{
+      const [players, tests, anaer] = await Promise.all([
+        loadSheet(SHEETS.players),
+        loadSheet(SHEETS.tests),
+        loadSheet(SHEETS.anaerobic) // ✅ 新增
+      ]);
 
-    el("printPlanSimple").innerHTML = simpleList.length
-      ? simpleList.map(t=>`<li>${t}</li>`).join("")
-      : `<li>（尚未填寫）</li>`;
+      // players
+      playersByName = new Map();
+      players.forEach(r=>{
+        const n = String(getVal(r, COL.name) || "").trim();
+        if(n) playersByName.set(n, r);
+      });
 
-    el("printPlanFull").innerHTML = fullList.length
-      ? fullList.map(t=>`<li>${t}</li>`).join("")
-      : `<li>（尚未填寫）</li>`;
+      // tests
+      testsArray = tests || [];
+      testsByName = new Map();
+      testsArray.forEach(r=>{
+        const n = String(getVal(r, COL.name) || "").trim();
+        if(n) testsByName.set(n, r);
+      });
+
+      // anaer sheet (A=姓名)
+      anaerByName = new Map();
+      (anaer || []).forEach(r=>{
+        const n = String(getVal(r, COL.anaerName) || "").trim();
+        if(n) anaerByName.set(n, r);
+      });
+
+      // group stats (includes anaer sheet)
+      buildGroupStats();
+
+      const names = Array.from(testsByName.keys()).sort((a,b)=>a.localeCompare(b,"zh-Hant"));
+      el("studentSelect").innerHTML = `<option value="">— 請選擇學員 —</option>`;
+      names.forEach(n=>{
+        const op = document.createElement("option");
+        op.value = n; op.textContent = n;
+        el("studentSelect").appendChild(op);
+      });
+
+      el("studentSelect").disabled = false;
+      el("statusMsg").textContent = "載入完成：請選學員。";
+
+    }catch(err){
+      console.error(err);
+      el("statusMsg").textContent = "載入失敗：請確認試算表已公開、分頁名稱正確（學員主資料表 / 檢測成績 / 無氧代謝）。";
+    }
   }
 
   function loadStudent(){
@@ -1348,6 +1497,7 @@
 
     const testRow = testsByName.get(name);
     const playerRow = playersByName.get(name) || {};
+    const anaRow = getAnaRow(name);
 
     if(!testRow){
       el("statusMsg").textContent = `找不到「${name}」的檢測成績。`;
@@ -1362,7 +1512,7 @@
     const weight = (getVal(playerRow, COL.weight) || "-").toString().trim() || "-";
     const photo  = (getVal(playerRow, COL.photo) || "").toString().trim();
 
-    const comp = calcCompositeZ(testRow, playerRow);
+    const comp = calcCompositeZ(testRow, playerRow, anaRow);
     const zByAxis = comp.zByAxis;
 
     const scores = {};
@@ -1370,6 +1520,7 @@
       scores[k] = zToScore(zByAxis[k]);
     });
 
+    // best/weak
     const items = Object.keys(zByAxis).map(k=>({k, z:zByAxis[k]})).filter(x=>x.z!=null && !isNaN(x.z));
     items.sort((a,b)=>b.z-a.z);
     const bestAxis = items[0]?.k || "metabolic";
@@ -1379,6 +1530,7 @@
     const bestLabel = (RADAR_AXES.find(a=>a.key===bestAxis)?.label || bestAxis);
     const weakLabels = weakPick.map(k=>RADAR_AXES.find(a=>a.key===k)?.label || k);
 
+    // render base info
     el("p_name").textContent = name;
     el("p_sex").textContent = sex;
     el("p_level").textContent = level;
@@ -1393,16 +1545,30 @@
       ? weakLabels.map((lbl,i)=> `${lbl}（Z=${(zByAxis[weakPick[i]] ?? 0).toFixed(2)}）`).join("、")
       : "目前沒有顯著弱項（接近同級平均）";
 
+    // coach note: 額外把代謝來源講清楚（避免家長問爆）
+    const meta = comp.metaExtra;
+    const anaerInfo = (()=>{
+      const parts = [];
+      if(meta.aerobic?.val != null) parts.push(`最大有氧：${meta.aerobic.val}`);
+      if(meta.anaerPct?.val != null) parts.push(`無氧代謝(%)：${meta.anaerPct.val}`);
+      if(meta.speedDecay?.val != null) parts.push(`速度衰退(%)：${meta.speedDecay.val}`);
+      if(meta.friScore?.val != null) parts.push(`FRI(分數)：${meta.friScore.val.toFixed(0)}`);
+      return parts.length ? parts.join("｜") : "（代謝欄位尚未填寫：雷達圖代謝先以 50 顯示）";
+    })();
+
     el("p_coachNote").innerHTML = `
       綜合來看，<b>${name}</b> 在同組（${sex}・${level}）中：<br/><br/>
       ・最強方向：<b>${bestLabel}</b>（Z=${(zByAxis[bestAxis] ?? 0).toFixed(2)}）<br/>
       ・優先補強：<b>${weakLabels[0] || "—"}</b>${weakLabels[1] ? `、<b>${weakLabels[1]}</b>` : ""}<br/><br/>
+      <b>代謝能力來源</b>：${anaerInfo}<br/><br/>
       這份球員版只要記住一句：<b>本週先把 1–2 個弱項拉回平均線附近</b>，穩定度會先上來。
     `;
 
+    // radar
     if(radarPlayerChart) radarPlayerChart.destroy();
     radarPlayerChart = renderRadar("playerRadar", scores, true);
 
+    // coach header
     el("c_name").textContent = name;
     el("c_groupKey").textContent = `${sex}・${level}`;
     el("c_sex").textContent = sex;
@@ -1413,16 +1579,19 @@
     if(radarCoachChart) radarCoachChart.destroy();
     radarCoachChart = renderRadar("coachRadar", scores, true);
 
+    // coach table rows (tests + anaer sheet rows)
     const gk = groupKeyOf(playerRow, testRow);
     const stats = groupStats.get(gk) || {};
 
     const rows = [];
+
+    // 1) tests
     Object.keys(testRow).forEach(k=>{
       if(!k) return;
       if (COL.name.includes(k) || COL.sex.includes(k) || COL.level.includes(k) || COL.date.includes(k)) return;
 
-      const isAna = COL.anaerobic.includes(k);
-      const latest = isAna ? anaerobicNormalize(testRow[k]) : toNum(testRow[k]);
+      const isAna = /無氧代謝/.test(k);
+      const latest = isAna ? normalizePct(testRow[k]) : toNum(testRow[k]);
       if(latest == null) return;
 
       const s = stats[k] || {};
@@ -1437,6 +1606,32 @@
       rows.push({ label:k, latest, mean, sd, z });
     });
 
+    // 2) anaer sheet O/P/Q
+    if(anaRow){
+      const pushAna = (colName, latest)=>{
+        if(latest == null) return;
+        const s = stats[colName] || {};
+        const mean = (s.mean==null?null:s.mean);
+        const sd = (s.sd==null?null:s.sd);
+        let z = null;
+        if(mean != null && sd != null && sd !== 0){
+          const lowerBetter = isLowerBetterMetric(colName);
+          z = lowerBetter ? (mean - latest)/sd : (latest - mean)/sd;
+        }
+        rows.push({ label: colName, latest, mean, sd, z });
+      };
+
+      const sd = pickMetric(anaRow, COL.speedDecay, "num");
+      pushAna(sd.col, sd.val);
+
+      const fri = pickMetric(anaRow, COL.fri, "friScore");
+      pushAna(fri.col, fri.val);
+
+      const ap = pickMetric(anaRow, COL.anaerobicPctSheet, "pct");
+      pushAna(ap.col, ap.val);
+    }
+
+    // key metrics bar
     const keyMetrics = rows.filter(r=>r.z!=null).sort((a,b)=>Math.abs(b.z)-Math.abs(a.z)).slice(0,10);
     renderCoachBar(keyMetrics);
 
@@ -1482,6 +1677,11 @@
     el("statusMsg").textContent = "";
   }
 
+  // ==============================
+  // ✅ PDF 匯出
+  // - 球員版：強制 A4 單頁滿版（contain，不切頁）
+  // - 教練版：保留原本可多頁（因為表格本來就可能超過）
+  // ==============================
   async function exportPDF(mode){
     const { jsPDF } = window.jspdf;
     const name = (el("studentSelect").value || "report").trim() || "report";
@@ -1493,12 +1693,13 @@
     if(mode==="coach") setView("coach");
 
     document.body.classList.add("exporting");
-    await new Promise(r=>setTimeout(r, 120));
+    await new Promise(r=>setTimeout(r, 180));
 
     const surface = document.getElementById("mainSurface");
+
     const canvas = await html2canvas(surface, {
       scale: 3,
-      backgroundColor: "#020617",
+      backgroundColor: mode==="player" ? "#ffffff" : "#020617",
       useCORS: true
     });
 
@@ -1507,29 +1708,47 @@
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
 
-    const imgWidth = pageWidth;
-    const imgHeight = canvas.height * imgWidth / canvas.width;
+    // ✅ 單頁 A4 contain：把整張圖縮到 A4 內（不切頁）
+    if(mode === "player"){
+      const imgW = canvas.width;
+      const imgH = canvas.height;
 
-    let position = 0;
-    let heightLeft = imgHeight;
+      const scale = Math.min(pageWidth / imgW, pageHeight / imgH);
+      const w = imgW * scale;
+      const h = imgH * scale;
 
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, "", "FAST");
-    heightLeft -= pageHeight;
+      const x = (pageWidth - w) / 2;
+      const y = (pageHeight - h) / 2;
 
-    while(heightLeft > 0){
-      position -= pageHeight;
-      pdf.addPage();
+      pdf.addImage(imgData, "PNG", x, y, w, h, "", "FAST");
+      pdf.save(`MatchPointLab-Player-A4-${name}.pdf`);
+    }else{
+      // 教練版：允許多頁（表格會爆）
+      const imgWidth = pageWidth;
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+
+      let position = 0;
+      let heightLeft = imgHeight;
+
       pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, "", "FAST");
       heightLeft -= pageHeight;
-    }
 
-    const suffix = mode==="player" ? "Player" : "Coach";
-    pdf.save(`MatchPointLab-${suffix}-${name}.pdf`);
+      while(heightLeft > 0){
+        position -= pageHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, "", "FAST");
+        heightLeft -= pageHeight;
+      }
+      pdf.save(`MatchPointLab-Coach-${name}.pdf`);
+    }
 
     document.body.classList.remove("exporting");
     setView(original);
   }
 
+  // ==============================
+  // Events
+  // ==============================
   el("reloadBtn").addEventListener("click", reloadAll);
   el("studentSelect").addEventListener("change", loadStudent);
 
@@ -1550,6 +1769,7 @@
     if(!el("studentSelect").value){ alert("請先選擇學員"); return; }
     savePlanFromEditors();
   });
+
   el("resetPlanBtn").addEventListener("click", ()=>{
     if(!el("studentSelect").value){ alert("請先選擇學員"); return; }
     if(confirm("確定要清空這位學員這次檢測的處方嗎？")) resetPlan();
