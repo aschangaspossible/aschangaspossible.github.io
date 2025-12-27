@@ -564,6 +564,61 @@
       .coach-grid{ grid-template-columns: 1fr; }
       .status{ width: 100%; margin-left:0; }
     }
+    /* =========================
+   ✅ FIX: 球員版 PDF 好閱讀（公司門面版）
+   放在 <style> 最下面！
+========================= */
+body.exporting-player #mainSurface{
+  background:#ffffff !important;
+  color:#0f172a !important;
+}
+
+/* ✅ 關鍵：把 mainSurface 裡所有卡片都變白底（不要再深色漸層） */
+body.exporting-player #mainSurface.card,
+body.exporting-player #mainSurface .card{
+  background:#ffffff !important;
+  background-image:none !important;
+  box-shadow:none !important;
+  border-color:rgba(15,23,42,.12) !important;
+}
+
+/* 卡片標題列也一起變成白底＋黑字 */
+body.exporting-player #mainSurface .card-h{
+  background:#ffffff !important;
+  border-bottom:1px solid rgba(15,23,42,.10) !important;
+}
+body.exporting-player #mainSurface .card-h b{
+  color:#0f172a !important;
+}
+body.exporting-player #mainSurface .card-h span{
+  color:#334155 !important;
+}
+
+/* ✅ 讓 PDF 裡的小字變清楚 */
+body.exporting-player #mainSurface .muted{
+  color:#334155 !important;
+  opacity:1 !important;
+}
+
+/* ✅ COACH NOTE：強制白底黑字（你紅框那塊） */
+body.exporting-player #mainSurface .coach-note-box,
+body.exporting-player #mainSurface #p_coachNote{
+  background:#ffffff !important;
+  border:1px solid rgba(15,23,42,.12) !important;
+  color:#0f172a !important;
+}
+body.exporting-player #mainSurface #p_coachNote *{
+  color:#0f172a !important;
+  opacity:1 !important;
+}
+body.exporting-player #mainSurface #p_coachNote b{
+  color:#065f46 !important; /* 保留教練重點的綠色 */
+}
+
+/* ✅ 下面那條淡淡的分隔線避免太搶戲 */
+body.exporting-player #mainSurface .card{
+  border-radius:18px !important;
+}
   </style>
 </head>
 
@@ -576,7 +631,7 @@
             <img class="logo" src="https://aschangaspossible.github.io/logo.jpeg" alt="logo" />
             <div class="brand-title">
               <b>奕晉網球學院｜體能檢測報告</b>
-              <span>球員版（含家長） / 教練版（完整版）｜同級比較自動算 Z → 轉成 0–100（50=同級平均）</span>
+              <span>球員版 / 教練版（完整版）｜同級比較自動算 Z → 轉成 0–100（50=同級平均）</span>
             </div>
           </div>
           <div class="pill"><span class="dot"></span><span>連線試算表 · 自動更新</span></div>
@@ -590,7 +645,7 @@
 
           <button class="btn" id="reloadBtn">🔄 重新載入</button>
 
-          <button class="btn btn-tab active" id="tabPlayer">🟢 球員版（含家長）</button>
+          <button class="btn btn-tab active" id="tabPlayer">🟢 球員版</button>
           <button class="btn btn-tab" id="tabCoach">📊 教練版（完整版）</button>
 
           <button class="btn btn-primary" id="pdfPlayerBtn">📄 球員版 PDF（A4滿版）</button>
@@ -610,7 +665,7 @@
             <img class="pdf-logo" src="https://aschangaspossible.github.io/logo.jpeg" alt="logo" crossorigin="anonymous" />
             <div class="pdf-title">
               <div class="pdf-main">奕晉網球學院｜體能檢測報告</div>
-              <div class="pdf-sub" id="pdfSubLine">球員版（含家長）</div>
+              <div class="pdf-sub" id="pdfSubLine">球員版</div>
             </div>
           </div>
         </div>
@@ -1399,7 +1454,7 @@
       el("viewTitle").textContent = "PLAYER VERSION";
       el("viewSubtitle").textContent = "看得懂、看得重點：照片 / 基本資料 / 雷達圖 / 本週 3 件事 / 教練提醒";
       const sub = document.getElementById("pdfSubLine");
-      if(sub) sub.textContent = "球員版（含家長）";
+      if(sub) sub.textContent = "球員版";
     }else{
       el("viewTitle").textContent = "COACH VERSION";
       el("viewSubtitle").textContent = "完整數據：雷達圖 + 關鍵指標前 10 + 全表（含 Z）+ 教練處方（可編輯）";
