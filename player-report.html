@@ -1650,8 +1650,7 @@ body.exporting-player #mainSurface .card{
       ・最強方向：<b>${bestLabel}</b>（Z=${(zByAxis[bestAxis] ?? 0).toFixed(2)}）<br/>
       ・優先補強：<b>${weakLabels[0] || "—"}</b>${weakLabels[1] ? `、<b>${weakLabels[1]}</b>` : ""}<br/><br/>
       <b>代謝能力來源</b>：${anaerInfo}<br/><br/>
-      這份球員版只要記住一句：<b>本週先把 1–2 個弱項拉回平均線附近</b>，穩定度會先上來。
-    `;
+          `;
 
     if(radarPlayerChart) radarPlayerChart.destroy();
     radarPlayerChart = renderRadar("playerRadar", scores, true);
