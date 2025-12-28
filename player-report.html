@@ -426,7 +426,7 @@
       color: rgba(255,255,255,.92) !important;
     }
 
-    /* ✅ PDF Header：只在球員版匯出顯示（拍得到 logo） */
+    /* ✅ PDF Header（放 mainSurface 裡，html2canvas 一定拍得到） */
     .pdf-header{
       display:none;
       padding: 14px 16px 12px;
@@ -434,11 +434,7 @@
       background:#fff;
     }
     body.exporting-player .pdf-header{ display:block; }
-    .pdf-brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
+    .pdf-brand{ display:flex; align-items:center; gap:12px; }
     .pdf-logo{
       width:44px;
       height:44px;
@@ -458,15 +454,9 @@
       margin-top:2px;
     }
 
-    /* ✅ 球員版 A4 匯出：白底黑字 */
-    body.exporting-player{
-      background:#fff !important;
-    }
-    body.exporting-player .wrap{
-      max-width: 980px !important;
-      margin: 0 auto !important;
-      padding: 0 !important;
-    }
+    /* ✅ A4 匯出模式（球員版：白底黑字、提高可讀性） */
+    body.exporting-player{ background:#fff !important; }
+    body.exporting-player .wrap{ max-width: 980px !important; margin: 0 auto !important; padding: 0 !important; }
     body.exporting-player .topbar{ display:none !important; }
     body.exporting-player #weightCard{ display:none !important; }
     body.exporting-player .card{ box-shadow: none !important; }
@@ -475,8 +465,6 @@
       background:#ffffff !important;
       color:#0f172a !important;
     }
-
-    /* 不要讓深色卡片混進 PDF */
     body.exporting-player #mainSurface.card,
     body.exporting-player #mainSurface .card{
       background:#ffffff !important;
@@ -484,62 +472,13 @@
       box-shadow:none !important;
       border-color:rgba(15,23,42,.12) !important;
     }
-
-    body.exporting-player #mainSurface > .card-h{
-      display:none !important;
+    body.exporting-player #mainSurface .card-h{
+      background:#ffffff !important;
+      border-bottom:1px solid rgba(15,23,42,.10) !important;
     }
-
-    body.exporting-player .player-info h2{
-      font-size: 30px !important;
-      letter-spacing:.04em !important;
-      color:#0f172a !important;
-    }
-
-    body.exporting-player .chip{
-      font-size: 13px !important;
-      padding: 7px 11px !important;
-      background: rgba(2,6,23,.04) !important;
-      border-color: rgba(15,23,42,.10) !important;
-      color:#334155 !important;
-    }
-    body.exporting-player .chip b{ color:#0f172a !important; }
-
-    body.exporting-player .badge{
-      font-size: 14px !important;
-      background: rgba(2,6,23,.03) !important;
-      border-color: rgba(15,23,42,.10) !important;
-      color:#0f172a !important;
-    }
-
-    body.exporting-player .coach-note-box{
-      font-size: 14px !important;
-      line-height: 1.8 !important;
-      background: rgba(2,6,23,.03) !important;
-      border-color: rgba(15,23,42,.10) !important;
-      color:#0f172a !important;
-    }
-    body.exporting-player .coach-note-box b{ color:#065f46 !important; }
-
-    body.exporting-player .radar-wrap{
-      height: 280px !important;
-      padding-top: 0 !important;
-    }
-    body.exporting-player .card-b{
-      padding: 14px 16px !important;
-    }
-    body.exporting-player .player-hero{
-      grid-template-columns: 240px 1fr !important;
-      gap: 12px !important;
-    }
-    body.exporting-player .photo{
-      min-height: 240px !important;
-      border-color: rgba(15,23,42,.14) !important;
-      background: rgba(2,6,23,.02) !important;
-    }
-    body.exporting-player .muted{
-      color:#334155 !important;
-      opacity:1 !important;
-    }
+    body.exporting-player #mainSurface .card-h b{ color:#0f172a !important; }
+    body.exporting-player #mainSurface .card-h span{ color:#334155 !important; }
+    body.exporting-player #mainSurface .muted{ color:#334155 !important; opacity:1 !important; }
 
     /* ✅ COACH NOTE：白底黑字 */
     body.exporting-player #mainSurface .coach-note-box,
@@ -548,27 +487,37 @@
       border:1px solid rgba(15,23,42,.12) !important;
       color:#0f172a !important;
     }
-    body.exporting-player #mainSurface #p_coachNote *{
+    body.exporting-player #mainSurface #p_coachNote *{ color:#0f172a !important; opacity:1 !important; }
+    body.exporting-player #mainSurface #p_coachNote b{ color:#065f46 !important; }
+
+    body.exporting-player .player-info h2{ font-size: 30px !important; color:#0f172a !important; }
+    body.exporting-player .chip{
+      font-size: 13px !important;
+      padding: 7px 11px !important;
+      background: rgba(2,6,23,.04) !important;
+      border-color: rgba(15,23,42,.10) !important;
+      color:#334155 !important;
+    }
+    body.exporting-player .chip b{ color:#0f172a !important; }
+    body.exporting-player .badge{
+      font-size: 14px !important;
+      background: rgba(2,6,23,.03) !important;
+      border-color: rgba(15,23,42,.10) !important;
       color:#0f172a !important;
-      opacity:1 !important;
     }
-    body.exporting-player #mainSurface #p_coachNote b{
-      color:#065f46 !important;
+    body.exporting-player .coach-note-box b{ color:#065f46 !important; }
+    body.exporting-player .radar-wrap{ height: 280px !important; padding-top: 0 !important; }
+    body.exporting-player .card-b{ padding: 14px 16px !important; }
+    body.exporting-player .player-hero{ grid-template-columns: 240px 1fr !important; gap: 12px !important; }
+    body.exporting-player .photo{
+      min-height: 240px !important;
+      border-color: rgba(15,23,42,.14) !important;
+      background: rgba(2,6,23,.02) !important;
     }
 
-    body.exporting-player #mainSurface .card{
-      border-radius:18px !important;
-    }
-
-    /* ✅ 教練版匯出：保留深色，只隱藏 topbar */
-    body.exporting-coach{
-      background:#020617 !important;
-    }
-    body.exporting-coach .wrap{
-      max-width: 1180px !important;
-      margin: 0 auto !important;
-      padding: 0 !important;
-    }
+    /* ✅ 教練版匯出：保留深色風格 */
+    body.exporting-coach{ background:#020617 !important; }
+    body.exporting-coach .wrap{ max-width: 1180px !important; margin: 0 auto !important; padding: 0 !important; }
     body.exporting-coach .topbar{ display:none !important; }
     body.exporting-coach .pdf-header{ display:none !important; }
 
@@ -618,10 +567,10 @@
     <div class="grid">
       <div class="card pdf-surface" id="mainSurface">
 
-        <!-- ✅ PDF Header：球員匯出一定看得到 -->
+        <!-- ✅ PDF Header：只會在 exporting-player 顯示 -->
         <div class="pdf-header" id="pdfHeader">
           <div class="pdf-brand">
-            <img class="pdf-logo" src="https://aschangaspossible.github.io/logo.jpeg" alt="logo" crossorigin="anonymous" />
+            <img class="pdf-logo" src="https://aschangaspossible.github.io/logo.jpeg" alt="logo" crossorigin="anonymous" referrerpolicy="no-referrer" />
             <div class="pdf-title">
               <div class="pdf-main">奕晉網球學院｜體能檢測報告</div>
               <div class="pdf-sub" id="pdfSubLine">球員版</div>
@@ -892,6 +841,10 @@
   </div>
 
 <script>
+  /*************************************************************
+   ✅ 你現在這個連結 /d/<ID>/edit?usp=sharing
+   可以用 gviz 抓資料，只要試算表共用為「知道連結的人可檢視」
+  *************************************************************/
   const FILE_ID = "1N-8HQZaxHYj4vE824raG1fWyNxt5w7B9_m8oHn8f4As";
   const SHEETS = {
     players: "學員主資料表",
@@ -928,16 +881,30 @@
   function csvUrlForSheet(sheetName){
     return `https://docs.google.com/spreadsheets/d/${FILE_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
   }
+
+  // ✅ 加強：若權限不對，會抓到 HTML 不是 CSV → 提示你「分享權限」問題
   function loadSheet(sheetName){
     return new Promise((resolve,reject)=>{
-      Papa.parse(csvUrlForSheet(sheetName),{
+      const url = csvUrlForSheet(sheetName);
+      Papa.parse(url,{
         download:true,
         header:true,
-        complete:r=>resolve((r.data || []).filter(x=>x && Object.keys(x).some(k=>String(x[k]||"").trim()!==""))),
+        skipEmptyLines:true,
+        complete:r=>{
+          const data = (r.data || []).filter(x=>x && Object.keys(x).some(k=>String(x[k]||"").trim()!==""));
+          // 偵測權限錯誤：如果 header 幾乎沒有欄位，很常是拿到登入頁/錯誤頁
+          const cols = (r.meta && r.meta.fields) ? r.meta.fields.length : 0;
+          if(cols <= 1 && data.length <= 1){
+            reject(new Error(`可能無權限讀取「${sheetName}」。請確認試算表共用：知道連結的人可檢視。URL=${url}`));
+            return;
+          }
+          resolve(data);
+        },
         error:reject
       });
     });
   }
+
   function getVal(row, keys){
     for (const k of keys){
       if (row && row[k] != null && String(row[k]).trim() !== "") return row[k];
@@ -971,7 +938,7 @@
 
     sohm:["站姿過頭拋","站姿過頭拋(距離)","Standing OH MB Throw"],
     kohm:["晚姿過頭拋","跪姿過頭拋","Kneeling OH MB Throw"],
-    shmb:["站姿水平拋","Standing Horizontal MB Throw"],
+    shmb:["站姿水平拋","Standing Horizontal MB Throw","站姿水平拋(距離)"],
     khmb:["晚姿水平拋","跪姿水平拋","Kneeling Horizontal MB Throw"],
 
     sprint10:["10米衝刺(秒)","10m sprint","10m Sprint","10m"],
@@ -1300,61 +1267,41 @@
 
   const el = (id)=>document.getElementById(id);
 
-  /* =========================================================
-     ✅ NEW：等待容器內所有圖片載入（避免 PDF 拍到空框）
-  ========================================================= */
-  function waitForImages(container){
-    const imgs = Array.from(container.querySelectorAll("img"));
-    const tasks = imgs.map(img=>{
-      if (img.complete && img.naturalWidth !== 0) return Promise.resolve();
+  // ✅ 修正：圖片跨域 + 匯出前等待載入
+  function renderPlayerPhoto(url){
+    const box = el("playerPhotoBox");
+    box.innerHTML = "";
+    if(url){
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "player photo";
+      img.crossOrigin = "anonymous";
+      img.referrerPolicy = "no-referrer";
+      img.loading = "eager";
+      box.appendChild(img);
+    }else{
+      const div = document.createElement("div");
+      div.className = "ph-txt";
+      div.innerHTML = "（可選）放球員打球照片<br/>欄位：<b>照片</b>（URL）";
+      box.appendChild(div);
+    }
+  }
+
+  async function waitForImages(rootEl){
+    const imgs = Array.from(rootEl.querySelectorAll("img"));
+    if(!imgs.length) return;
+
+    await Promise.all(imgs.map(img=>{
+      if(img.complete && img.naturalWidth > 0) return Promise.resolve();
       return new Promise(resolve=>{
         const done = ()=>resolve();
         img.addEventListener("load", done, { once:true });
         img.addEventListener("error", done, { once:true });
-        setTimeout(done, 1800); // 保底：避免卡死
       });
-    });
-    return Promise.all(tasks);
-  }
+    }));
 
-  /* =========================================================
-     ✅ FIX：球員照片渲染（CORS + no-referrer + onload 確認）
-  ========================================================= */
-  function renderPlayerPhoto(url){
-    const box = el("playerPhotoBox");
-    box.innerHTML = "";
-
-    if(url){
-      const img = document.createElement("img");
-      img.alt = "player photo";
-
-      // ⚠️ 這兩行是 PDF 缺圖的關鍵修正
-      img.crossOrigin = "anonymous";
-      img.referrerPolicy = "no-referrer";
-
-      img.onload = () => {
-        box.innerHTML = "";
-        box.appendChild(img);
-      };
-
-      img.onerror = () => {
-        box.innerHTML = `
-          <div class="ph-txt">
-            照片載入失敗（可能是網址不公開或 CORS 限制）<br/>
-            建議改用：同網域 / 可公開的圖片網址
-          </div>
-        `;
-      };
-
-      box.innerHTML = `<div class="ph-txt">照片載入中…</div>`;
-      img.src = url;
-      return;
-    }
-
-    const div = document.createElement("div");
-    div.className = "ph-txt";
-    div.innerHTML = "（可選）放球員打球照片<br/>欄位：<b>照片</b>（URL）";
-    box.appendChild(div);
+    // 再多等一點，避免「載入完成但還沒繪製進 layout」
+    await new Promise(r=>setTimeout(r, 120));
   }
 
   function renderRadar(canvasId, scores, avgLine=true){
@@ -1533,6 +1480,12 @@
     renderPlanToPlayerAndPrint();
   }
 
+  let playersByName = new Map();
+  let testsByName = new Map();
+  let testsArray = [];
+  let anaerByName = new Map();
+  let groupStats = new Map();
+
   async function reloadAll(){
     el("statusMsg").textContent = "從 Google Sheets 載入中…";
     el("studentSelect").disabled = true;
@@ -1575,11 +1528,16 @@
       });
 
       el("studentSelect").disabled = false;
-      el("statusMsg").textContent = "載入完成：請選學員。";
+      el("statusMsg").textContent = `載入完成：${names.length} 位學員。`;
 
     }catch(err){
       console.error(err);
-      el("statusMsg").textContent = "載入失敗：請確認試算表已公開、分頁名稱正確（學員主資料表 / 檢測成績 / 無氧代謝）。";
+      el("statusMsg").textContent =
+        "載入失敗：很可能是「試算表共用權限」或「分頁名稱」不一致。\n" +
+        "請確認：共用 → 知道連結的人可檢視。\n" +
+        "分頁：學員主資料表 / 檢測成績 / 無氧代謝。\n" +
+        "（開 console 看詳細錯誤）";
+      alert(String(err.message || err));
     }
   }
 
@@ -1589,7 +1547,7 @@
 
     const testRow = testsByName.get(name);
     const playerRow = playersByName.get(name) || {};
-    const anaRow = getAnaRow(name);
+    const anaRow = anaerByName.get(String(name||"").trim()) || null;
 
     if(!testRow){
       el("statusMsg").textContent = `找不到「${name}」的檢測成績。`;
@@ -1757,9 +1715,6 @@
     el("statusMsg").textContent = "";
   }
 
-  /* =========================================================
-     ✅ PDF 匯出（已修：等待圖片載入）
-  ========================================================= */
   async function exportPDF(mode){
     const { jsPDF } = window.jspdf;
     const name = (el("studentSelect").value || "report").trim() || "report";
@@ -1772,17 +1727,19 @@
 
     document.body.classList.remove("exporting-player","exporting-coach");
     document.body.classList.add(mode==="player" ? "exporting-player" : "exporting-coach");
-    await new Promise(r=>setTimeout(r, 220));
+
+    await new Promise(r=>setTimeout(r, 180));
 
     const surface = document.getElementById("mainSurface");
 
-    // ✅ 關鍵：先等圖片載好（球員照片 / logo / 任何 img）
+    // ✅ 關鍵：匯出前等圖片載入完成（不然你會拍到空白）
     await waitForImages(surface);
 
     const canvas = await html2canvas(surface, {
       scale: 3,
       backgroundColor: mode==="player" ? "#ffffff" : "#020617",
-      useCORS: true
+      useCORS: true,
+      allowTaint: false
     });
 
     const imgData = canvas.toDataURL("image/png");
@@ -1793,9 +1750,9 @@
     if(mode === "player"){
       const imgW = canvas.width;
       const imgH = canvas.height;
-      const scale = Math.min(pageWidth / imgW, pageHeight / imgH);
-      const w = imgW * scale;
-      const h = imgH * scale;
+      const s = Math.min(pageWidth / imgW, pageHeight / imgH);
+      const w = imgW * s;
+      const h = imgH * s;
       const x = (pageWidth - w) / 2;
       const y = (pageHeight - h) / 2;
       pdf.addImage(imgData, "PNG", x, y, w, h, "", "FAST");
@@ -1822,8 +1779,6 @@
     document.body.classList.remove("exporting-player","exporting-coach");
     setView(original);
   }
-
-  let currentPlanKey = null;
 
   el("reloadBtn").addEventListener("click", reloadAll);
   el("studentSelect").addEventListener("change", loadStudent);
