@@ -558,6 +558,7 @@
       background: rgba(2, 6, 23, 0.34);
       border: 1px solid rgba(148, 163, 184, 0.18);
       margin-bottom: 12px;
+      overflow: hidden;
     }
 
     .form-title {
@@ -676,16 +677,17 @@
 
     .score-row {
       display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 10px;
+      grid-template-columns: minmax(220px, 1.25fr) minmax(260px, 1fr);
+      gap: 14px;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .score-row label {
       color: var(--text-sub);
       font-size: 13px;
-      line-height: 1.45;
+      line-height: 1.55;
+      word-break: break-word;
     }
 
     .score-row select {
@@ -1031,10 +1033,10 @@
         <div class="section-head">
           <div>
             <div class="section-label">INTERACTIVE TOOL</div>
-            <h2>發球決策導航工具雛形</h2>
+            <h2>發球判讀工具</h2>
           </div>
           <p class="section-copy">
-            這是第一版互動原型。教練可以依序填入疼痛風險、動作品質與能力檢測結果，系統會輸出初步限制因素與訓練優先方向。正式版可再加入選手資料儲存、影片上傳、報告匯出與回測提醒。
+            這是第一版教練用判讀表。教練可以依序填入疼痛風險、動作品質與能力檢查結果，整理出目前較需要優先留意的方向。正式版可再加入選手資料儲存、影片上傳、評估摘要匯出與後續追蹤提醒。
           </p>
         </div>
 
@@ -1073,11 +1075,11 @@
             </div>
 
             <div class="form-section">
-              <div class="form-title">D. 能力檢測判斷 <span>簡化版</span></div>
-              <div class="score-row"><label>CMJ / Broad Jump</label><select id="lower"><option value="low">兩項都偏低</option><option value="mixed" selected>其中一項偏低</option><option value="ok">兩項可接受</option></select></div>
-              <div class="score-row"><label>旋轉藥球丟擲</label><select id="rotation"><option value="low" selected>明顯偏低或左右差大</option><option value="mixed">略低</option><option value="ok">可接受</option></select></div>
-              <div class="score-row"><label>Seated Shot Put</label><select id="upper"><option value="low">明顯偏低</option><option value="mixed" selected>略低</option><option value="ok">可接受</option></select></div>
-              <div class="score-row"><label>CKCUEST / 肩胛控制</label><select id="shoulder"><option value="risk">偏低或發球後不適</option><option value="mixed" selected>需注意</option><option value="ok">可接受且無不適</option></select></div>
+              <div class="form-title">D. 能力檢查與判讀 <span>簡化版</span></div>
+              <div class="score-row"><label>下肢爆發（CMJ / Broad Jump）</label><select id="lower"><option value="low">兩項都偏低</option><option value="mixed" selected>其中一項偏低</option><option value="ok">表現可接受</option></select></div>
+              <div class="score-row"><label>軀幹旋轉（左 / 右）與旋轉藥球丟擲</label><select id="rotation"><option value="low" selected>左右差異明顯 / 旋轉受限</option><option value="mixed">略有差異</option><option value="ok">左右表現接近</option></select></div>
+              <div class="score-row"><label>上肢輸出（Seated Shot Put）</label><select id="upper"><option value="low">明顯偏低</option><option value="mixed" selected>略低</option><option value="ok">表現可接受</option></select></div>
+              <div class="score-row"><label>肩部穩定（CKCUEST / 肩胛控制）</label><select id="shoulder"><option value="risk">偏低或發球後不適</option><option value="mixed" selected>需注意</option><option value="ok">表現可接受</option></select></div>
             </div>
 
             <div class="form-section">
@@ -1086,14 +1088,14 @@
             </div>
 
             <div class="tool-actions">
-              <button class="btn btn-primary" type="button" id="generateBtn">產生判斷結果</button>
+              <button class="btn btn-primary" type="button" id="generateBtn">查看判讀結果</button>
               <button class="btn btn-ghost" type="button" id="resetBtn">重設示範資料</button>
             </div>
           </div>
 
           <aside class="report" aria-live="polite">
-            <h3>初步診斷報告</h3>
-            <div class="report-sub">填寫左側資料後，系統會產生一份教練可讀的決策摘要。</div>
+            <h3>本次判讀結果</h3>
+            <div class="report-sub">填寫左側資料後，整理出一份方便教練查看的評估摘要。</div>
 
             <div class="result-card">
               <div class="result-label">動作品質分數</div>
@@ -1102,20 +1104,20 @@
             </div>
 
             <div class="result-card">
-              <div class="result-label">主要限制因素</div>
+              <div class="result-label">優先處理項目</div>
               <div class="result-main" id="mainLimit">—</div>
-              <div class="result-text" id="mainReason">請先按下「產生判斷結果」。</div>
+              <div class="result-text" id="mainReason">請先按下「查看判讀結果」。</div>
             </div>
 
             <div class="result-card">
-              <div class="result-label">訓練優先順序</div>
+              <div class="result-label">建議訓練方向</div>
               <ol class="report-list" id="trainingList">
                 <li>等待輸出</li>
               </ol>
             </div>
 
             <div class="result-card">
-              <div class="result-label">4–6 週回測建議</div>
+              <div class="result-label">後續追蹤重點</div>
               <div class="result-text" id="retestText">等待輸出</div>
             </div>
           </aside>
@@ -1202,7 +1204,7 @@
         },
         rotation: {
           list: ["Medicine Ball Rotational Throw", "Step-behind Rotational Throw", "Pallof Press / Cable Lift & Chop", "髖肩分離與分段式發球整合"],
-          retest: "旋轉藥球距離、左右側差異、髖肩分離畫面、發球球速。"
+          retest: "軀幹左、右旋轉角度、旋轉藥球距離、髖肩分離畫面、發球球速。"
         },
         upper: {
           list: ["Seated Shot Put", "Half-kneeling Med Ball Throw", "Overhead Med Ball Slam", "肩肘腕加速節奏練習"],
@@ -1242,7 +1244,7 @@
 
       let type = "rotation";
       let mainLimit = "軀幹旋轉能力不足";
-      let reason = "旋轉藥球丟擲結果偏低或左右差異明顯，且發球速度常見限制會落在髖肩分離與力量傳遞。建議先確認軀幹旋轉輸出與發球節奏是否能接上。";
+      let reason = "軀幹左、右旋轉表現有明顯差異，或旋轉藥球丟擲結果偏低。建議先確認左右旋轉角度、髖肩分離，以及旋轉力量是否能接到發球節奏。";
 
       if (hasRisk) {
         type = "safety";
@@ -1270,7 +1272,7 @@
 
         const map = {
           lower: ["下肢爆發力不足", "CMJ / Broad Jump 顯示下肢爆發或水平推進能力不足。若發球影片也出現蹬地不明顯，這會成為主要限制因素。"],
-          rotation: ["軀幹旋轉能力不足", "旋轉藥球丟擲偏低或左右差異明顯。若搭配髖肩分離不足或身體太早打開，旋轉能力會是優先處理方向。"],
+          rotation: ["軀幹旋轉能力不足", "軀幹左、右旋轉角度差異明顯，或旋轉藥球丟擲偏低。若搭配髖肩分離不足或身體太早打開，旋轉能力會是優先處理方向。"],
           upper: ["上肢加速能力不足", "Seated Shot Put 表現偏低，可能代表最後輸出端不足。需要確認這不是由前段力量傳遞斷鏈造成。"],
           shoulder: ["肩關節穩定需加強", "肩穩定略需注意。雖不一定要停止球速訓練，但應把肩胛控制與負荷管理放進課表。"],
           coordination: ["動作協調與力量傳遞不佳", "能力檢測沒有明顯單一弱點時，應回到發球動作影片，確認力量是否能順利轉換到場上。"]
