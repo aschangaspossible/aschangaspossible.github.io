@@ -701,7 +701,8 @@
     showSyncStatus("syncing","⏳ 同步到 Google Sheets 中…");
     try{
       const payload={...record};delete payload.photoDataUrl;delete payload.logoDataUrl;
-      await fetch(endpoint,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(payload)});
+      const qs=new URLSearchParams({d:JSON.stringify(payload)});
+      await fetch(`${endpoint}?${qs}`,{mode:"no-cors"});
       showSyncStatus("synced","✓ 已同步到「02 檢測紀錄」與「05 雷達圖分數」");
     }catch(err){console.error(err);showSyncStatus("failed","⚠ Sheets 同步失敗，資料已存在本機");}
     finally{btn.textContent="儲存紀錄";btn.disabled=false;}}
