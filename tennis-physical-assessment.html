@@ -477,9 +477,10 @@
 
 </main>
 <script>
-  const PLAYERS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZKZtSAFr7BCls9jvRTKqyimlOyT-AojqQWWCAlO30V1_yEzweD-dPxb7mmjPweUrVb2ihEXcjkL5K/pub?gid=911598882&single=true&output=csv";
-  const STORAGE_KEY    = "tennisPerformanceLabRecords_v3";
-  const ENDPOINT_KEY   = "tennisLabSheetsEndpoint";
+  const PLAYERS_CSV_URL  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZKZtSAFr7BCls9jvRTKqyimlOyT-AojqQWWCAlO30V1_yEzweD-dPxb7mmjPweUrVb2ihEXcjkL5K/pub?gid=911598882&single=true&output=csv";
+  const SHEETS_ENDPOINT  = "https://script.google.com/macros/s/AKfycbyoqZVU4_OFAadm3ak3-sImiK_dgjc0jZE_D1E2A1paoQd-uZ9Mk3qaDRVLjEERZUy1/exec";
+  const STORAGE_KEY      = "tennisPerformanceLabRecords_v3";
+  const ENDPOINT_KEY     = "tennisLabSheetsEndpoint";
 
   let playerDatabase = [], photoDataUrl = "", logoDataUrl = "";
   const $ = id => document.getElementById(id);
@@ -695,8 +696,8 @@
     if(!record.playerName){alert("請至少輸入球員姓名。");return;}
     record.overallScore=calculateOverall(record.scores);
     const records=getRecords();records.unshift(record);setRecords(records);renderRecords();
-    const endpoint=getSheetsEndpoint();
-    if(!endpoint){showSyncStatus("failed","⚠ 尚未設定 Sheets 網址，請點「⚙ 系統設定」");return;}
+    const endpoint=localStorage.getItem(ENDPOINT_KEY)||SHEETS_ENDPOINT;
+    if(!endpoint){showSyncStatus("failed","⚠ Apps Script 網址未設定");return;}
     const btn=$("saveRecordBtn");btn.textContent="同步中...";btn.disabled=true;
     showSyncStatus("syncing","⏳ 同步到 Google Sheets 中…");
     try{
