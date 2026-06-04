@@ -4,1023 +4,785 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tennis Performance Lab｜網球體能檢測報告系統</title>
-  <meta name="description" content="Tennis Performance Lab 是一套網球體能檢測報告產生器，可輸入球員資料、體能數據、核心能力分數，並即時生成專業檢測報告、雷達圖與訓練建議。" />
+  <meta name="description" content="Tennis Performance Lab 網球體能檢測報告系統" />
   <style>
     :root {
-      --bg: #f3f7fb;
-      --surface: #ffffff;
-      --surface-soft: #f8fafc;
-      --ink: #132033;
-      --muted: #667085;
-      --line: #d9e2ec;
-      --primary: #0f766e;
-      --primary-dark: #0b4f4a;
-      --primary-soft: #d8f3ef;
-      --blue: #2563eb;
-      --yellow: #f4b942;
-      --red: #dc2626;
-      --green: #16a34a;
-      --orange: #f59e0b;
-      --radius-xl: 30px;
-      --shadow: 0 24px 70px rgba(15,23,42,0.14);
-      --shadow-soft: 0 14px 36px rgba(15,23,42,0.08);
+      --bg:#f3f7fb; --surface:#fff; --surface-soft:#f8fafc; --ink:#132033;
+      --muted:#667085; --line:#d9e2ec;
+      --primary:#0f766e; --primary-dark:#0b4f4a; --primary-soft:#d8f3ef;
+      --blue:#2563eb; --yellow:#f4b942; --red:#dc2626; --green:#16a34a; --orange:#f59e0b;
+      --radius-xl:30px; --shadow:0 24px 70px rgba(15,23,42,.14); --shadow-soft:0 14px 36px rgba(15,23,42,.08);
     }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-      background:
-        radial-gradient(circle at 8% 4%, rgba(15,118,110,0.18), transparent 34%),
-        radial-gradient(circle at 88% 0%, rgba(37,99,235,0.12), transparent 32%),
-        linear-gradient(180deg, #ffffff 0%, var(--bg) 34%, #eaf1f8 100%);
-      color: var(--ink);
-      line-height: 1.6;
-    }
-    button, input, select, textarea { font-family: inherit; }
-    .site { width: min(1440px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 80px; }
+    *{box-sizing:border-box} html{scroll-behavior:smooth}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;
+      background:radial-gradient(circle at 8% 4%,rgba(15,118,110,.18),transparent 34%),
+        radial-gradient(circle at 88% 0%,rgba(37,99,235,.12),transparent 32%),
+        linear-gradient(180deg,#fff 0%,var(--bg) 34%,#eaf1f8 100%);
+      color:var(--ink);line-height:1.6}
+    button,input,select,textarea{font-family:inherit}
+    .site{width:min(1440px,calc(100% - 32px));margin:0 auto;padding:28px 0 80px}
 
     /* Hero */
-    .hero {
-      position: relative; overflow: hidden; border-radius: 36px;
-      padding: clamp(28px, 5vw, 56px); min-height: 360px;
-      display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 28px; align-items: center;
-      background: linear-gradient(135deg, rgba(8,47,73,0.94), rgba(15,118,110,0.92)),
+    .hero{position:relative;overflow:hidden;border-radius:36px;padding:clamp(28px,5vw,56px);min-height:360px;
+      display:grid;grid-template-columns:1.05fr .95fr;gap:28px;align-items:center;
+      background:linear-gradient(135deg,rgba(8,47,73,.94),rgba(15,118,110,.92)),
         url("data:image/svg+xml,%3Csvg width='900' height='500' viewBox='0 0 900 500' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,0.14)' stroke-width='1'%3E%3Cpath d='M70 430C190 300 235 135 388 178C540 222 614 20 810 88'/%3E%3Ccircle cx='690' cy='210' r='140'/%3E%3Ccircle cx='690' cy='210' r='82'/%3E%3C/g%3E%3C/svg%3E");
-      background-size: cover; box-shadow: var(--shadow); color: white;
-    }
-    .hero::after {
-      content: ""; position: absolute; right: -100px; bottom: -140px;
-      width: 420px; height: 420px; border-radius: 999px;
-      background: rgba(244,185,66,0.20); filter: blur(6px);
-    }
-    .hero-content { position: relative; z-index: 2; }
-    .eyebrow {
-      display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px;
-      border-radius: 999px; background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.22);
-      font-size: 13px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase;
-    }
-    .hero h1 { margin: 20px 0 14px; font-size: clamp(38px,6vw,72px); line-height: 0.96; letter-spacing: -0.07em; font-weight: 1000; }
-    .hero p { margin: 0; max-width: 680px; color: rgba(255,255,255,0.82); font-size: clamp(16px,2vw,19px); font-weight: 600; }
-    .hero-actions { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 12px; }
-    .hero-panel {
-      position: relative; z-index: 2;
-      background: rgba(255,255,255,0.13); border: 1px solid rgba(255,255,255,0.22);
-      border-radius: 28px; padding: 22px; backdrop-filter: blur(14px); display: grid; gap: 14px;
-    }
-    .hero-stat { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18); border-radius: 22px; padding: 18px; }
-    .hero-stat small { color: rgba(255,255,255,0.68); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
-    .hero-stat strong { display: block; margin-top: 4px; font-size: 30px; line-height: 1.1; letter-spacing: -0.04em; }
+      background-size:cover;box-shadow:var(--shadow);color:#fff}
+    .hero::after{content:"";position:absolute;right:-100px;bottom:-140px;width:420px;height:420px;border-radius:999px;background:rgba(244,185,66,.2);filter:blur(6px)}
+    .hero-content{position:relative;z-index:2}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);font-size:13px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+    .hero h1{margin:20px 0 14px;font-size:clamp(38px,6vw,72px);line-height:.96;letter-spacing:-.07em;font-weight:1000}
+    .hero p{margin:0;max-width:680px;color:rgba(255,255,255,.82);font-size:clamp(16px,2vw,19px);font-weight:600}
+    .hero-actions{margin-top:26px;display:flex;flex-wrap:wrap;gap:12px}
+    .hero-panel{position:relative;z-index:2;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:28px;padding:22px;backdrop-filter:blur(14px);display:grid;gap:14px}
+    .hero-stat{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:22px;padding:18px}
+    .hero-stat small{color:rgba(255,255,255,.68);font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+    .hero-stat strong{display:block;margin-top:4px;font-size:30px;line-height:1.1;letter-spacing:-.04em}
 
     /* Layout */
-    .main-grid { margin-top: 26px; display: grid; grid-template-columns: 420px 1fr; gap: 24px; align-items: start; }
-    .panel { background: rgba(255,255,255,0.9); border: 1px solid rgba(217,226,236,0.95); border-radius: var(--radius-xl); box-shadow: var(--shadow-soft); overflow: hidden; backdrop-filter: blur(14px); }
-    .sticky-panel { position: sticky; top: 18px; max-height: calc(100vh - 36px); overflow: auto; }
-    .panel-header {
-      padding: 22px 24px 16px; border-bottom: 1px solid var(--line);
-      background: linear-gradient(135deg, rgba(15,118,110,0.08), rgba(37,99,235,0.04)), #ffffff;
-    }
-    .panel-header h2 { margin: 0; font-size: 22px; line-height: 1.15; letter-spacing: -0.03em; }
-    .panel-header p { margin: 8px 0 0; color: var(--muted); font-size: 14px; font-weight: 650; }
-    .form-body { padding: 22px 24px 26px; display: grid; gap: 24px; }
-    .form-section { display: grid; gap: 14px; }
-    .form-section-title {
-      display: flex; align-items: center; gap: 8px;
-      color: var(--primary-dark); font-size: 15px; font-weight: 1000;
-    }
-    .form-section-title::before { content: ""; width: 8px; height: 20px; border-radius: 99px; background: linear-gradient(180deg, var(--primary), var(--blue)); }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    label { display: grid; gap: 6px; color: #344054; font-size: 13px; font-weight: 900; }
-    input, select, textarea {
-      width: 100%; border: 1px solid #cfd8e3; background: #ffffff; color: var(--ink);
-      border-radius: 14px; padding: 12px 13px; font-size: 14px; outline: none; transition: 0.2s ease;
-    }
-    textarea { resize: vertical; min-height: 96px; }
-    input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(15,118,110,0.12); }
-    input[type="range"] { padding: 0; accent-color: var(--primary); }
-    .range-row { display: grid; grid-template-columns: 1fr 54px; gap: 10px; align-items: center; }
-    .score-pill { padding: 7px 8px; border-radius: 999px; background: var(--primary-soft); color: var(--primary-dark); text-align: center; font-weight: 1000; font-variant-numeric: tabular-nums; }
-    .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .main-grid{margin-top:26px;display:grid;grid-template-columns:420px 1fr;gap:24px;align-items:start}
+    .panel{background:rgba(255,255,255,.9);border:1px solid rgba(217,226,236,.95);border-radius:var(--radius-xl);box-shadow:var(--shadow-soft);overflow:hidden;backdrop-filter:blur(14px)}
+    .sticky-panel{position:sticky;top:18px;max-height:calc(100vh - 36px);overflow:auto}
+    .panel-header{padding:22px 24px 16px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,rgba(15,118,110,.08),rgba(37,99,235,.04)),#fff}
+    .panel-header h2{margin:0;font-size:22px;line-height:1.15;letter-spacing:-.03em}
+    .panel-header p{margin:8px 0 0;color:var(--muted);font-size:14px;font-weight:650}
+    .form-body{padding:22px 24px 26px;display:grid;gap:24px}
+    .form-section{display:grid;gap:14px}
+    .form-section-title{display:flex;align-items:center;gap:8px;color:var(--primary-dark);font-size:15px;font-weight:1000}
+    .form-section-title::before{content:"";width:8px;height:20px;border-radius:99px;background:linear-gradient(180deg,var(--primary),var(--blue))}
+    .form-subsection{font-size:12px;font-weight:1000;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);padding:6px 0 2px;border-bottom:1px solid var(--line)}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    label{display:grid;gap:6px;color:#344054;font-size:13px;font-weight:900}
+    input,select,textarea{width:100%;border:1px solid #cfd8e3;background:#fff;color:var(--ink);border-radius:14px;padding:12px 13px;font-size:14px;outline:none;transition:.2s ease}
+    textarea{resize:vertical;min-height:96px}
+    input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(15,118,110,.12)}
+    input[type="range"]{padding:0;accent-color:var(--primary)}
+    input[type="number"]{-moz-appearance:textfield}
+    .range-row{display:grid;grid-template-columns:1fr 54px;gap:10px;align-items:center}
+    .score-pill{padding:7px 8px;border-radius:999px;background:var(--primary-soft);color:var(--primary-dark);text-align:center;font-weight:1000;font-variant-numeric:tabular-nums}
+    .button-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .btn{appearance:none;border:0;cursor:pointer;border-radius:16px;padding:13px 18px;font-weight:1000;font-size:14px;transition:.2s ease;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+    .btn:hover{transform:translateY(-2px);filter:brightness(.98)}
+    .btn-primary{color:#07211f;background:#fff;box-shadow:0 14px 24px rgba(0,0,0,.16)}
+    .btn-ghost{color:#fff;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.24)}
+    .btn-dark{color:#fff;background:#132033}
+    .btn-teal{color:#fff;background:var(--primary);box-shadow:0 12px 24px rgba(15,118,110,.22)}
+    .btn-light{color:#243044;background:#f1f5f9;border:1px solid #d9e2ec}
+    .btn-danger{color:#991b1b;background:#fee2e2;border:1px solid #fecaca}
+    .hint{margin:0;color:var(--muted);font-size:13px;font-weight:650}
 
-    /* Buttons */
-    .btn { appearance: none; border: 0; cursor: pointer; border-radius: 16px; padding: 13px 18px; font-weight: 1000; font-size: 14px; transition: 0.2s ease; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn:hover { transform: translateY(-2px); filter: brightness(0.98); }
-    .btn-primary { color: #07211f; background: #ffffff; box-shadow: 0 14px 24px rgba(0,0,0,0.16); }
-    .btn-ghost { color: #ffffff; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.24); }
-    .btn-dark { color: white; background: #132033; }
-    .btn-teal { color: white; background: var(--primary); box-shadow: 0 12px 24px rgba(15,118,110,0.22); }
-    .btn-light { color: #243044; background: #f1f5f9; border: 1px solid #d9e2ec; }
-    .btn-danger { color: #991b1b; background: #fee2e2; border: 1px solid #fecaca; }
-    .hint { margin: 0; color: var(--muted); font-size: 13px; font-weight: 650; }
-
-    /* Settings panel */
-    .settings-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; background: none; border: none; padding: 0; color: var(--muted); font-size: 13px; font-weight: 900; }
-    .settings-body { display: none; margin-top: 12px; padding: 16px; background: #f8fafc; border-radius: 16px; border: 1px solid var(--line); display: grid; gap: 10px; }
-    .settings-body.open { display: grid; }
-    .endpoint-status { font-size: 12px; font-weight: 900; }
-    .endpoint-status.set { color: var(--green); }
-    .endpoint-status.empty { color: var(--orange); }
+    /* Settings */
+    .settings-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;background:none;border:none;padding:0;color:var(--muted);font-size:13px;font-weight:900}
+    .settings-body{display:none;margin-top:12px;padding:16px;background:#f8fafc;border-radius:16px;border:1px solid var(--line);gap:10px}
+    .settings-body.open{display:grid}
+    .endpoint-status{font-size:12px;font-weight:900}
+    .endpoint-status.set{color:var(--green)}
+    .endpoint-status.empty{color:var(--orange)}
 
     /* Report */
-    .report-wrap { display: grid; gap: 22px; }
-    .report-card { position: relative; overflow: hidden; border-radius: 36px; border: 1px solid rgba(217,226,236,0.95); background: var(--surface); box-shadow: var(--shadow); }
-    .report-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 12px; background: linear-gradient(90deg, var(--primary), var(--blue), var(--yellow)); z-index: 2; }
-    .report-inner { padding: clamp(22px,3.2vw,36px); display: grid; gap: 24px; }
-    .report-top { display: grid; grid-template-columns: 280px 1fr 240px; gap: 22px; align-items: center; min-height: 150px; }
-    .player-block { display: flex; gap: 16px; align-items: center; }
-    .avatar { width: 108px; height: 108px; object-fit: cover; border-radius: 999px; border: 6px solid var(--primary-soft); background: var(--surface-soft); box-shadow: 0 14px 26px rgba(15,23,42,0.14); }
-    .player-name { margin: 0; font-size: 28px; line-height: 1.05; letter-spacing: -0.04em; }
-    .player-meta { margin-top: 8px; display: grid; gap: 3px; color: var(--muted); font-size: 13px; font-weight: 800; }
-    .report-title { text-align: center; display: grid; gap: 8px; }
-    .report-title small { color: var(--primary); font-weight: 1000; letter-spacing: 0.22em; text-transform: uppercase; }
-    .report-title h2 { margin: 0; font-size: clamp(36px,4.6vw,60px); line-height: 0.94; letter-spacing: -0.08em; font-weight: 1000; }
-    .report-title p { margin: 0; color: var(--muted); font-weight: 800; }
-    .academy-block { display: grid; justify-items: end; gap: 10px; text-align: right; color: var(--muted); font-size: 13px; font-weight: 800; }
-    .logo-box { width: 92px; height: 92px; display: grid; place-items: center; overflow: hidden; border-radius: 24px; background: #f1f5f9; border: 1px solid var(--line); color: var(--primary-dark); font-size: 12px; font-weight: 1000; line-height: 1.15; text-align: center; }
-    .logo-box img { width: 100%; height: 100%; object-fit: contain; padding: 10px; }
-    .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--line), transparent); }
-    .summary-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-    .summary-card { border-radius: 22px; padding: 16px; background: linear-gradient(135deg, rgba(15,118,110,0.08), rgba(37,99,235,0.04)), var(--surface-soft); border: 1px solid #e2e8f0; min-height: 112px; }
-    .summary-card small { display: block; color: var(--muted); font-size: 12px; font-weight: 1000; letter-spacing: 0.06em; text-transform: uppercase; }
-    .summary-card strong { display: block; margin-top: 8px; font-size: 30px; line-height: 1; letter-spacing: -0.05em; }
-    .summary-card span { display: block; margin-top: 8px; color: var(--muted); font-size: 12px; font-weight: 750; line-height: 1.45; }
-    .status-good { color: var(--green); }
-    .status-watch { color: var(--orange); }
-    .status-risk { color: var(--red); }
-    .overview { display: grid; grid-template-columns: 46% 1fr; gap: 20px; align-items: stretch; }
-    .card { border-radius: 26px; padding: 22px; background: var(--surface-soft); border: 1px solid #e2e8f0; }
-    .card-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
-    .card-kicker { margin: 0; color: var(--primary); font-size: 12px; font-weight: 1000; letter-spacing: 0.14em; text-transform: uppercase; }
-    .card-title { margin: 3px 0 0; font-size: 23px; line-height: 1.12; letter-spacing: -0.04em; }
-    .legend { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 900; }
-    .legend span { display: inline-flex; gap: 6px; align-items: center; padding: 6px 9px; border-radius: 999px; background: white; border: 1px solid #e2e8f0; }
-    .dot { width: 9px; height: 9px; border-radius: 999px; display: inline-block; }
-    .dot-gray { background: #94a3b8; }
-    .dot-player { background: var(--primary); }
-    .radar-box { width: 100%; aspect-ratio: 1 / 0.82; min-height: 320px; }
-    canvas { display: block; width: 100%; height: 100%; }
-    .analysis-grid { display: grid; gap: 12px; }
-    .analysis-box { background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 16px; }
-    .analysis-box h4 { margin: 0 0 10px; font-size: 15px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-    .tag { padding: 5px 8px; border-radius: 999px; font-size: 11px; font-weight: 1000; letter-spacing: 0.08em; }
-    .tag-good { color: #166534; background: #dcfce7; }
-    .tag-watch { color: #92400e; background: #fef3c7; }
-    .tag-court { color: #1d4ed8; background: #dbeafe; }
-    .analysis-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; color: #344054; font-size: 14px; font-weight: 750; }
-    .analysis-list li { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; }
-    .data-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
-    .metric-card { min-height: 114px; display: grid; gap: 4px; padding: 14px; border-radius: 20px; background: white; border: 1px solid #e2e8f0; }
-    .metric-label { color: var(--muted); font-size: 12px; font-weight: 1000; line-height: 1.25; }
-    .metric-value { color: var(--ink); font-size: 27px; line-height: 1; letter-spacing: -0.05em; font-weight: 1000; }
-    .metric-unit { color: var(--primary); font-size: 12px; font-weight: 1000; }
-    .metric-note { margin-top: auto; color: var(--muted); font-size: 11px; font-weight: 750; }
-    .focus-card { display: grid; grid-template-columns: 0.85fr 1.2fr; gap: 18px; align-items: stretch; border-radius: 28px; padding: 22px; border: 1px solid rgba(217,226,236,0.95); background: linear-gradient(135deg, rgba(15,118,110,0.12), rgba(244,185,66,0.16)), white; }
-    .focus-left { display: grid; align-content: center; gap: 8px; }
-    .focus-left h3 { margin: 0; font-size: 30px; line-height: 1.08; letter-spacing: -0.05em; }
-    .focus-left p { margin: 0; color: var(--muted); font-weight: 800; }
-    .focus-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
-    .focus-list li { display: grid; grid-template-columns: 30px 1fr; gap: 8px; align-items: center; padding: 12px 14px; border-radius: 18px; background: rgba(255,255,255,0.85); border: 1px solid rgba(217,226,236,0.96); font-weight: 900; }
-    .recommendation { grid-column: 1 / -1; padding: 16px 18px; border-radius: 20px; background: rgba(255,255,255,0.88); border: 1px solid rgba(217,226,236,0.96); color: #344054; font-weight: 750; }
-    .recommendation strong { color: var(--primary-dark); }
-    .signature { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 12px; font-weight: 850; }
+    .report-wrap{display:grid;gap:22px}
+    .report-card{position:relative;overflow:hidden;border-radius:36px;border:1px solid rgba(217,226,236,.95);background:var(--surface);box-shadow:var(--shadow)}
+    .report-card::before{content:"";position:absolute;inset:0 0 auto 0;height:12px;background:linear-gradient(90deg,var(--primary),var(--blue),var(--yellow));z-index:2}
+    .report-inner{padding:clamp(22px,3.2vw,36px);display:grid;gap:24px}
+    .report-top{display:grid;grid-template-columns:280px 1fr 240px;gap:22px;align-items:center;min-height:150px}
+    .player-block{display:flex;gap:16px;align-items:center}
+    .avatar{width:108px;height:108px;object-fit:cover;border-radius:999px;border:6px solid var(--primary-soft);background:var(--surface-soft);box-shadow:0 14px 26px rgba(15,23,42,.14)}
+    .player-name{margin:0;font-size:28px;line-height:1.05;letter-spacing:-.04em}
+    .player-meta{margin-top:8px;display:grid;gap:3px;color:var(--muted);font-size:13px;font-weight:800}
+    .report-title{text-align:center;display:grid;gap:8px}
+    .report-title small{color:var(--primary);font-weight:1000;letter-spacing:.22em;text-transform:uppercase}
+    .report-title h2{margin:0;font-size:clamp(36px,4.6vw,60px);line-height:.94;letter-spacing:-.08em;font-weight:1000}
+    .report-title p{margin:0;color:var(--muted);font-weight:800}
+    .academy-block{display:grid;justify-items:end;gap:10px;text-align:right;color:var(--muted);font-size:13px;font-weight:800}
+    .logo-box{width:92px;height:92px;display:grid;place-items:center;overflow:hidden;border-radius:24px;background:#f1f5f9;border:1px solid var(--line);color:var(--primary-dark);font-size:12px;font-weight:1000;line-height:1.15;text-align:center}
+    .logo-box img{width:100%;height:100%;object-fit:contain;padding:10px}
+    .divider{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent)}
+    .summary-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .summary-card{border-radius:22px;padding:16px;background:linear-gradient(135deg,rgba(15,118,110,.08),rgba(37,99,235,.04)),var(--surface-soft);border:1px solid #e2e8f0;min-height:112px}
+    .summary-card small{display:block;color:var(--muted);font-size:12px;font-weight:1000;letter-spacing:.06em;text-transform:uppercase}
+    .summary-card strong{display:block;margin-top:8px;font-size:30px;line-height:1;letter-spacing:-.05em}
+    .summary-card span{display:block;margin-top:8px;color:var(--muted);font-size:12px;font-weight:750;line-height:1.45}
+    .status-good{color:var(--green)} .status-watch{color:var(--orange)} .status-risk{color:var(--red)}
+    .overview{display:grid;grid-template-columns:46% 1fr;gap:20px;align-items:stretch}
+    .card{border-radius:26px;padding:22px;background:var(--surface-soft);border:1px solid #e2e8f0}
+    .card-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
+    .card-kicker{margin:0;color:var(--primary);font-size:12px;font-weight:1000;letter-spacing:.14em;text-transform:uppercase}
+    .card-title{margin:3px 0 0;font-size:23px;line-height:1.12;letter-spacing:-.04em}
+    .legend{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;color:var(--muted);font-size:12px;font-weight:900}
+    .legend span{display:inline-flex;gap:6px;align-items:center;padding:6px 9px;border-radius:999px;background:#fff;border:1px solid #e2e8f0}
+    .dot{width:9px;height:9px;border-radius:999px;display:inline-block}
+    .dot-gray{background:#94a3b8} .dot-player{background:var(--primary)}
+    .radar-box{width:100%;aspect-ratio:1/.82;min-height:320px}
+    canvas{display:block;width:100%;height:100%}
+    .analysis-grid{display:grid;gap:12px}
+    .analysis-box{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:16px}
+    .analysis-box h4{margin:0 0 10px;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .tag{padding:5px 8px;border-radius:999px;font-size:11px;font-weight:1000;letter-spacing:.08em}
+    .tag-good{color:#166534;background:#dcfce7} .tag-watch{color:#92400e;background:#fef3c7} .tag-court{color:#1d4ed8;background:#dbeafe}
+    .analysis-list{margin:0;padding:0;list-style:none;display:grid;gap:8px;color:#344054;font-size:14px;font-weight:750}
+    .analysis-list li{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:start}
+    .data-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+    .metric-card{min-height:114px;display:grid;gap:4px;padding:14px;border-radius:20px;background:#fff;border:1px solid #e2e8f0}
+    .metric-label{color:var(--muted);font-size:12px;font-weight:1000;line-height:1.25}
+    .metric-value{color:var(--ink);font-size:27px;line-height:1;letter-spacing:-.05em;font-weight:1000}
+    .metric-unit{color:var(--primary);font-size:12px;font-weight:1000}
+    .metric-note{margin-top:auto;color:var(--muted);font-size:11px;font-weight:750}
+    .focus-card{display:grid;grid-template-columns:.85fr 1.2fr;gap:18px;align-items:stretch;border-radius:28px;padding:22px;border:1px solid rgba(217,226,236,.95);background:linear-gradient(135deg,rgba(15,118,110,.12),rgba(244,185,66,.16)),#fff}
+    .focus-left{display:grid;align-content:center;gap:8px}
+    .focus-left h3{margin:0;font-size:30px;line-height:1.08;letter-spacing:-.05em}
+    .focus-left p{margin:0;color:var(--muted);font-weight:800}
+    .focus-list{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+    .focus-list li{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:center;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.85);border:1px solid rgba(217,226,236,.96);font-weight:900}
+    .recommendation{grid-column:1/-1;padding:16px 18px;border-radius:20px;background:rgba(255,255,255,.88);border:1px solid rgba(217,226,236,.96);color:#344054;font-weight:750}
+    .recommendation strong{color:var(--primary-dark)}
+    .signature{display:flex;justify-content:space-between;gap:16px;color:var(--muted);font-size:12px;font-weight:850}
 
     /* Records */
-    .records-panel { margin-top: 26px; }
-    .records-toolbar { padding: 18px 24px 0; display: flex; flex-wrap: wrap; gap: 10px; }
-    .table-wrap { padding: 18px 24px 24px; overflow-x: auto; }
-    table { width: 100%; min-width: 980px; border-collapse: collapse; font-size: 13px; }
-    th, td { padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align: left; white-space: nowrap; vertical-align: middle; }
-    th { color: var(--primary-dark); background: #f8fafc; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
-    td { color: #344054; font-weight: 750; }
-    .mini-btn { padding: 7px 10px; border-radius: 10px; font-size: 12px; }
-    .empty { padding: 22px 24px 28px; color: var(--muted); font-size: 14px; font-weight: 750; }
-    .footer-note { margin-top: 20px; color: var(--muted); text-align: center; font-size: 13px; font-weight: 700; }
+    .records-panel{margin-top:26px}
+    .records-toolbar{padding:18px 24px 0;display:flex;flex-wrap:wrap;gap:10px}
+    .table-wrap{padding:18px 24px 24px;overflow-x:auto}
+    table{width:100%;min-width:980px;border-collapse:collapse;font-size:13px}
+    th,td{padding:12px 10px;border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap;vertical-align:middle}
+    th{color:var(--primary-dark);background:#f8fafc;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+    td{color:#344054;font-weight:750}
+    .mini-btn{padding:7px 10px;border-radius:10px;font-size:12px}
+    .empty{padding:22px 24px 28px;color:var(--muted);font-size:14px;font-weight:750}
+    .footer-note{margin-top:20px;color:var(--muted);text-align:center;font-size:13px;font-weight:700}
+    .sync-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:900}
+    .sync-badge.syncing{background:#fef3c7;color:#92400e}
+    .sync-badge.synced{background:#dcfce7;color:#166534}
+    .sync-badge.failed{background:#fee2e2;color:#991b1b}
 
-    /* Sync badge */
-    .sync-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 900; }
-    .sync-badge.syncing { background: #fef3c7; color: #92400e; }
-    .sync-badge.synced { background: #dcfce7; color: #166534; }
-    .sync-badge.failed { background: #fee2e2; color: #991b1b; }
-
-    @media (max-width: 1180px) {
-      .hero, .main-grid { grid-template-columns: 1fr; }
-      .sticky-panel { position: static; max-height: none; }
-      .report-top { grid-template-columns: 1fr; text-align: center; }
-      .player-block { justify-content: center; }
-      .academy-block { justify-items: center; text-align: center; }
-      .overview { grid-template-columns: 1fr; }
-      .summary-strip { grid-template-columns: repeat(2, 1fr); }
-      .data-grid { grid-template-columns: repeat(3, 1fr); }
-      .focus-card { grid-template-columns: 1fr; }
+    @media(max-width:1180px){
+      .hero,.main-grid{grid-template-columns:1fr}
+      .sticky-panel{position:static;max-height:none}
+      .report-top{grid-template-columns:1fr;text-align:center}
+      .player-block{justify-content:center}
+      .academy-block{justify-items:center;text-align:center}
+      .overview{grid-template-columns:1fr}
+      .summary-strip{grid-template-columns:repeat(2,1fr)}
+      .data-grid{grid-template-columns:repeat(3,1fr)}
+      .focus-card{grid-template-columns:1fr}
     }
-    @media (max-width: 720px) {
-      .site { width: min(100% - 20px, 1440px); padding-top: 12px; }
-      .hero { border-radius: 28px; }
-      .grid-2, .grid-3, .button-grid, .summary-strip { grid-template-columns: 1fr; }
-      .data-grid { grid-template-columns: repeat(2, 1fr); }
-      .player-block { flex-direction: column; }
-      .signature { flex-direction: column; }
+    @media(max-width:720px){
+      .site{width:min(100% - 20px,1440px);padding-top:12px}
+      .hero{border-radius:28px}
+      .grid-2,.grid-3,.button-grid,.summary-strip{grid-template-columns:1fr}
+      .data-grid{grid-template-columns:repeat(2,1fr)}
+      .player-block{flex-direction:column}
+      .signature{flex-direction:column}
     }
-    @media print {
-      body { background: white; }
-      .no-print, .hero, .records-panel, .footer-note { display: none !important; }
-      .site { width: 100%; margin: 0; padding: 0; }
-      .main-grid { display: block; margin: 0; }
-      .report-card { box-shadow: none; border: 0; border-radius: 0; }
-      .report-inner { padding: 14mm; }
-      .report-top { grid-template-columns: 250px 1fr 220px; text-align: left; }
-      .report-title { text-align: center; }
-      .academy-block { justify-items: end; text-align: right; }
-      .overview { grid-template-columns: 46% 1fr; }
-      .summary-strip { grid-template-columns: repeat(4, 1fr); }
-      .data-grid { grid-template-columns: repeat(6, 1fr); }
-      .focus-card { grid-template-columns: 0.85fr 1.2fr; }
+    @media print{
+      body{background:#fff}
+      .no-print,.hero,.records-panel,.footer-note{display:none!important}
+      .site{width:100%;margin:0;padding:0}
+      .main-grid{display:block;margin:0}
+      .report-card{box-shadow:none;border:0;border-radius:0}
+      .report-inner{padding:14mm}
+      .report-top{grid-template-columns:250px 1fr 220px;text-align:left}
+      .report-title{text-align:center}
+      .academy-block{justify-items:end;text-align:right}
+      .overview{grid-template-columns:46% 1fr}
+      .summary-strip{grid-template-columns:repeat(4,1fr)}
+      .data-grid{grid-template-columns:repeat(6,1fr)}
+      .focus-card{grid-template-columns:.85fr 1.2fr}
     }
   </style>
 </head>
 <body>
-  <main class="site">
-    <section class="hero no-print">
-      <div class="hero-content">
-        <div class="eyebrow">Tennis Performance Lab</div>
-        <h1>網球體能檢測<br />報告系統</h1>
-        <p>輸入球員資料、核心能力分數與檢測數據，立即生成一份可以給家長、球員與教練共同討論的專業報告。</p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="#assessmentForm">開始輸入檢測資料</a>
-          <a class="btn btn-ghost" href="#reportCard">查看報告預覽</a>
-        </div>
+<main class="site">
+
+  <section class="hero no-print">
+    <div class="hero-content">
+      <div class="eyebrow">Tennis Performance Lab</div>
+      <h1>網球體能檢測<br />報告系統</h1>
+      <p>輸入原始測量數據，Sheets 自動計算雷達分數，填入後即生成完整報告。</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#assessmentForm">開始輸入</a>
+        <a class="btn btn-ghost" href="#reportCard">查看報告</a>
       </div>
-      <div class="hero-panel">
-        <div class="hero-stat"><small>Report Output</small><strong>Radar + Analysis</strong></div>
-        <div class="hero-stat"><small>Training Focus</small><strong>6 Weeks Plan</strong></div>
-        <div class="hero-stat"><small>Data Collection</small><strong>CSV + Sheets</strong></div>
-      </div>
-    </section>
+    </div>
+    <div class="hero-panel">
+      <div class="hero-stat"><small>Data Flow</small><strong>Form → Sheets</strong></div>
+      <div class="hero-stat"><small>Radar Scores</small><strong>Sheets Calculated</strong></div>
+      <div class="hero-stat"><small>Output</small><strong>PDF Report</strong></div>
+    </div>
+  </section>
 
-    <section class="main-grid">
-      <aside class="panel sticky-panel no-print" id="assessmentForm">
-        <div class="panel-header">
-          <h2>檢測資料輸入</h2>
-          <p>從球員名單選擇後填入評估分數，儲存時自動同步到 Google Sheets。</p>
-        </div>
-
-        <div class="form-body">
-
-          <!-- 球員選擇 -->
-          <section class="form-section">
-            <div class="form-section-title">從名單選擇球員</div>
-            <div style="display:grid; grid-template-columns:1fr auto; gap:8px; align-items:end;">
-              <label>
-                球員名單
-                <select id="playerSelect">
-                  <option value="">— 載入中… —</option>
-                </select>
-              </label>
-              <button class="btn btn-light" id="refreshPlayersBtn" type="button" style="white-space:nowrap; height:46px; margin-top:auto;">重新載入</button>
-            </div>
-            <p class="hint" id="playerLoadStatus">正在從 Google Sheets 讀取球員資料…</p>
-          </section>
-
-          <!-- 基本資料 -->
-          <section class="form-section">
-            <div class="form-section-title">球員基本資料</div>
-            <label>球員照片<input id="photoInput" type="file" accept="image/*" /></label>
-            <label>Academy Logo<input id="logoInput" type="file" accept="image/*" /></label>
-            <div class="grid-2">
-              <label>姓名<input id="playerName" type="text" value="林小宇" /></label>
-              <label>年齡<input id="playerAge" type="number" value="13" min="3" max="80" /></label>
-            </div>
-            <div class="grid-2">
-              <label>身高 cm<input id="playerHeight" type="number" value="158" /></label>
-              <label>體重 kg<input id="playerWeight" type="number" value="47" /></label>
-            </div>
-            <div class="grid-2">
-              <label>慣用手
-                <select id="dominantHand">
-                  <option value="右手">右手</option>
-                  <option value="左手">左手</option>
-                  <option value="雙手">雙手</option>
-                </select>
-              </label>
-              <label>檢測日期<input id="testDate" type="date" /></label>
-            </div>
-            <div class="grid-2">
-              <label>教練名稱<input id="coachName" type="text" value="Coach Mark" /></label>
-              <label>Academy 名稱<input id="academyName" type="text" value="Tennis Academy" /></label>
-            </div>
-          </section>
-
-          <!-- 核心分數 -->
-          <section class="form-section">
-            <div class="form-section-title">核心能力分數</div>
-            <p class="hint">0–100 分。系統自動比對同齡平均，整理優勢與待加強項目。</p>
-            <label>第一拍啟動速度<div class="range-row"><input id="acceleration" type="range" min="0" max="100" value="82" /><span class="score-pill" data-score-for="acceleration">82</span></div></label>
-            <label>水平爆發能力<div class="range-row"><input id="horizontalPower" type="range" min="0" max="100" value="85" /><span class="score-pill" data-score-for="horizontalPower">85</span></div></label>
-            <label>核心穩定能力<div class="range-row"><input id="coreStability" type="range" min="0" max="100" value="76" /><span class="score-pill" data-score-for="coreStability">76</span></div></label>
-            <label>減速控制能力<div class="range-row"><input id="deceleration" type="range" min="0" max="100" value="54" /><span class="score-pill" data-score-for="deceleration">54</span></div></label>
-            <label>單腳穩定能力<div class="range-row"><input id="singleLeg" type="range" min="0" max="100" value="48" /><span class="score-pill" data-score-for="singleLeg">48</span></div></label>
-            <label>長回合恢復能力<div class="range-row"><input id="recovery" type="range" min="0" max="100" value="58" /><span class="score-pill" data-score-for="recovery">58</span></div></label>
-          </section>
-
-          <!-- 同齡平均 -->
-          <section class="form-section">
-            <div class="form-section-title">同齡平均設定</div>
-            <div class="grid-3">
-              <label>啟動<input id="avgAcceleration" type="number" value="65" min="0" max="100" /></label>
-              <label>爆發<input id="avgHorizontalPower" type="number" value="66" min="0" max="100" /></label>
-              <label>核心<input id="avgCoreStability" type="number" value="64" min="0" max="100" /></label>
-            </div>
-            <div class="grid-3">
-              <label>減速<input id="avgDeceleration" type="number" value="63" min="0" max="100" /></label>
-              <label>單腳<input id="avgSingleLeg" type="number" value="62" min="0" max="100" /></label>
-              <label>恢復<input id="avgRecovery" type="number" value="64" min="0" max="100" /></label>
-            </div>
-          </section>
-
-          <!-- 檢測數據 -->
-          <section class="form-section">
-            <div class="form-section-title">重要檢測數據</div>
-            <div class="grid-2">
-              <label>10m Sprint<input id="sprint10m" type="text" value="2.08 sec" /></label>
-              <label>Broad Jump<input id="broadJump" type="text" value="176 cm" /></label>
-            </div>
-            <div class="grid-2">
-              <label>Plank<input id="plank" type="text" value="92 sec" /></label>
-              <label>Side Shuffle<input id="sideShuffle" type="text" value="7.4 sec" /></label>
-            </div>
-            <div class="grid-2">
-              <label>Single Leg Balance<input id="singleLegBalance" type="text" value="L 28s / R 19s" /></label>
-              <label>Recovery Test<input id="recoveryTest" type="text" value="Level 6.5" /></label>
-            </div>
-          </section>
-
-          <!-- 教練觀察 -->
-          <section class="form-section">
-            <div class="form-section-title">教練補充觀察</div>
-            <label>訓練建議<textarea id="coachNote">球員已具備不錯的基礎爆發能力，若能進一步提升減速與再加速控制，將有助於底線移動效率與防守品質。</textarea></label>
-          </section>
-
-          <!-- 按鈕 -->
-          <section class="form-section">
-            <div class="button-grid">
-              <button class="btn btn-teal" id="updateReportBtn" type="button">更新報告</button>
-              <button class="btn btn-dark" id="saveRecordBtn" type="button">儲存紀錄</button>
-              <button class="btn btn-light" id="printBtn" type="button">列印 / PDF</button>
-              <button class="btn btn-light" id="exportCsvBtn" type="button">匯出 CSV</button>
-              <button class="btn btn-light" id="resetBtn" type="button">重設範例</button>
-              <button class="btn btn-danger" id="clearRecordsBtn" type="button">清空紀錄</button>
-            </div>
-            <div id="syncStatus" style="display:none; margin-top:4px;"></div>
-          </section>
-
-          <!-- 系統設定 -->
-          <section class="form-section">
-            <button class="settings-toggle" id="settingsToggle" type="button">⚙ 系統設定（Sheets 連結）</button>
-            <div class="settings-body" id="settingsBody">
-              <p class="hint">將 Apps Script 部署網址貼到下方，儲存後「儲存紀錄」就會同步到正確的 Sheets。</p>
-              <label>Apps Script 網址<input id="endpointInput" type="url" placeholder="https://script.google.com/macros/s/..." /></label>
-              <div style="display:flex; gap:8px; align-items:center;">
-                <button class="btn btn-teal" id="saveEndpointBtn" type="button" style="padding:10px 16px; font-size:13px;">儲存設定</button>
-                <span class="endpoint-status" id="endpointStatus"></span>
-              </div>
-            </div>
-          </section>
-
-        </div>
-      </aside>
-
-      <section class="report-wrap">
-        <article class="report-card" id="reportCard">
-          <div class="report-inner">
-            <section class="report-top">
-              <div class="player-block">
-                <img id="reportPhoto" class="avatar" alt="球員照片" />
-                <div>
-                  <h3 class="player-name" id="reportName">林小宇</h3>
-                  <div class="player-meta">
-                    <span id="reportAge">年齡｜13 歲</span>
-                    <span id="reportBody">身高體重｜158 cm / 47 kg</span>
-                    <span id="reportHand">慣用手｜右手</span>
-                  </div>
-                </div>
-              </div>
-              <div class="report-title">
-                <small>Tennis Athlete</small>
-                <h2>PERFORMANCE<br />REPORT</h2>
-                <p>Tennis Physical Performance Assessment</p>
-              </div>
-              <div class="academy-block">
-                <div class="logo-box" id="reportLogoBox"><span>ACADEMY<br />LOGO</span></div>
-                <div>
-                  <div id="reportDate">檢測日期｜—</div>
-                  <div id="reportCoach">教練｜Coach Mark</div>
-                  <div id="reportAcademy">Tennis Academy</div>
-                </div>
-              </div>
-            </section>
-
-            <div class="divider"></div>
-
-            <section class="summary-strip">
-              <div class="summary-card"><small>Overall Score</small><strong id="overallScore">67</strong><span>整體體能表現分數</span></div>
-              <div class="summary-card"><small>Best Ability</small><strong id="bestAbility">爆發</strong><span>目前最突出的能力</span></div>
-              <div class="summary-card"><small>Main Focus</small><strong id="mainFocus">單腳</strong><span>下一階段優先訓練</span></div>
-              <div class="summary-card"><small>Training Status</small><strong id="trainingStatus" class="status-watch">觀察</strong><span id="trainingStatusNote">具備基礎，需補強控制能力</span></div>
-            </section>
-
-            <section class="overview">
-              <div class="card">
-                <div class="card-title-row">
-                  <div><p class="card-kicker">Core Ability Overview</p><h3 class="card-title">核心能力雷達圖</h3></div>
-                  <div class="legend">
-                    <span><i class="dot dot-gray"></i>同齡平均</span>
-                    <span><i class="dot dot-player"></i>球員能力</span>
-                  </div>
-                </div>
-                <div class="radar-box"><canvas id="radarChart"></canvas></div>
-              </div>
-              <div class="card">
-                <div class="card-title-row"><div><p class="card-kicker">Professional Analysis</p><h3 class="card-title">關鍵分析區</h3></div></div>
-                <div class="analysis-grid">
-                  <div class="analysis-box"><h4>A｜Strengths 優勢<span class="tag tag-good">GOOD</span></h4><ul class="analysis-list" id="strengthList"></ul></div>
-                  <div class="analysis-box"><h4>B｜Needs Improvement 待加強<span class="tag tag-watch">FOCUS</span></h4><ul class="analysis-list" id="improveList"></ul></div>
-                  <div class="analysis-box"><h4>C｜On-Court Translation 場上影響<span class="tag tag-court">COURT</span></h4><ul class="analysis-list" id="courtList"></ul></div>
-                </div>
-              </div>
-            </section>
-
-            <section class="card">
-              <div class="card-title-row"><div><p class="card-kicker">Key Testing Data</p><h3 class="card-title">最重要數據</h3></div></div>
-              <div class="data-grid">
-                <div class="metric-card"><div class="metric-label">10m Sprint</div><div class="metric-value" id="metricSprint">2.08</div><div class="metric-unit">sec</div><div class="metric-note">第一拍啟動</div></div>
-                <div class="metric-card"><div class="metric-label">Broad Jump</div><div class="metric-value" id="metricJump">176</div><div class="metric-unit">cm</div><div class="metric-note">水平爆發</div></div>
-                <div class="metric-card"><div class="metric-label">Plank</div><div class="metric-value" id="metricPlank">92</div><div class="metric-unit">sec</div><div class="metric-note">核心穩定</div></div>
-                <div class="metric-card"><div class="metric-label">Side Shuffle</div><div class="metric-value" id="metricShuffle">7.4</div><div class="metric-unit">sec</div><div class="metric-note">側向移動</div></div>
-                <div class="metric-card"><div class="metric-label">Single Leg Balance</div><div class="metric-value" id="metricBalance">L28/R19</div><div class="metric-unit">sec</div><div class="metric-note">單腳穩定</div></div>
-                <div class="metric-card"><div class="metric-label">Recovery Test</div><div class="metric-value" id="metricRecovery">6.5</div><div class="metric-unit">level</div><div class="metric-note">長回合恢復</div></div>
-              </div>
-            </section>
-
-            <section class="focus-card">
-              <div class="focus-left">
-                <p class="card-kicker">Development Focus</p>
-                <h3>下一階段重點</h3>
-                <p>未來 6 週訓練方向</p>
-              </div>
-              <ul class="focus-list" id="focusList"></ul>
-              <div class="recommendation" id="recommendationText"><strong>訓練建議：</strong>球員已具備不錯的基礎爆發能力，若能進一步提升減速與再加速控制，將有助於底線移動效率與防守品質。</div>
-            </section>
-
-            <footer class="signature">
-              <span>Tennis Performance Lab</span>
-              <span>Report System｜Physical Performance Assessment</span>
-            </footer>
-          </div>
-        </article>
-      </section>
-    </section>
-
-    <section class="panel records-panel no-print">
+  <section class="main-grid">
+    <aside class="panel sticky-panel no-print" id="assessmentForm">
       <div class="panel-header">
-        <h2>檢測資料收集</h2>
-        <p>儲存後會出現在這裡，同時同步到 Google Sheets「02 檢測紀錄」分頁。</p>
+        <h2>檢測資料輸入</h2>
+        <p>原始數據存入 Sheets → 計算好後填入雷達圖分數 → 列印報告</p>
       </div>
-      <div class="records-toolbar">
-        <button class="btn btn-light" id="scrollTopBtn" type="button">回到輸入區</button>
+      <div class="form-body">
+
+        <!-- 球員選擇 -->
+        <section class="form-section">
+          <div class="form-section-title">從名單選擇球員</div>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;">
+            <label>球員名單<select id="playerSelect"><option value="">— 載入中… —</option></select></label>
+            <button class="btn btn-light" id="refreshPlayersBtn" type="button" style="white-space:nowrap;height:46px;margin-top:auto;">重新載入</button>
+          </div>
+          <p class="hint" id="playerLoadStatus">正在從 Google Sheets 讀取…</p>
+        </section>
+
+        <!-- 基本資料 -->
+        <section class="form-section">
+          <div class="form-section-title">球員基本資料</div>
+          <label>球員照片<input id="photoInput" type="file" accept="image/*" /></label>
+          <label>Academy Logo<input id="logoInput" type="file" accept="image/*" /></label>
+          <div class="grid-2">
+            <label>姓名<input id="playerName" type="text" /></label>
+            <label>年齡<input id="playerAge" type="number" min="3" max="80" /></label>
+          </div>
+          <div class="grid-2">
+            <label>身高 cm<input id="playerHeight" type="number" /></label>
+            <label>體重 kg<input id="playerWeight" type="number" /></label>
+          </div>
+          <div class="grid-2">
+            <label>慣用手
+              <select id="dominantHand">
+                <option value="右手">右手</option>
+                <option value="左手">左手</option>
+                <option value="雙手">雙手</option>
+              </select>
+            </label>
+            <label>檢測日期<input id="testDate" type="date" /></label>
+          </div>
+          <div class="grid-2">
+            <label>教練名稱<input id="coachName" type="text" /></label>
+            <label>Academy<input id="academyName" type="text" value="Tennis Academy" /></label>
+          </div>
+        </section>
+
+        <!-- 原始測量數據 -->
+        <section class="form-section">
+          <div class="form-section-title">原始測量數據</div>
+          <p class="hint">填入實際測量值，儲存後自動寫入「02 檢測紀錄」。</p>
+
+          <div class="form-subsection">速度與變向</div>
+          <div class="grid-2">
+            <label>10m 衝刺 (秒)<input id="sprint10m" type="number" step="0.01" placeholder="2.08" /></label>
+            <label>蜘蛛跑 (秒)<input id="spiderRun" type="number" step="0.01" placeholder="12.5" /></label>
+          </div>
+          <div class="grid-2">
+            <label>5-10-5 左側 (秒)<input id="agility505Left" type="number" step="0.01" placeholder="5.2" /></label>
+            <label>5-10-5 右側 (秒)<input id="agility505Right" type="number" step="0.01" placeholder="5.4" /></label>
+          </div>
+
+          <div class="form-subsection">下肢爆發</div>
+          <div class="grid-2">
+            <label>擺臂反向跳 (cm)<input id="cmj" type="number" step="0.1" placeholder="38" /></label>
+            <label>跳遠 (cm)<input id="broadJump" type="number" step="1" placeholder="176" /></label>
+          </div>
+          <div class="grid-2">
+            <label>側向跳 左 (cm)<input id="lateralJumpLeft" type="number" step="0.1" placeholder="62" /></label>
+            <label>側向跳 右 (cm)<input id="lateralJumpRight" type="number" step="0.1" placeholder="64" /></label>
+          </div>
+
+          <div class="form-subsection">單腳減速</div>
+          <div class="grid-2">
+            <label>單腳落地 左 (秒)<input id="singleLegLandLeft" type="number" step="0.001" placeholder="0.350" /></label>
+            <label>單腳落地 右 (秒)<input id="singleLegLandRight" type="number" step="0.001" placeholder="0.380" /></label>
+          </div>
+
+          <div class="form-subsection">轉體爆發</div>
+          <div class="grid-2">
+            <label>轉體投擲 左 (m)<input id="rotThrowLeft" type="number" step="0.01" placeholder="8.5" /></label>
+            <label>轉體投擲 右 (m)<input id="rotThrowRight" type="number" step="0.01" placeholder="9.2" /></label>
+          </div>
+
+          <div class="form-subsection">心肺適能</div>
+          <label>30-15IFT (km/h)<input id="ift" type="number" step="0.5" placeholder="18.5" /></label>
+        </section>
+
+        <!-- 雷達圖分數（從 Sheets 填入） -->
+        <section class="form-section">
+          <div class="form-section-title">雷達圖分數</div>
+          <p class="hint">從「05 雷達圖分數」填入 Sheets 計算好的分數（0–100），顯示在報告雷達圖。</p>
+          <label>速度與變向<div class="range-row"><input id="speedAgility" type="range" min="0" max="100" value="0" /><span class="score-pill" data-score-for="speedAgility">0</span></div></label>
+          <label>下肢爆發<div class="range-row"><input id="lowerPower" type="range" min="0" max="100" value="0" /><span class="score-pill" data-score-for="lowerPower">0</span></div></label>
+          <label>單腳減速能力<div class="range-row"><input id="singleLegDecel" type="range" min="0" max="100" value="0" /><span class="score-pill" data-score-for="singleLegDecel">0</span></div></label>
+          <label>轉體爆發<div class="range-row"><input id="rotPower" type="range" min="0" max="100" value="0" /><span class="score-pill" data-score-for="rotPower">0</span></div></label>
+          <label>投擲<div class="range-row"><input id="throwing" type="range" min="0" max="100" value="0" /><span class="score-pill" data-score-for="throwing">0</span></div></label>
+          <label>心肺適能<div class="range-row"><input id="cardio" type="range" min="0" max="100" value="0" /><span class="score-pill" data-score-for="cardio">0</span></div></label>
+        </section>
+
+        <!-- 同齡平均 -->
+        <section class="form-section">
+          <div class="form-section-title">同齡平均設定</div>
+          <div class="grid-3">
+            <label>速度變向<input id="avgSpeedAgility" type="number" value="50" min="0" max="100" /></label>
+            <label>下肢爆發<input id="avgLowerPower" type="number" value="50" min="0" max="100" /></label>
+            <label>單腳減速<input id="avgSingleLegDecel" type="number" value="50" min="0" max="100" /></label>
+          </div>
+          <div class="grid-3">
+            <label>轉體爆發<input id="avgRotPower" type="number" value="50" min="0" max="100" /></label>
+            <label>投擲<input id="avgThrowing" type="number" value="50" min="0" max="100" /></label>
+            <label>心肺<input id="avgCardio" type="number" value="50" min="0" max="100" /></label>
+          </div>
+        </section>
+
+        <!-- 教練備註 -->
+        <section class="form-section">
+          <div class="form-section-title">教練備註</div>
+          <label>訓練建議<textarea id="coachNote" placeholder="填入本次評估重點與後續訓練方向…"></textarea></label>
+        </section>
+
+        <!-- 按鈕 -->
+        <section class="form-section">
+          <div class="button-grid">
+            <button class="btn btn-teal" id="updateReportBtn" type="button">更新報告</button>
+            <button class="btn btn-dark" id="saveRecordBtn" type="button">儲存紀錄</button>
+            <button class="btn btn-light" id="printBtn" type="button">列印 / PDF</button>
+            <button class="btn btn-light" id="exportCsvBtn" type="button">匯出 CSV</button>
+            <button class="btn btn-light" id="resetBtn" type="button">重設範例</button>
+            <button class="btn btn-danger" id="clearRecordsBtn" type="button">清空紀錄</button>
+          </div>
+          <div id="syncStatus" style="display:none;margin-top:4px;"></div>
+        </section>
+
+        <!-- 系統設定 -->
+        <section class="form-section">
+          <button class="settings-toggle" id="settingsToggle" type="button">⚙ 系統設定（Sheets 連結）</button>
+          <div class="settings-body" id="settingsBody">
+            <p class="hint">貼上「網球體能檢測」Sheets 的 Apps Script 部署網址，儲存後即可同步。</p>
+            <label>Apps Script 網址<input id="endpointInput" type="url" placeholder="https://script.google.com/macros/s/…/exec" /></label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <button class="btn btn-teal" id="saveEndpointBtn" type="button" style="padding:10px 16px;font-size:13px;">儲存設定</button>
+              <span class="endpoint-status" id="endpointStatus"></span>
+            </div>
+          </div>
+        </section>
+
       </div>
-      <div id="recordsEmpty" class="empty">尚未儲存任何檢測紀錄。輸入資料後，按「儲存紀錄」即可開始累積。</div>
-      <div id="recordsTableWrap" class="table-wrap" style="display:none;">
-        <table>
-          <thead>
-            <tr>
-              <th>日期</th><th>姓名</th><th>年齡</th><th>身高</th><th>體重</th><th>總分</th>
-              <th>啟動</th><th>爆發</th><th>核心</th><th>減速</th><th>單腳</th><th>恢復</th>
-              <th>教練</th><th>操作</th>
-            </tr>
-          </thead>
-          <tbody id="recordsTbody"></tbody>
-        </table>
-      </div>
+    </aside>
+
+    <section class="report-wrap">
+      <article class="report-card" id="reportCard">
+        <div class="report-inner">
+
+          <section class="report-top">
+            <div class="player-block">
+              <img id="reportPhoto" class="avatar" alt="球員照片" />
+              <div>
+                <h3 class="player-name" id="reportName">—</h3>
+                <div class="player-meta">
+                  <span id="reportAge">年齡｜—</span>
+                  <span id="reportBody">身高體重｜—</span>
+                  <span id="reportHand">慣用手｜—</span>
+                </div>
+              </div>
+            </div>
+            <div class="report-title">
+              <small>Tennis Athlete</small>
+              <h2>PERFORMANCE<br />REPORT</h2>
+              <p>Tennis Physical Performance Assessment</p>
+            </div>
+            <div class="academy-block">
+              <div class="logo-box" id="reportLogoBox"><span>ACADEMY<br />LOGO</span></div>
+              <div>
+                <div id="reportDate">檢測日期｜—</div>
+                <div id="reportCoach">教練｜—</div>
+                <div id="reportAcademy">Tennis Academy</div>
+              </div>
+            </div>
+          </section>
+
+          <div class="divider"></div>
+
+          <section class="summary-strip">
+            <div class="summary-card"><small>Overall Score</small><strong id="overallScore">—</strong><span>整體雷達平均分數</span></div>
+            <div class="summary-card"><small>Best Ability</small><strong id="bestAbility">—</strong><span>目前最突出能力</span></div>
+            <div class="summary-card"><small>Main Focus</small><strong id="mainFocus">—</strong><span>下階段優先訓練</span></div>
+            <div class="summary-card"><small>Training Status</small><strong id="trainingStatus" class="status-watch">—</strong><span id="trainingStatusNote">填入雷達分數後顯示</span></div>
+          </section>
+
+          <section class="overview">
+            <div class="card">
+              <div class="card-title-row">
+                <div><p class="card-kicker">Core Ability Overview</p><h3 class="card-title">能力雷達圖</h3></div>
+                <div class="legend">
+                  <span><i class="dot dot-gray"></i>同齡平均</span>
+                  <span><i class="dot dot-player"></i>球員能力</span>
+                </div>
+              </div>
+              <div class="radar-box"><canvas id="radarChart"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="card-title-row"><div><p class="card-kicker">Professional Analysis</p><h3 class="card-title">關鍵分析區</h3></div></div>
+              <div class="analysis-grid">
+                <div class="analysis-box"><h4>A｜Strengths 優勢<span class="tag tag-good">GOOD</span></h4><ul class="analysis-list" id="strengthList"></ul></div>
+                <div class="analysis-box"><h4>B｜Needs Improvement 待加強<span class="tag tag-watch">FOCUS</span></h4><ul class="analysis-list" id="improveList"></ul></div>
+                <div class="analysis-box"><h4>C｜On-Court Translation 場上影響<span class="tag tag-court">COURT</span></h4><ul class="analysis-list" id="courtList"></ul></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-title-row"><div><p class="card-kicker">Key Testing Data</p><h3 class="card-title">原始測量數據</h3></div></div>
+            <div class="data-grid">
+              <div class="metric-card"><div class="metric-label">10m Sprint</div><div class="metric-value" id="metricSprint">—</div><div class="metric-unit">sec</div><div class="metric-note">速度</div></div>
+              <div class="metric-card"><div class="metric-label">5-10-5 平均</div><div class="metric-value" id="metricAgility">—</div><div class="metric-unit">sec</div><div class="metric-note">變向</div></div>
+              <div class="metric-card"><div class="metric-label">Spider Run</div><div class="metric-value" id="metricSpider">—</div><div class="metric-unit">sec</div><div class="metric-note">蜘蛛跑</div></div>
+              <div class="metric-card"><div class="metric-label">Broad Jump</div><div class="metric-value" id="metricJump">—</div><div class="metric-unit">cm</div><div class="metric-note">跳遠</div></div>
+              <div class="metric-card"><div class="metric-label">CMJ</div><div class="metric-value" id="metricCMJ">—</div><div class="metric-unit">cm</div><div class="metric-note">反向跳</div></div>
+              <div class="metric-card"><div class="metric-label">30-15 IFT</div><div class="metric-value" id="metricIFT">—</div><div class="metric-unit">km/h</div><div class="metric-note">心肺</div></div>
+            </div>
+          </section>
+
+          <section class="focus-card">
+            <div class="focus-left">
+              <p class="card-kicker">Development Focus</p>
+              <h3>下一階段重點</h3>
+              <p>未來 6 週訓練方向</p>
+            </div>
+            <ul class="focus-list" id="focusList"></ul>
+            <div class="recommendation" id="recommendationText"><strong>訓練建議：</strong>—</div>
+          </section>
+
+          <footer class="signature">
+            <span>Tennis Performance Lab</span>
+            <span>Report System｜Physical Performance Assessment</span>
+          </footer>
+        </div>
+      </article>
     </section>
+  </section>
 
-    <p class="footer-note no-print">Tennis Performance Lab｜資料同步至 Google Sheets「02 檢測紀錄」，本機 localStorage 備份，支援 CSV 匯出</p>
-  </main>
+  <section class="panel records-panel no-print">
+    <div class="panel-header">
+      <h2>檢測資料收集</h2>
+      <p>儲存後同步至「02 檢測紀錄」與「05 雷達圖分數」，本機亦有備份。</p>
+    </div>
+    <div class="records-toolbar">
+      <button class="btn btn-light" id="scrollTopBtn" type="button">回到輸入區</button>
+    </div>
+    <div id="recordsEmpty" class="empty">尚未儲存任何檢測紀錄。</div>
+    <div id="recordsTableWrap" class="table-wrap" style="display:none;">
+      <table>
+        <thead><tr>
+          <th>日期</th><th>姓名</th><th>年齡</th><th>身高</th><th>體重</th>
+          <th>速度變向</th><th>下肢爆發</th><th>單腳減速</th><th>轉體爆發</th><th>投擲</th><th>心肺</th>
+          <th>教練</th><th>操作</th>
+        </tr></thead>
+        <tbody id="recordsTbody"></tbody>
+      </table>
+    </div>
+  </section>
 
-  <script>
-    const PLAYERS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZKZtSAFr7BCls9jvRTKqyimlOyT-AojqQWWCAlO30V1_yEzweD-dPxb7mmjPweUrVb2ihEXcjkL5K/pub?gid=911598882&single=true&output=csv";
-    const STORAGE_KEY = "tennisPerformanceLabRecords_v2";
-    const ENDPOINT_KEY = "tennisLabSheetsEndpoint";
+  <p class="footer-note no-print">Tennis Performance Lab｜原始數據 → 02 檢測紀錄，雷達分數 → 05 雷達圖分數</p>
 
-    let playerDatabase = [];
-    let photoDataUrl = "";
-    let logoDataUrl = "";
+</main>
+<script>
+  const PLAYERS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZKZtSAFr7BCls9jvRTKqyimlOyT-AojqQWWCAlO30V1_yEzweD-dPxb7mmjPweUrVb2ihEXcjkL5K/pub?gid=911598882&single=true&output=csv";
+  const STORAGE_KEY    = "tennisPerformanceLabRecords_v3";
+  const ENDPOINT_KEY   = "tennisLabSheetsEndpoint";
 
-    const $ = (id) => document.getElementById(id);
+  let playerDatabase = [], photoDataUrl = "", logoDataUrl = "";
+  const $ = id => document.getElementById(id);
 
-    // ── 工具 ────────────────────────────────────────────
+  // ── metricConfig（雷達圖 6 個維度） ──────────────────────────────────────────
+  const metricConfig = [
+    { id:"speedAgility",   avgId:"avgSpeedAgility",   label:"速度與變向",   short:"速度\n變向",
+      strength:"速度與變向能力優秀，能快速完成方向切換與起步加速。",
+      weakness:"速度與變向能力待提升，建議加強短距衝刺與側向移動訓練。",
+      focus:"速度與變向訓練", court:"速度與變向能力直接影響接球位置、進攻機會與被動防守的覆蓋率。" },
+    { id:"lowerPower",     avgId:"avgLowerPower",     label:"下肢爆發",     short:"下肢\n爆發",
+      strength:"下肢爆發能力佳，具備良好的跳躍與推蹬基礎。",
+      weakness:"下肢爆發能力不足，建議加強跳躍與推蹬訓練。",
+      focus:"下肢爆發與彈跳", court:"下肢爆發影響跨步距離、起跳高度與發球後移動速度。" },
+    { id:"singleLegDecel", avgId:"avgSingleLegDecel", label:"單腳減速能力", short:"單腳\n減速",
+      strength:"單腳減速能力穩定，煞停與方向轉換時控制良好。",
+      weakness:"單腳減速能力需加強，建議訓練單腳煞停與重心轉移。",
+      focus:"單腳減速與落地控制", court:"單腳減速能力不足時，開放式站位穩定性與受傷風險都會提升。" },
+    { id:"rotPower",       avgId:"avgRotPower",       label:"轉體爆發",     short:"轉體\n爆發",
+      strength:"轉體爆發能力出色，具備良好的旋轉力量基礎。",
+      weakness:"轉體爆發能力待提升，建議加強核心旋轉與藥球投擲訓練。",
+      focus:"轉體爆發與核心旋轉", court:"轉體爆發能力影響擊球力量傳遞效率，尤其在底線對打時。" },
+    { id:"throwing",       avgId:"avgThrowing",       label:"投擲",         short:"投擲",
+      strength:"投擲能力良好，上肢與整體動力鏈協調性佳。",
+      weakness:"投擲能力需強化，建議加強上肢力量與動力鏈整合訓練。",
+      focus:"上肢力量與動力鏈整合", court:"投擲能力反映發球與高點擊球的力量傳遞效率。" },
+    { id:"cardio",         avgId:"avgCardio",         label:"心肺適能",     short:"心肺",
+      strength:"心肺適能良好，能維持較長時間的高強度移動品質。",
+      weakness:"心肺適能需提升，建議加強間歇訓練與有氧基礎。",
+      focus:"心肺適能與長回合耐力", court:"心肺適能不足時，長回合後段的腳步品質與決策速度都會下降。" }
+  ];
 
-    function todayISO() {
-      const now = new Date();
-      const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-      return local.toISOString().slice(0, 10);
-    }
-    function getValue(id) { return $(id).value.trim(); }
-    function getNumber(id) { const n = Number($(id).value); return Number.isFinite(n) ? n : 0; }
-    function setValue(id, v) { if ($(id)) $(id).value = v ?? ""; }
-    function extractNumber(text) { const m = String(text).match(/[0-9]+(\.[0-9]+)?/); return m ? m[0] : String(text); }
-    function formatBalance(text) {
-      const raw = String(text).trim();
-      if (!raw) return "-";
-      return raw.replace(/\s+/g, "").replace("/R", " / R");
-    }
-    function escapeHtml(text) {
-      return String(text).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
-    }
-    function csvEscape(v) {
-      const t = v == null ? "" : String(v);
-      return `"${t.replace(/"/g,'""')}"`;
-    }
-    function getSheetsEndpoint() {
-      return localStorage.getItem(ENDPOINT_KEY) || "";
-    }
+  // 原始測量欄位（for live update）
+  const rawIds = ["sprint10m","spiderRun","agility505Left","agility505Right","cmj","broadJump","lateralJumpLeft","lateralJumpRight","singleLegLandLeft","singleLegLandRight","rotThrowLeft","rotThrowRight","ift"];
 
-    // ── 預設圖片 ─────────────────────────────────────────
+  // ── 工具 ──────────────────────────────────────────────────────────────────
+  function todayISO(){const n=new Date();return new Date(n.getTime()-n.getTimezoneOffset()*60000).toISOString().slice(0,10)}
+  function getValue(id){return $(id)?.value.trim()||""}
+  function getNumber(id){const n=Number($(id)?.value);return Number.isFinite(n)?n:0}
+  function setValue(id,v){if($(id))$(id).value=v??""}
+  function escapeHtml(t){return String(t).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+  function csvEscape(v){const t=v==null?"":String(v);return`"${t.replace(/"/g,'""')}"`}
+  function getSheetsEndpoint(){return localStorage.getItem(ENDPOINT_KEY)||""}
+  function avg2(a,b){return a&&b?((Number(a)+Number(b))/2).toFixed(2):""}
 
-    const defaultPhotoSvg = encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="260" height="260" viewBox="0 0 260 260"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#d8f3ef"/><stop offset="100%" stop-color="#f8fafc"/></linearGradient></defs><rect width="260" height="260" rx="130" fill="url(#g)"/><circle cx="130" cy="95" r="42" fill="#0f766e" opacity="0.75"/><path d="M58 222c12-52 43-80 72-80s60 28 72 80" fill="#0f766e" opacity="0.75"/></svg>`);
-    const defaultPhoto = `data:image/svg+xml;charset=UTF-8,${defaultPhotoSvg}`;
+  const defaultPhotoSvg=encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="260" height="260" viewBox="0 0 260 260"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#d8f3ef"/><stop offset="100%" stop-color="#f8fafc"/></linearGradient></defs><rect width="260" height="260" rx="130" fill="url(#g)"/><circle cx="130" cy="95" r="42" fill="#0f766e" opacity="0.75"/><path d="M58 222c12-52 43-80 72-80s60 28 72 80" fill="#0f766e" opacity="0.75"/></svg>`);
+  const defaultPhoto=`data:image/svg+xml;charset=UTF-8,${defaultPhotoSvg}`;
 
-    // ── 球員選擇 ─────────────────────────────────────────
+  // ── CSV ───────────────────────────────────────────────────────────────────
+  function parseCsv(text){
+    const rows=[];
+    for(const line of text.split(/\r?\n/)){
+      if(!line.trim())continue;
+      const cols=[];let cur="",inQ=false;
+      for(let i=0;i<line.length;i++){const ch=line[i];
+        if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+        else if(ch===','&&!inQ){cols.push(cur);cur="";}else cur+=ch;}
+      cols.push(cur);rows.push(cols);}
+    return rows;}
 
-    function parseCsv(text) {
-      const rows = [];
-      for (const line of text.split(/\r?\n/)) {
-        if (!line.trim()) continue;
-        const cols = []; let cur = ""; let inQ = false;
-        for (let i = 0; i < line.length; i++) {
-          const ch = line[i];
-          if (ch === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
-          else if (ch === "," && !inQ) { cols.push(cur); cur = ""; }
-          else cur += ch;
-        }
-        cols.push(cur); rows.push(cols);
-      }
-      return rows;
-    }
+  function calcAge(s){
+    if(!s)return"";const d=new Date(String(s).replace(/\//g,"-"));
+    if(isNaN(d.getTime()))return"";
+    const t=new Date();let a=t.getFullYear()-d.getFullYear();
+    const m=t.getMonth()-d.getMonth();if(m<0||(m===0&&t.getDate()<d.getDate()))a--;
+    return a>0?String(a):""}
 
-    function calcAge(dateStr) {
-      if (!dateStr) return "";
-      const d = new Date(String(dateStr).replace(/\//g, "-"));
-      if (isNaN(d.getTime())) return "";
-      const today = new Date();
-      let age = today.getFullYear() - d.getFullYear();
-      const m = today.getMonth() - d.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < d.getDate())) age--;
-      return age > 0 ? String(age) : "";
-    }
+  async function initPlayerSelector(){
+    const sel=$("playerSelect"),st=$("playerLoadStatus");
+    try{
+      const res=await fetch(PLAYERS_CSV_URL);
+      const text=await res.text();
+      const rows=parseCsv(text);
+      playerDatabase=rows.slice(1).filter(r=>r[1]&&r[1].trim());
+      if(!playerDatabase.length){sel.innerHTML='<option value="">（球員名單尚無資料）</option>';st.textContent="「01 球員總表」目前沒有資料，新增後點「重新載入」。";return;}
+      sel.innerHTML='<option value="">— 選擇球員 —</option>';
+      playerDatabase.forEach((r,i)=>{const o=document.createElement("option");o.value=i;o.textContent=`${r[0]?"["+r[0]+"] ":""}${r[1]}`;sel.appendChild(o);});
+      st.textContent=`已載入 ${playerDatabase.length} 位球員`;
+    }catch(err){sel.innerHTML='<option value="">（載入失敗）</option>';st.textContent="載入失敗，請確認 Sheets 已公開發布。";console.error(err);}
+  }
 
-    async function initPlayerSelector() {
-      const select = $("playerSelect");
-      const status = $("playerLoadStatus");
-      try {
-        const res = await fetch(PLAYERS_CSV_URL);
-        const text = await res.text();
-        const rows = parseCsv(text);
-        // cols: 0=編號 1=姓名 2=性別 3=生日 4=照片連結 5=身高 6=體重 7=腿長 8=臂長 9=慣用手 10=教練 11=班級
-        playerDatabase = rows.slice(1).filter(r => r[1] && r[1].trim());
-        if (!playerDatabase.length) {
-          select.innerHTML = '<option value="">（球員名單尚無資料）</option>';
-          status.textContent = "「01 球員總表」目前還沒有球員，在 Sheets 新增後按「重新載入」。";
-          return;
-        }
-        select.innerHTML = '<option value="">— 選擇球員 —</option>';
-        playerDatabase.forEach((row, i) => {
-          const opt = document.createElement("option");
-          opt.value = i;
-          opt.textContent = `${row[0] ? "[" + row[0] + "] " : ""}${row[1]}`;
-          select.appendChild(opt);
-        });
-        status.textContent = `已載入 ${playerDatabase.length} 位球員`;
-      } catch (err) {
-        select.innerHTML = '<option value="">（名單載入失敗）</option>';
-        status.textContent = "載入失敗，請確認 Sheets 已公開發布（File → Share → Publish to web）。";
-        console.error(err);
-      }
-    }
+  function fillPlayerFromDatabase(i){
+    const r=playerDatabase[Number(i)];if(!r)return;
+    setValue("playerName",r[1]);setValue("playerAge",calcAge(r[3]));
+    setValue("playerHeight",r[5]);setValue("playerWeight",r[6]);
+    if(["右手","左手","雙手"].includes(r[9]))setValue("dominantHand",r[9]);
+    if(r[10])setValue("coachName",r[10]);
+    syncScorePills();updateReport();}
 
-    function fillPlayerFromDatabase(index) {
-      const row = playerDatabase[Number(index)];
-      if (!row) return;
-      setValue("playerName", row[1] || "");
-      setValue("playerAge", calcAge(row[3]));
-      setValue("playerHeight", row[5] || "");
-      setValue("playerWeight", row[6] || "");
-      const hand = row[9];
-      if (hand === "右手" || hand === "左手" || hand === "雙手") setValue("dominantHand", hand);
-      if (row[10]) setValue("coachName", row[10]);
-      syncScorePills();
-      updateReport();
-    }
+  // ── 設定 ──────────────────────────────────────────────────────────────────
+  function initSettings(){
+    const cur=getSheetsEndpoint();
+    if(cur){setValue("endpointInput",cur);$("endpointStatus").textContent="✓ 已設定";$("endpointStatus").className="endpoint-status set";}
+    else{$("endpointStatus").textContent="尚未設定";$("endpointStatus").className="endpoint-status empty";}}
 
-    // ── 設定面板 ─────────────────────────────────────────
+  // ── 資料收集 ───────────────────────────────────────────────────────────────
+  function collectFormData(){
+    const scores={},averages={};
+    metricConfig.forEach(m=>{scores[m.id]=getNumber(m.id);averages[m.id]=getNumber(m.avgId);});
+    return{
+      id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),
+      createdAt:new Date().toISOString(),
+      playerName:getValue("playerName"),playerAge:getValue("playerAge"),
+      playerHeight:getValue("playerHeight"),playerWeight:getValue("playerWeight"),
+      dominantHand:getValue("dominantHand"),testDate:getValue("testDate"),
+      coachName:getValue("coachName"),academyName:getValue("academyName"),
+      // 原始測量
+      sprint10m:getValue("sprint10m"),spiderRun:getValue("spiderRun"),
+      agility505Left:getValue("agility505Left"),agility505Right:getValue("agility505Right"),
+      cmj:getValue("cmj"),broadJump:getValue("broadJump"),
+      lateralJumpLeft:getValue("lateralJumpLeft"),lateralJumpRight:getValue("lateralJumpRight"),
+      singleLegLandLeft:getValue("singleLegLandLeft"),singleLegLandRight:getValue("singleLegLandRight"),
+      rotThrowLeft:getValue("rotThrowLeft"),rotThrowRight:getValue("rotThrowRight"),
+      ift:getValue("ift"),
+      coachNote:getValue("coachNote"),
+      scores,averages,photoDataUrl,logoDataUrl};}
 
-    function initSettings() {
-      const current = getSheetsEndpoint();
-      if (current) {
-        setValue("endpointInput", current);
-        $("endpointStatus").textContent = "✓ 已設定";
-        $("endpointStatus").className = "endpoint-status set";
-      } else {
-        $("endpointStatus").textContent = "尚未設定";
-        $("endpointStatus").className = "endpoint-status empty";
-      }
-    }
+  function calculateOverall(scores){
+    const vals=metricConfig.map(m=>Number(scores[m.id]||0));
+    const nonZero=vals.filter(v=>v>0);
+    return nonZero.length?Math.round(nonZero.reduce((s,v)=>s+v)/nonZero.length):0;}
 
-    // ── metricConfig ─────────────────────────────────────
+  // ── 報告更新 ───────────────────────────────────────────────────────────────
+  function syncScorePills(){metricConfig.forEach(m=>{const p=document.querySelector(`[data-score-for="${m.id}"]`);if(p)p.textContent=getNumber(m.id);})}
 
-    const metricConfig = [
-      { id:"acceleration", avgId:"avgAcceleration", label:"第一拍啟動速度", short:"啟動",
-        strength:"第一拍啟動速度佳，能在來球後快速完成第一步反應。",
-        weakness:"第一拍啟動效率仍可提升，建議加強反應判斷與起步推蹬。",
-        focus:"第一步反應與短距離啟動",
-        court:"發球後第一步與接發球後啟動效率，會直接影響下一拍銜接品質。" },
-      { id:"horizontalPower", avgId:"avgHorizontalPower", label:"水平爆發能力", short:"爆發",
-        strength:"水平爆發能力優秀，具備良好的跨步與推蹬基礎。",
-        weakness:"水平爆發能力不足，可能影響被拉開時的跨步距離與回位速度。",
-        focus:"水平爆發與跨步推蹬",
-        court:"被拉開時，若水平爆發不足，防守覆蓋範圍與回位節奏容易受限。" },
-      { id:"coreStability", avgId:"avgCoreStability", label:"核心穩定能力", short:"核心",
-        strength:"核心穩定有良好基礎，有助於擊球時維持身體控制。",
-        weakness:"核心穩定仍需加強，擊球時可能較容易出現身體晃動或力量流失。",
-        focus:"核心穩定與軀幹抗旋轉",
-        court:"核心穩定不足時，開放式站位與移動中擊球的平衡會受到影響。" },
-      { id:"deceleration", avgId:"avgDeceleration", label:"減速控制能力", short:"減速",
-        strength:"減速控制能力穩定，能較有效地完成煞停與方向轉換。",
-        weakness:"減速控制不足，建議加強煞停、重心下降與轉換步伐。",
-        focus:"減速能力建立",
-        court:"減速控制不足時，開放式站位穩定性會下降，也容易影響下一拍銜接。" },
-      { id:"singleLeg", avgId:"avgSingleLeg", label:"單腳穩定能力", short:"單腳",
-        strength:"單腳穩定能力佳，移動中擊球與跨步支撐較有基礎。",
-        weakness:"單腳穩定左右差異較大，建議加強單腳支撐與轉移控制。",
-        focus:"單腳穩定與重心轉移",
-        court:"單腳穩定不足時，被拉開後的支撐、煞停與回位速度容易受限。" },
-      { id:"recovery", avgId:"avgRecovery", label:"長回合恢復能力", short:"恢復",
-        strength:"長回合恢復能力良好，能維持較穩定的多拍移動品質。",
-        weakness:"長回合恢復能力需提升，建議加強間歇移動與回合後恢復。",
-        focus:"長回合恢復與移動耐力",
-        court:"長回合恢復不足時，後段回合的腳步品質與擊球穩定度容易下降。" }
-    ];
+  function generateAnalysis(data){
+    const rows=metricConfig.map(m=>({...m,score:Number(data.scores[m.id]||0),avg:Number(data.averages[m.id]||0),gap:Number(data.scores[m.id]||0)-Number(data.averages[m.id]||0)}));
+    const byGapDesc=[...rows].sort((a,b)=>b.gap-a.gap||b.score-a.score);
+    const byGapAsc=[...rows].sort((a,b)=>a.gap-b.gap||a.score-b.score);
+    return{strengths:byGapDesc.slice(0,3).map(r=>r.strength),improvements:byGapAsc.slice(0,3).map(r=>r.weakness),courts:byGapAsc.slice(0,3).map(r=>r.court),focuses:byGapAsc.slice(0,3).map(r=>r.focus),best:[...rows].sort((a,b)=>b.score-a.score)[0],weakest:[...rows].sort((a,b)=>a.score-b.score)[0]};}
 
-    // ── 表單 ─────────────────────────────────────────────
+  function renderList(id,items,icon){const ul=$(id);ul.innerHTML="";items.forEach(t=>{const li=document.createElement("li");li.innerHTML=`<span>${icon}</span><span>${escapeHtml(t)}</span>`;ul.appendChild(li);});}
 
-    function collectFormData() {
-      const scores = {}, averages = {};
-      metricConfig.forEach(m => { scores[m.id] = getNumber(m.id); averages[m.id] = getNumber(m.avgId); });
-      return {
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-        createdAt: new Date().toISOString(),
-        playerName: getValue("playerName"), playerAge: getValue("playerAge"),
-        playerHeight: getValue("playerHeight"), playerWeight: getValue("playerWeight"),
-        dominantHand: getValue("dominantHand"), testDate: getValue("testDate"),
-        coachName: getValue("coachName"), academyName: getValue("academyName"),
-        sprint10m: getValue("sprint10m"), broadJump: getValue("broadJump"),
-        plank: getValue("plank"), sideShuffle: getValue("sideShuffle"),
-        singleLegBalance: getValue("singleLegBalance"), recoveryTest: getValue("recoveryTest"),
-        coachNote: getValue("coachNote"),
-        scores, averages, photoDataUrl, logoDataUrl
-      };
-    }
+  function updateReport(){
+    const data=collectFormData();
+    const analysis=generateAnalysis(data);
+    const overall=calculateOverall(data.scores);
 
-    function calculateOverall(scores) {
-      const vals = metricConfig.map(m => Number(scores[m.id] || 0));
-      return Math.round(vals.reduce((s, v) => s + v, 0) / vals.length);
-    }
+    $("reportPhoto").src=photoDataUrl||defaultPhoto;
+    $("reportName").textContent=data.playerName||"—";
+    $("reportAge").textContent=`年齡｜${data.playerAge||"—"} 歲`;
+    $("reportBody").textContent=`身高體重｜${data.playerHeight||"—"} cm / ${data.playerWeight||"—"} kg`;
+    $("reportHand").textContent=`慣用手｜${data.dominantHand||"—"}`;
+    $("reportDate").textContent=`檢測日期｜${data.testDate||"—"}`;
+    $("reportCoach").textContent=`教練｜${data.coachName||"—"}`;
+    $("reportAcademy").textContent=data.academyName||"Tennis Academy";
+    const lb=$("reportLogoBox");lb.innerHTML=logoDataUrl?`<img src="${logoDataUrl}" alt="Logo" />`:`<span>ACADEMY<br />LOGO</span>`;
 
-    function getRows(data) {
-      return metricConfig.map(m => {
-        const score = Number(data.scores[m.id] || 0);
-        const avg = Number(data.averages[m.id] || 0);
-        return { ...m, score, avg, gap: score - avg };
-      });
-    }
+    // Summary
+    if(overall>0){
+      $("overallScore").textContent=overall;
+      $("bestAbility").textContent=analysis.best?.label||"—";
+      $("mainFocus").textContent=analysis.weakest?.label||"—";
+      const st=$("trainingStatus"),sn=$("trainingStatusNote");
+      st.classList.remove("status-good","status-watch","status-risk");
+      if(overall>=78){st.textContent="良好";st.classList.add("status-good");sn.textContent="整體表現成熟，可進入更高強度訓練";}
+      else if(overall>=60){st.textContent="觀察";st.classList.add("status-watch");sn.textContent="具備基礎，需補強控制能力";}
+      else{st.textContent="補強";st.classList.add("status-risk");sn.textContent="建議先建立基礎穩定與移動品質";}
+    }else{
+      $("overallScore").textContent="—";$("bestAbility").textContent="—";$("mainFocus").textContent="—";
+      $("trainingStatus").textContent="—";$("trainingStatusNote").textContent="填入雷達分數後顯示";}
 
-    function generateAnalysis(data) {
-      const rows = getRows(data);
-      const byGapDesc = [...rows].sort((a,b) => b.gap-a.gap || b.score-a.score);
-      const byGapAsc  = [...rows].sort((a,b) => a.gap-b.gap || a.score-b.score);
-      return {
-        strengths:    byGapDesc.slice(0,3).map(r => r.strength),
-        improvements: byGapAsc.slice(0,3).map(r => r.weakness),
-        courts:       byGapAsc.slice(0,3).map(r => r.court),
-        focuses:      byGapAsc.slice(0,3).map(r => r.focus),
-        best:    [...rows].sort((a,b) => b.score-a.score)[0],
-        weakest: [...rows].sort((a,b) => a.score-b.score)[0]
-      };
-    }
+    renderList("strengthList",analysis.strengths,"✅");
+    renderList("improveList",analysis.improvements,"⚠️");
+    renderList("courtList",analysis.courts,"🎾");
+    renderList("focusList",analysis.focuses,"▸");
 
-    function syncScorePills() {
-      metricConfig.forEach(m => {
-        const pill = document.querySelector(`[data-score-for="${m.id}"]`);
-        if (pill) pill.textContent = getNumber(m.id);
-      });
-    }
+    // 原始數據
+    $("metricSprint").textContent=data.sprint10m||"—";
+    $("metricAgility").textContent=avg2(data.agility505Left,data.agility505Right)||"—";
+    $("metricSpider").textContent=data.spiderRun||"—";
+    $("metricJump").textContent=data.broadJump||"—";
+    $("metricCMJ").textContent=data.cmj||"—";
+    $("metricIFT").textContent=data.ift||"—";
 
-    function renderList(id, items, icon) {
-      const ul = $(id);
-      ul.innerHTML = "";
-      items.forEach(text => {
-        const li = document.createElement("li");
-        li.innerHTML = `<span>${icon}</span><span>${escapeHtml(text)}</span>`;
-        ul.appendChild(li);
-      });
-    }
+    $("recommendationText").innerHTML=`<strong>訓練建議：</strong>${escapeHtml(data.coachNote||"—")}`;
 
-    function updateSummary(data, analysis) {
-      const overall = calculateOverall(data.scores);
-      $("overallScore").textContent = overall;
-      $("bestAbility").textContent = analysis.best?.short || "-";
-      $("mainFocus").textContent = analysis.weakest?.short || "-";
-      const status = $("trainingStatus"), note = $("trainingStatusNote");
-      status.classList.remove("status-good","status-watch","status-risk");
-      if (overall >= 78) { status.textContent = "良好"; status.classList.add("status-good"); note.textContent = "整體表現成熟，可進入更高強度訓練"; }
-      else if (overall >= 60) { status.textContent = "觀察"; status.classList.add("status-watch"); note.textContent = "具備基礎，需補強控制能力"; }
-      else { status.textContent = "補強"; status.classList.add("status-risk"); note.textContent = "建議先建立基礎穩定與移動品質"; }
-    }
+    drawRadarChart(data);}
 
-    function updateReport() {
-      const data = collectFormData();
-      const analysis = generateAnalysis(data);
-      $("reportPhoto").src = photoDataUrl || defaultPhoto;
-      $("reportName").textContent = data.playerName || "未命名球員";
-      $("reportAge").textContent = `年齡｜${data.playerAge || "-"} 歲`;
-      $("reportBody").textContent = `身高體重｜${data.playerHeight || "-"} cm / ${data.playerWeight || "-"} kg`;
-      $("reportHand").textContent = `慣用手｜${data.dominantHand || "-"}`;
-      $("reportDate").textContent = `檢測日期｜${data.testDate || "-"}`;
-      $("reportCoach").textContent = `教練｜${data.coachName || "-"}`;
-      $("reportAcademy").textContent = data.academyName || "Tennis Academy";
-      const lb = $("reportLogoBox");
-      lb.innerHTML = logoDataUrl ? `<img src="${logoDataUrl}" alt="Academy Logo" />` : `<span>ACADEMY<br />LOGO</span>`;
-      updateSummary(data, analysis);
-      renderList("strengthList", analysis.strengths, "✅");
-      renderList("improveList", analysis.improvements, "⚠️");
-      renderList("courtList", analysis.courts, "🎾");
-      renderList("focusList", analysis.focuses, "▸");
-      $("metricSprint").textContent = extractNumber(data.sprint10m);
-      $("metricJump").textContent = extractNumber(data.broadJump);
-      $("metricPlank").textContent = extractNumber(data.plank);
-      $("metricShuffle").textContent = extractNumber(data.sideShuffle);
-      $("metricBalance").textContent = formatBalance(data.singleLegBalance);
-      $("metricRecovery").textContent = extractNumber(data.recoveryTest);
-      $("recommendationText").innerHTML = `<strong>訓練建議：</strong>${escapeHtml(data.coachNote || "建議持續追蹤球員弱項，並安排 6 週訓練週期進行複測。")}`;
-      drawRadarChart(data);
-    }
+  // ── 雷達圖 ────────────────────────────────────────────────────────────────
+  function drawRadarChart(data){
+    const canvas=$("radarChart"),box=canvas.parentElement;
+    const dpr=window.devicePixelRatio||1,w=box.clientWidth,h=box.clientHeight;
+    canvas.width=w*dpr;canvas.height=h*dpr;canvas.style.width=w+"px";canvas.style.height=h+"px";
+    const ctx=canvas.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+    const labels=metricConfig.map(m=>m.short);
+    const pv=metricConfig.map(m=>data.scores[m.id]);
+    const av=metricConfig.map(m=>data.averages[m.id]);
+    const cx=w/2,cy=h/2+8,r=Math.min(w,h)*.34,levels=5,step=Math.PI*2/labels.length,start=-Math.PI/2;
+    // Grid
+    for(let lv=1;lv<=levels;lv++){const lr=r/levels*lv;ctx.beginPath();labels.forEach((_,i)=>{const a=start+i*step,x=cx+Math.cos(a)*lr,y=cy+Math.sin(a)*lr;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.closePath();ctx.strokeStyle="#d9e2ec";ctx.lineWidth=1;ctx.stroke();}
+    // Axes + labels
+    labels.forEach((lbl,i)=>{
+      const a=start+i*step;
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);ctx.strokeStyle="#e2e8f0";ctx.lineWidth=1;ctx.stroke();
+      const lx=cx+Math.cos(a)*(r+34),ly=cy+Math.sin(a)*(r+30);
+      ctx.font="800 12px system-ui,-apple-system,'Noto Sans TC'";ctx.fillStyle="#344054";
+      ctx.textAlign=lx>cx+10?"left":lx<cx-10?"right":"center";ctx.textBaseline="middle";
+      // Handle multi-line labels
+      const lines=lbl.split("\n");
+      lines.forEach((ln,li)=>ctx.fillText(ln,lx,ly+(li-(lines.length-1)/2)*16));});
+    // Polygons
+    function poly(vals,fill,stroke,lw){ctx.beginPath();vals.forEach((v,i)=>{const sv=Math.max(0,Math.min(100,Number(v)||0)),a=start+i*step,x=cx+Math.cos(a)*r*(sv/100),y=cy+Math.sin(a)*r*(sv/100);i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.closePath();ctx.fillStyle=fill;ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.fill();ctx.stroke();}
+    poly(av,"rgba(120,130,145,.22)","rgba(120,130,145,.88)",2);
+    poly(pv,"rgba(15,118,110,.46)","#0f766e",3);
+    pv.forEach((v,i)=>{const sv=Math.max(0,Math.min(100,Number(v)||0)),a=start+i*step,x=cx+Math.cos(a)*r*(sv/100),y=cy+Math.sin(a)*r*(sv/100);ctx.beginPath();ctx.arc(x,y,4.5,0,Math.PI*2);ctx.fillStyle="#fff";ctx.fill();ctx.lineWidth=3;ctx.strokeStyle="#0f766e";ctx.stroke();});}
 
-    // ── Sync ─────────────────────────────────────────────
+  // ── Sync ─────────────────────────────────────────────────────────────────
+  function showSyncStatus(type,text){const el=$("syncStatus");el.style.display="block";el.innerHTML=`<span class="sync-badge ${type}">${text}</span>`;}
 
-    function showSyncStatus(type, text) {
-      const el = $("syncStatus");
-      el.style.display = "block";
-      el.innerHTML = `<span class="sync-badge ${type}">${text}</span>`;
-    }
+  async function saveCurrentRecord(){
+    const record=collectFormData();
+    if(!record.playerName){alert("請至少輸入球員姓名。");return;}
+    record.overallScore=calculateOverall(record.scores);
+    const records=getRecords();records.unshift(record);setRecords(records);renderRecords();
+    const endpoint=getSheetsEndpoint();
+    if(!endpoint){showSyncStatus("failed","⚠ 尚未設定 Sheets 網址，請點「⚙ 系統設定」");return;}
+    const btn=$("saveRecordBtn");btn.textContent="同步中...";btn.disabled=true;
+    showSyncStatus("syncing","⏳ 同步到 Google Sheets 中…");
+    try{
+      const payload={...record};delete payload.photoDataUrl;delete payload.logoDataUrl;
+      await fetch(endpoint,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(payload)});
+      showSyncStatus("synced","✓ 已同步到「02 檢測紀錄」與「05 雷達圖分數」");
+    }catch(err){console.error(err);showSyncStatus("failed","⚠ Sheets 同步失敗，資料已存在本機");}
+    finally{btn.textContent="儲存紀錄";btn.disabled=false;}}
 
-    async function saveCurrentRecord() {
-      const record = collectFormData();
-      if (!record.playerName) { alert("請至少輸入球員姓名，再儲存紀錄。"); return; }
-      record.overallScore = calculateOverall(record.scores);
+  // ── LocalStorage ─────────────────────────────────────────────────────────
+  function getRecords(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||[];}catch{return[];}}
+  function setRecords(r){localStorage.setItem(STORAGE_KEY,JSON.stringify(r));}
 
-      const records = getRecords();
-      records.unshift(record);
-      setRecords(records);
-      renderRecords();
+  function renderRecords(){
+    const records=getRecords(),empty=$("recordsEmpty"),wrap=$("recordsTableWrap"),tbody=$("recordsTbody");
+    tbody.innerHTML="";
+    if(!records.length){empty.style.display="block";wrap.style.display="none";return;}
+    empty.style.display="none";wrap.style.display="block";
+    records.forEach(rec=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${escapeHtml(rec.testDate||"—")}</td><td>${escapeHtml(rec.playerName||"—")}</td><td>${escapeHtml(rec.playerAge||"—")}</td><td>${escapeHtml(rec.playerHeight||"—")}</td><td>${escapeHtml(rec.playerWeight||"—")}</td><td>${rec.scores?.speedAgility??"—"}</td><td>${rec.scores?.lowerPower??"—"}</td><td>${rec.scores?.singleLegDecel??"—"}</td><td>${rec.scores?.rotPower??"—"}</td><td>${rec.scores?.throwing??"—"}</td><td>${rec.scores?.cardio??"—"}</td><td>${escapeHtml(rec.coachName||"—")}</td><td><button class="btn mini-btn btn-light" type="button" data-action="load" data-id="${rec.id}">回填</button> <button class="btn mini-btn btn-danger" type="button" data-action="delete" data-id="${rec.id}">刪除</button></td>`;
+      tbody.appendChild(tr);});}
 
-      const endpoint = getSheetsEndpoint();
-      if (!endpoint) {
-        showSyncStatus("failed", "⚠ 尚未設定 Sheets 網址，請點「⚙ 系統設定」填入");
-        return;
-      }
+  function loadRecord(id){
+    const rec=getRecords().find(r=>r.id===id);if(!rec)return;
+    ["playerName","playerAge","playerHeight","playerWeight","dominantHand","testDate","coachName","academyName","coachNote"].forEach(f=>setValue(f,rec[f]));
+    rawIds.forEach(f=>setValue(f,rec[f]||""));
+    metricConfig.forEach(m=>{setValue(m.id,rec.scores?.[m.id]??0);setValue(m.avgId,rec.averages?.[m.id]??50);});
+    photoDataUrl=rec.photoDataUrl||defaultPhoto;logoDataUrl=rec.logoDataUrl||"";
+    syncScorePills();updateReport();
+    document.querySelector("#assessmentForm").scrollIntoView({behavior:"smooth",block:"start"});}
 
-      const btn = $("saveRecordBtn");
-      btn.textContent = "同步中...";
-      btn.disabled = true;
-      showSyncStatus("syncing", "⏳ 同步到 Google Sheets 中…");
+  function deleteRecord(id){if(!confirm("確定要刪除這筆紀錄嗎？"))return;setRecords(getRecords().filter(r=>r.id!==id));renderRecords();}
+  function clearRecords(){if(!confirm("確定要清空所有紀錄？無法復原。"))return;localStorage.removeItem(STORAGE_KEY);renderRecords();}
 
-      try {
-        const payload = { ...record };
-        delete payload.photoDataUrl;
-        delete payload.logoDataUrl;
-        await fetch(endpoint, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify(payload)
-        });
-        showSyncStatus("synced", "✓ 已同步到 Google Sheets「02 檢測紀錄」");
-      } catch (err) {
-        console.error("Sheets 同步失敗：", err);
-        showSyncStatus("failed", "⚠ Sheets 同步失敗，資料已存在本機");
-      } finally {
-        btn.textContent = "儲存紀錄";
-        btn.disabled = false;
-      }
-    }
+  function exportCsv(){
+    const records=getRecords();if(!records.length){alert("沒有可匯出的紀錄。");return;}
+    const headers=["檢測日期","姓名","年齡","身高","體重","慣用手","教練","Academy","10m衝刺","蜘蛛跑","5-10-5左","5-10-5右","擺臂反向跳","跳遠","側向跳左","側向跳右","單腳落地左","單腳落地右","轉體投擲左","轉體投擲右","30-15IFT","速度與變向","下肢爆發","單腳減速","轉體爆發","投擲","心肺","建立時間"];
+    const rows=records.map(r=>[r.testDate,r.playerName,r.playerAge,r.playerHeight,r.playerWeight,r.dominantHand,r.coachName,r.academyName,r.sprint10m,r.spiderRun,r.agility505Left,r.agility505Right,r.cmj,r.broadJump,r.lateralJumpLeft,r.lateralJumpRight,r.singleLegLandLeft,r.singleLegLandRight,r.rotThrowLeft,r.rotThrowRight,r.ift,r.scores?.speedAgility,r.scores?.lowerPower,r.scores?.singleLegDecel,r.scores?.rotPower,r.scores?.throwing,r.scores?.cardio,r.createdAt]);
+    const csv=[headers,...rows].map(r=>r.map(csvEscape).join(",")).join("\n");
+    const blob=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8;"});
+    const url=URL.createObjectURL(blob);const a=document.createElement("a");
+    a.href=url;a.download=`tennis-lab-${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);}
 
-    // ── Radar ─────────────────────────────────────────────
+  function resetDemo(){
+    setValue("playerName","張無忌");setValue("playerAge","17");setValue("playerHeight","178");setValue("playerWeight","69");
+    setValue("dominantHand","左手");setValue("testDate",todayISO());setValue("coachName","Coach Mark");setValue("academyName","Tennis Academy");
+    setValue("sprint10m","2.08");setValue("spiderRun","12.5");setValue("agility505Left","5.2");setValue("agility505Right","5.4");
+    setValue("cmj","42");setValue("broadJump","198");setValue("lateralJumpLeft","68");setValue("lateralJumpRight","72");
+    setValue("singleLegLandLeft","0.34");setValue("singleLegLandRight","0.37");
+    setValue("rotThrowLeft","9.2");setValue("rotThrowRight","10.1");setValue("ift","19.5");
+    setValue("speedAgility",75);setValue("lowerPower",80);setValue("singleLegDecel",60);
+    setValue("rotPower",70);setValue("throwing",65);setValue("cardio",72);
+    setValue("avgSpeedAgility",50);setValue("avgLowerPower",50);setValue("avgSingleLegDecel",50);
+    setValue("avgRotPower",50);setValue("avgThrowing",50);setValue("avgCardio",50);
+    setValue("coachNote","整體數據表現良好，下肢爆發突出。建議本階段重點加強單腳減速與落地控制訓練。");
+    photoDataUrl=defaultPhoto;logoDataUrl="";$("syncStatus").style.display="none";
+    syncScorePills();updateReport();}
 
-    function drawRadarChart(data) {
-      const canvas = $("radarChart");
-      const box = canvas.parentElement;
-      const dpr = window.devicePixelRatio || 1;
-      const w = box.clientWidth, h = box.clientHeight;
-      canvas.width = w * dpr; canvas.height = h * dpr;
-      canvas.style.width = w + "px"; canvas.style.height = h + "px";
-      const ctx = canvas.getContext("2d");
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, w, h);
-      const labels = metricConfig.map(m => m.short);
-      const pv = metricConfig.map(m => data.scores[m.id]);
-      const av = metricConfig.map(m => data.averages[m.id]);
-      const cx = w / 2, cy = h / 2 + 8, r = Math.min(w, h) * 0.34;
-      const levels = 5, step = Math.PI * 2 / labels.length, start = -Math.PI / 2;
-      ctx.lineWidth = 1;
-      for (let lv = 1; lv <= levels; lv++) {
-        const lr = r / levels * lv;
-        ctx.beginPath();
-        labels.forEach((_, i) => { const a = start + i * step; const x = cx + Math.cos(a)*lr, y = cy + Math.sin(a)*lr; i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y); });
-        ctx.closePath(); ctx.strokeStyle = "#d9e2ec"; ctx.stroke();
-      }
-      labels.forEach((lbl, i) => {
-        const a = start + i * step;
-        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx+Math.cos(a)*r, cy+Math.sin(a)*r); ctx.strokeStyle="#e2e8f0"; ctx.stroke();
-        const lx = cx+Math.cos(a)*(r+32), ly = cy+Math.sin(a)*(r+30);
-        ctx.font = "800 13px system-ui, -apple-system, 'Noto Sans TC'";
-        ctx.fillStyle = "#344054";
-        ctx.textAlign = lx > cx+10 ? "left" : lx < cx-10 ? "right" : "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(lbl, lx, ly);
-      });
-      function poly(vals, fill, stroke, lw) {
-        ctx.beginPath();
-        vals.forEach((v, i) => { const sv = Math.max(0,Math.min(100,Number(v)||0)); const a = start+i*step; const x = cx+Math.cos(a)*r*(sv/100), y = cy+Math.sin(a)*r*(sv/100); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
-        ctx.closePath(); ctx.fillStyle=fill; ctx.strokeStyle=stroke; ctx.lineWidth=lw; ctx.fill(); ctx.stroke();
-      }
-      poly(av, "rgba(120,130,145,0.22)", "rgba(120,130,145,0.88)", 2);
-      poly(pv, "rgba(15,118,110,0.46)", "#0f766e", 3);
-      pv.forEach((v, i) => {
-        const sv = Math.max(0,Math.min(100,Number(v)||0));
-        const a = start+i*step, x = cx+Math.cos(a)*r*(sv/100), y = cy+Math.sin(a)*r*(sv/100);
-        ctx.beginPath(); ctx.arc(x,y,4.5,0,Math.PI*2); ctx.fillStyle="#ffffff"; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle="#0f766e"; ctx.stroke();
-      });
-    }
+  // ── Events ────────────────────────────────────────────────────────────────
+  function setupEvents(){
+    metricConfig.forEach(m=>{$(m.id).addEventListener("input",()=>{syncScorePills();updateReport();});$(m.avgId).addEventListener("input",updateReport);});
+    rawIds.forEach(id=>{const el=$(id);if(el){el.addEventListener("input",updateReport);el.addEventListener("change",updateReport);}});
+    ["playerName","playerAge","playerHeight","playerWeight","dominantHand","testDate","coachName","academyName","coachNote"].forEach(id=>{$(id).addEventListener("input",updateReport);$(id).addEventListener("change",updateReport);});
+    $("playerSelect").addEventListener("change",e=>{if(e.target.value!=="")fillPlayerFromDatabase(e.target.value);});
+    $("refreshPlayersBtn").addEventListener("click",()=>{$("playerLoadStatus").textContent="重新載入中…";$("playerSelect").innerHTML='<option value="">— 載入中… —</option>';initPlayerSelector();});
+    $("settingsToggle").addEventListener("click",()=>$("settingsBody").classList.toggle("open"));
+    $("saveEndpointBtn").addEventListener("click",()=>{const url=getValue("endpointInput");if(!url){alert("請貼上 Apps Script 網址。");return;}localStorage.setItem(ENDPOINT_KEY,url);$("endpointStatus").textContent="✓ 已儲存";$("endpointStatus").className="endpoint-status set";});
+    $("updateReportBtn").addEventListener("click",updateReport);
+    $("saveRecordBtn").addEventListener("click",saveCurrentRecord);
+    $("printBtn").addEventListener("click",()=>window.print());
+    $("exportCsvBtn").addEventListener("click",exportCsv);
+    $("resetBtn").addEventListener("click",resetDemo);
+    $("clearRecordsBtn").addEventListener("click",clearRecords);
+    $("scrollTopBtn").addEventListener("click",()=>document.querySelector("#assessmentForm").scrollIntoView({behavior:"smooth",block:"start"}));
+    $("recordsTbody").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.action==="load")loadRecord(b.dataset.id);if(b.dataset.action==="delete")deleteRecord(b.dataset.id);});
+    const setupImg=(inputId,cb)=>{$(inputId).addEventListener("change",e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{cb(r.result);updateReport();};r.readAsDataURL(f);});};
+    setupImg("photoInput",r=>{photoDataUrl=r;});setupImg("logoInput",r=>{logoDataUrl=r;});
+    window.addEventListener("resize",updateReport);}
 
-    // ── LocalStorage ─────────────────────────────────────
+  function init(){
+    $("testDate").value=todayISO();$("reportPhoto").src=defaultPhoto;
+    initSettings();setupEvents();syncScorePills();updateReport();renderRecords();initPlayerSelector();}
 
-    function getRecords() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
-    function setRecords(r) { localStorage.setItem(STORAGE_KEY, JSON.stringify(r)); }
-
-    function renderRecords() {
-      const records = getRecords();
-      const empty = $("recordsEmpty"), wrap = $("recordsTableWrap"), tbody = $("recordsTbody");
-      tbody.innerHTML = "";
-      if (!records.length) { empty.style.display="block"; wrap.style.display="none"; return; }
-      empty.style.display="none"; wrap.style.display="block";
-      records.forEach(rec => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${escapeHtml(rec.testDate||"-")}</td><td>${escapeHtml(rec.playerName||"-")}</td><td>${escapeHtml(rec.playerAge||"-")}</td><td>${escapeHtml(rec.playerHeight||"-")}</td><td>${escapeHtml(rec.playerWeight||"-")}</td><td>${rec.overallScore??calculateOverall(rec.scores||{})}</td><td>${rec.scores?.acceleration??"-"}</td><td>${rec.scores?.horizontalPower??"-"}</td><td>${rec.scores?.coreStability??"-"}</td><td>${rec.scores?.deceleration??"-"}</td><td>${rec.scores?.singleLeg??"-"}</td><td>${rec.scores?.recovery??"-"}</td><td>${escapeHtml(rec.coachName||"-")}</td><td><button class="btn mini-btn btn-light" type="button" data-action="load" data-id="${rec.id}">回填</button> <button class="btn mini-btn btn-danger" type="button" data-action="delete" data-id="${rec.id}">刪除</button></td>`;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function loadRecord(id) {
-      const rec = getRecords().find(r => r.id === id);
-      if (!rec) return;
-      setValue("playerName", rec.playerName); setValue("playerAge", rec.playerAge);
-      setValue("playerHeight", rec.playerHeight); setValue("playerWeight", rec.playerWeight);
-      setValue("dominantHand", rec.dominantHand); setValue("testDate", rec.testDate);
-      setValue("coachName", rec.coachName); setValue("academyName", rec.academyName);
-      setValue("sprint10m", rec.sprint10m); setValue("broadJump", rec.broadJump);
-      setValue("plank", rec.plank); setValue("sideShuffle", rec.sideShuffle);
-      setValue("singleLegBalance", rec.singleLegBalance); setValue("recoveryTest", rec.recoveryTest);
-      setValue("coachNote", rec.coachNote);
-      metricConfig.forEach(m => { setValue(m.id, rec.scores?.[m.id]??0); setValue(m.avgId, rec.averages?.[m.id]??60); });
-      photoDataUrl = rec.photoDataUrl || defaultPhoto;
-      logoDataUrl = rec.logoDataUrl || "";
-      syncScorePills(); updateReport();
-      document.querySelector("#assessmentForm").scrollIntoView({ behavior:"smooth", block:"start" });
-    }
-
-    function deleteRecord(id) {
-      if (!confirm("確定要刪除這筆紀錄嗎？")) return;
-      setRecords(getRecords().filter(r => r.id !== id));
-      renderRecords();
-    }
-
-    function clearRecords() {
-      if (!confirm("確定要清空所有檢測紀錄嗎？這個動作無法復原。")) return;
-      localStorage.removeItem(STORAGE_KEY);
-      renderRecords();
-    }
-
-    function exportCsv() {
-      const records = getRecords();
-      if (!records.length) { alert("目前沒有可匯出的紀錄。"); return; }
-      const headers = ["檢測日期","姓名","年齡","身高","體重","慣用手","教練","Academy","總分","第一拍啟動速度","水平爆發能力","核心穩定能力","減速控制能力","單腳穩定能力","長回合恢復能力","10m Sprint","Broad Jump","Plank","Side Shuffle","Single Leg Balance","Recovery Test","教練備註","建立時間"];
-      const rows = records.map(r => [r.testDate,r.playerName,r.playerAge,r.playerHeight,r.playerWeight,r.dominantHand,r.coachName,r.academyName,r.overallScore??calculateOverall(r.scores||{}),r.scores?.acceleration,r.scores?.horizontalPower,r.scores?.coreStability,r.scores?.deceleration,r.scores?.singleLeg,r.scores?.recovery,r.sprint10m,r.broadJump,r.plank,r.sideShuffle,r.singleLegBalance,r.recoveryTest,r.coachNote,r.createdAt]);
-      const csv = [headers,...rows].map(r => r.map(csvEscape).join(",")).join("\n");
-      const blob = new Blob(["﻿"+csv], { type:"text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = `tennis-performance-lab-${todayISO()}.csv`;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-
-    function resetDemo() {
-      setValue("playerName","林小宇"); setValue("playerAge","13"); setValue("playerHeight","158"); setValue("playerWeight","47");
-      setValue("dominantHand","右手"); setValue("testDate",todayISO()); setValue("coachName","Coach Mark"); setValue("academyName","Tennis Academy");
-      setValue("acceleration",82); setValue("horizontalPower",85); setValue("coreStability",76); setValue("deceleration",54); setValue("singleLeg",48); setValue("recovery",58);
-      setValue("avgAcceleration",65); setValue("avgHorizontalPower",66); setValue("avgCoreStability",64); setValue("avgDeceleration",63); setValue("avgSingleLeg",62); setValue("avgRecovery",64);
-      setValue("sprint10m","2.08 sec"); setValue("broadJump","176 cm"); setValue("plank","92 sec"); setValue("sideShuffle","7.4 sec"); setValue("singleLegBalance","L 28s / R 19s"); setValue("recoveryTest","Level 6.5");
-      setValue("coachNote","球員已具備不錯的基礎爆發能力，若能進一步提升減速與再加速控制，將有助於底線移動效率與防守品質。");
-      photoDataUrl = defaultPhoto; logoDataUrl = "";
-      $("syncStatus").style.display = "none";
-      syncScorePills(); updateReport();
-    }
-
-    // ── Events ───────────────────────────────────────────
-
-    function setupEvents() {
-      metricConfig.forEach(m => {
-        $(m.id).addEventListener("input", () => { syncScorePills(); updateReport(); });
-        $(m.avgId).addEventListener("input", updateReport);
-      });
-      ["playerName","playerAge","playerHeight","playerWeight","dominantHand","testDate","coachName","academyName","sprint10m","broadJump","plank","sideShuffle","singleLegBalance","recoveryTest","coachNote"].forEach(id => {
-        $(id).addEventListener("input", updateReport);
-        $(id).addEventListener("change", updateReport);
-      });
-
-      $("playerSelect").addEventListener("change", e => { if (e.target.value !== "") fillPlayerFromDatabase(e.target.value); });
-      $("refreshPlayersBtn").addEventListener("click", () => {
-        $("playerLoadStatus").textContent = "重新載入中…";
-        $("playerSelect").innerHTML = '<option value="">— 載入中… —</option>';
-        initPlayerSelector();
-      });
-
-      $("settingsToggle").addEventListener("click", () => {
-        const body = $("settingsBody");
-        body.classList.toggle("open");
-      });
-      $("saveEndpointBtn").addEventListener("click", () => {
-        const url = getValue("endpointInput");
-        if (!url) { alert("請貼上 Apps Script 網址。"); return; }
-        localStorage.setItem(ENDPOINT_KEY, url);
-        $("endpointStatus").textContent = "✓ 已儲存";
-        $("endpointStatus").className = "endpoint-status set";
-      });
-
-      $("updateReportBtn").addEventListener("click", updateReport);
-      $("saveRecordBtn").addEventListener("click", saveCurrentRecord);
-      $("printBtn").addEventListener("click", () => window.print());
-      $("exportCsvBtn").addEventListener("click", exportCsv);
-      $("resetBtn").addEventListener("click", resetDemo);
-      $("clearRecordsBtn").addEventListener("click", clearRecords);
-      $("scrollTopBtn").addEventListener("click", () => document.querySelector("#assessmentForm").scrollIntoView({ behavior:"smooth", block:"start" }));
-
-      $("recordsTbody").addEventListener("click", e => {
-        const btn = e.target.closest("button");
-        if (!btn) return;
-        if (btn.dataset.action === "load") loadRecord(btn.dataset.id);
-        if (btn.dataset.action === "delete") deleteRecord(btn.dataset.id);
-      });
-
-      const setupImg = (inputId, cb) => {
-        $(inputId).addEventListener("change", e => {
-          const file = e.target.files?.[0]; if (!file) return;
-          const reader = new FileReader();
-          reader.onload = () => { cb(reader.result); updateReport(); };
-          reader.readAsDataURL(file);
-        });
-      };
-      setupImg("photoInput", r => { photoDataUrl = r; });
-      setupImg("logoInput", r => { logoDataUrl = r; });
-
-      window.addEventListener("resize", updateReport);
-    }
-
-    // ── Init ─────────────────────────────────────────────
-
-    function init() {
-      $("testDate").value = todayISO();
-      $("reportPhoto").src = defaultPhoto;
-      initSettings();
-      setupEvents();
-      syncScorePills();
-      updateReport();
-      renderRecords();
-      initPlayerSelector();
-    }
-
-    init();
-  </script>
+  init();
+</script>
 </body>
 </html>
