@@ -1088,6 +1088,29 @@
 
     /* ── 樣本數提示 ── */
     #sampleSizeNote { font-size: 12px; margin-top: 4px; }
+
+    /* ── 語音輸入按鈕 ── */
+    .voice-row {
+      display: flex; gap: 8px; align-items: center;
+    }
+    .voice-row input { flex: 1; margin: 0; }
+    .mic-btn {
+      flex-shrink: 0; width: 38px; height: 38px;
+      border: 1.5px solid var(--line); border-radius: 10px;
+      background: var(--surface-soft); cursor: pointer;
+      font-size: 16px; display: flex; align-items: center;
+      justify-content: center; transition: all .2s;
+      padding: 0; margin-top: 22px;
+    }
+    .mic-btn:hover { border-color: var(--primary); background: var(--primary-soft); }
+    .mic-btn.listening {
+      background: #fee2e2; border-color: var(--red);
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50%       { transform: scale(1.12); }
+    }
   </style>
 </head>
 
@@ -1220,19 +1243,31 @@
 
             <div class="grid-2">
               <label>10m 衝刺 sec
-                <input id="sprint10m" type="number" step="0.01" placeholder="例：1.98" />
+                <div class="voice-row">
+                  <input id="sprint10m" type="number" step="0.01" placeholder="例：1.98" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('sprint10m')" title="語音輸入">🎤</button>
+                </div>
               </label>
               <label>蜘蛛跑 sec
-                <input id="spiderRun" type="number" step="0.01" placeholder="例：12.5" />
+                <div class="voice-row">
+                  <input id="spiderRun" type="number" step="0.01" placeholder="例：12.5" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('spiderRun')" title="語音輸入">🎤</button>
+                </div>
               </label>
             </div>
 
             <div class="grid-2">
               <label>5-10-5 左側 sec
-                <input id="agility515L" type="number" step="0.01" placeholder="例：4.82" />
+                <div class="voice-row">
+                  <input id="agility515L" type="number" step="0.01" placeholder="例：4.82" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('agility515L')" title="語音輸入">🎤</button>
+                </div>
               </label>
               <label>5-10-5 右側 sec
-                <input id="agility515R" type="number" step="0.01" placeholder="例：4.95" />
+                <div class="voice-row">
+                  <input id="agility515R" type="number" step="0.01" placeholder="例：4.95" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('agility515R')" title="語音輸入">🎤</button>
+                </div>
               </label>
             </div>
           </section>
@@ -1244,19 +1279,31 @@
 
             <div class="grid-2">
               <label>擺臂反向跳 cm
-                <input id="cmjHeight" type="number" step="0.1" placeholder="例：38" />
+                <div class="voice-row">
+                  <input id="cmjHeight" type="number" step="0.1" placeholder="例：38" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('cmjHeight')" title="語音輸入">🎤</button>
+                </div>
               </label>
               <label>跳遠 cm
-                <input id="broadJump" type="number" step="0.1" placeholder="例：180" />
+                <div class="voice-row">
+                  <input id="broadJump" type="number" step="0.1" placeholder="例：180" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('broadJump')" title="語音輸入">🎤</button>
+                </div>
               </label>
             </div>
 
             <div class="grid-2">
               <label>側向跳 左腳 cm
-                <input id="lateralJumpL" type="number" step="0.1" placeholder="例：130" />
+                <div class="voice-row">
+                  <input id="lateralJumpL" type="number" step="0.1" placeholder="例：130" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('lateralJumpL')" title="語音輸入">🎤</button>
+                </div>
               </label>
               <label>側向跳 右腳 cm
-                <input id="lateralJumpR" type="number" step="0.1" placeholder="例：128" />
+                <div class="voice-row">
+                  <input id="lateralJumpR" type="number" step="0.1" placeholder="例：128" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('lateralJumpR')" title="語音輸入">🎤</button>
+                </div>
               </label>
             </div>
           </section>
@@ -1268,10 +1315,16 @@
 
             <div class="grid-2">
               <label>單腿落地 左腳 sec
-                <input id="singleLegLandL" type="number" step="0.01" placeholder="例：0.62" />
+                <div class="voice-row">
+                  <input id="singleLegLandL" type="number" step="0.01" placeholder="例：0.62" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('singleLegLandL')" title="語音輸入">🎤</button>
+                </div>
               </label>
               <label>單腿落地 右腳 sec
-                <input id="singleLegLandR" type="number" step="0.01" placeholder="例：0.71" />
+                <div class="voice-row">
+                  <input id="singleLegLandR" type="number" step="0.01" placeholder="例：0.71" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('singleLegLandR')" title="語音輸入">🎤</button>
+                </div>
               </label>
             </div>
           </section>
@@ -1878,6 +1931,42 @@
       setupImageInput('logoInput',  r => { logoDataUrl  = r; });
 
       window.addEventListener('resize', () => { if (currentScores) drawRadarChart(currentScores); });
+    }
+
+
+    // ── 語音輸入 ──
+    function voiceInput(inputId) {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { alert('請使用 Chrome 瀏覽器以啟用語音輸入功能'); return; }
+
+      const recognition = new SR();
+      const btn = document.querySelector(`.mic-btn[onclick="voiceInput('${inputId}')"]`);
+
+      recognition.lang = 'zh-TW';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 3;
+
+      recognition.onstart = () => {
+        if (btn) { btn.classList.add('listening'); btn.textContent = '⏺'; }
+      };
+
+      recognition.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        const match = transcript.match(/\d+(\.\d+)?/);
+        if (match) {
+          const input = document.getElementById(inputId);
+          if (input) { input.value = match[0]; input.dispatchEvent(new Event('input')); }
+        }
+      };
+
+      recognition.onerror = () => {};
+
+      recognition.onend = () => {
+        if (btn) { btn.classList.remove('listening'); btn.textContent = '🎤'; }
+      };
+
+      recognition.start();
     }
 
     init();
