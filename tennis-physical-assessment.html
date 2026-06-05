@@ -1311,7 +1311,7 @@
           <!-- 單腿減速能力 -->
           <section class="form-section">
             <div class="form-section-title">單腿減速能力</div>
-            <p class="hint">單腿落地穩定所需時間（秒，越低越好）</p>
+            <p class="hint">落地穩定所需時間（秒，越低越好）</p>
 
             <div class="grid-2">
               <label>單腿落地 左腳 sec
@@ -1327,6 +1327,82 @@
                 </div>
               </label>
             </div>
+
+            <p class="hint" style="margin-top:8px">落地峰值/體重（N/kg，越低越好）</p>
+            <div class="grid-2">
+              <label>單腿落地 左腳 N/kg
+                <div class="voice-row">
+                  <input id="singleLegLandNkgL" type="number" step="0.01" placeholder="例：2.8" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('singleLegLandNkgL')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+              <label>單腿落地 右腳 N/kg
+                <div class="voice-row">
+                  <input id="singleLegLandNkgR" type="number" step="0.01" placeholder="例：2.9" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('singleLegLandNkgR')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+            </div>
+
+            <p class="hint" style="margin-top:8px">Single leg drop jump RSI（m/s，越高越好）</p>
+            <div class="grid-2">
+              <label>單腿DJ 左腳 RSI m/s
+                <div class="voice-row">
+                  <input id="singleLegDJL" type="number" step="0.01" placeholder="例：1.2" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('singleLegDJL')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+              <label>單腿DJ 右腳 RSI m/s
+                <div class="voice-row">
+                  <input id="singleLegDJR" type="number" step="0.01" placeholder="例：1.1" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('singleLegDJR')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+            </div>
+          </section>
+
+          <!-- 轉體爆發 -->
+          <section class="form-section">
+            <div class="form-section-title">轉體爆發</div>
+            <p class="hint">藥球轉體投擲距離（m，越遠越好）</p>
+            <div class="grid-2">
+              <label>轉體投擲 左側 m
+                <div class="voice-row">
+                  <input id="rotationalThrowL" type="number" step="0.1" placeholder="例：5.2" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('rotationalThrowL')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+              <label>轉體投擲 右側 m
+                <div class="voice-row">
+                  <input id="rotationalThrowR" type="number" step="0.1" placeholder="例：5.5" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('rotationalThrowR')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+            </div>
+          </section>
+
+          <!-- 投擲 -->
+          <section class="form-section">
+            <div class="form-section-title">投擲</div>
+            <p class="hint">藥球發球模式投擲距離（m，越遠越好）</p>
+            <label>發球投擲 m
+              <div class="voice-row">
+                <input id="servingThrow" type="number" step="0.1" placeholder="例：6.0" />
+                <button class="mic-btn" type="button" onclick="voiceInput('servingThrow')" title="語音輸入">🎤</button>
+              </div>
+            </label>
+          </section>
+
+          <!-- 心肺適能 -->
+          <section class="form-section">
+            <div class="form-section-title">心肺適能</div>
+            <p class="hint">30-15 間歇體能測試最終速度（km/h，越高越好）</p>
+            <label>30-15 IFT km/h
+              <div class="voice-row">
+                <input id="IFT30_15" type="number" step="0.5" placeholder="例：18.5" />
+                <button class="mic-btn" type="button" onclick="voiceInput('IFT30_15')" title="語音輸入">🎤</button>
+              </div>
+            </label>
           </section>
 
           <!-- 教練備註 -->
@@ -1592,7 +1668,7 @@
 
   <script>
     // ===== 設定：部署 Apps Script 後，把 URL 貼在這裡 =====
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxa4IyvCKKvhtLpXsRxS9E9zhQuU06zrVCBtVi_gcB4Mbtp0qgbbbZB_dUN4JVphJiU/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwTv7FopjngazZL9mGPF1HFjDCZf99XDKWNJYJ6unfh5jWjfnsTZ9UL44cywh-HJBL6/exec';
 
     const metricConfig = [
       {
@@ -1617,21 +1693,21 @@
         court: "被拉開後的支撐、煞停與回位速度容易受限。"
       },
       {
-        id: "rotational", label: "轉體爆發", short: "轉體", active: false,
+        id: "rotational", label: "轉體爆發", short: "轉體", active: true,
         strength: "轉體爆發能力佳，有助於擊球力量銜接。",
         weakness: "轉體爆發仍需補強，可能影響擊球力量傳遞。",
         focus: "加強髖轉、軀幹旋轉與上下肢連動。",
         court: "擊球時容易只靠手臂發力，身體鏈結不足。"
       },
       {
-        id: "throwing", label: "投擲", short: "投擲", active: false,
+        id: "throwing", label: "投擲", short: "投擲", active: true,
         strength: "投擲能力佳，代表上肢與核心力量傳遞有良好基礎。",
         weakness: "投擲能力仍需加強，可能影響發球與上肢力量輸出。",
         focus: "加強肩胛穩定、核心傳力與藥球投擲。",
         court: "發球後段加速與身體力量傳遞可能不足。"
       },
       {
-        id: "cardio", label: "心肺適能", short: "心肺", active: false,
+        id: "cardio", label: "心肺適能", short: "心肺", active: true,
         strength: "心肺適能良好，長回合中較能維持移動品質。",
         weakness: "心肺適能仍需提升，長回合後段容易出現腳步品質下降。",
         focus: "加強間歇移動、回合恢復與專項耐力。",
@@ -1726,6 +1802,14 @@
         lateralJumpR:   getNum('lateralJumpR'),
         singleLegLandL: getNum('singleLegLandL'),
         singleLegLandR: getNum('singleLegLandR'),
+        singleLegLandNkgL: getNum('singleLegLandNkgL'),
+        singleLegLandNkgR: getNum('singleLegLandNkgR'),
+        singleLegDJL:      getNum('singleLegDJL'),
+        singleLegDJR:      getNum('singleLegDJR'),
+        rotationalThrowL:  getNum('rotationalThrowL'),
+        rotationalThrowR:  getNum('rotationalThrowR'),
+        servingThrow:      getNum('servingThrow'),
+        IFT30_15:          getNum('IFT30_15'),
         notes:          getVal('coachNote'),
         playerId:       ''
       };
@@ -1895,7 +1979,9 @@
     function resetForm() {
       ['playerName','birthday','height','weight','legLength','armLength','coachName',
        'sprint10m','spiderRun','agility515L','agility515R','cmjHeight','broadJump',
-       'lateralJumpL','lateralJumpR','singleLegLandL','singleLegLandR','coachNote']
+       'lateralJumpL','lateralJumpR','singleLegLandL','singleLegLandR',
+       'singleLegLandNkgL','singleLegLandNkgR','singleLegDJL','singleLegDJR',
+       'rotationalThrowL','rotationalThrowR','servingThrow','IFT30_15','coachNote']
         .forEach(id => setVal(id, ''));
       setVal('gender', '男'); setVal('dominantHand', '右手');
       setVal('testDate', todayISO()); setVal('academyName', '奕晉網球學院');
