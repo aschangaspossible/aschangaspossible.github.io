@@ -1047,6 +1047,33 @@
       }
     }
 
+
+    /* ── 不對稱性分析卡 ── */
+    .asym-card { margin-top: 16px; }
+    .asym-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .asym-item {
+      border-radius: 14px;
+      padding: 16px 12px;
+      text-align: center;
+      transition: transform .15s;
+    }
+    .asym-good  { background: #dcfce7; color: #15803d; }
+    .asym-watch { background: #fef9c3; color: #854d0e; }
+    .asym-risk  { background: #fee2e2; color: #991b1b; }
+    .asym-empty { background: var(--surface-soft); color: var(--muted); }
+    .asym-label { font-size: 11px; font-weight: 700; opacity: .8; margin-bottom: 6px; letter-spacing: .3px; }
+    .asym-value { font-size: 30px; font-weight: 900; line-height: 1; }
+    .asym-pct   { font-size: 13px; font-weight: 600; margin-top: 2px; }
+    .asym-status{ font-size: 11px; font-weight: 700; margin-top: 6px; opacity: .85; }
+
+    @media (max-width: 600px) {
+      .asym-grid { grid-template-columns: repeat(1, 1fr); }
+    }
     /* ── 密碼覆蓋層 ── */
     #passwordOverlay {
       position: fixed; inset: 0;
@@ -1615,6 +1642,39 @@
               </div>
             </section>
 
+
+            <section class="card asym-card" id="asymmetryCard" style="display:none">
+              <div class="card-title-row">
+                <div>
+                  <p class="card-kicker">Asymmetry Analysis</p>
+                  <h3 class="card-title">左右不對稱性分析</h3>
+                </div>
+                <div style="font-size:12px;color:var(--muted);text-align:right;line-height:1.5">
+                  🟢 &lt;10% 良好<br>🟡 10–15% 觀察<br>🔴 &gt;15% 優先處理
+                </div>
+              </div>
+              <div class="asym-grid">
+                <div class="asym-item asym-empty" id="asymLandTime">
+                  <div class="asym-label">落地穩定時間</div>
+                  <div class="asym-value">—</div>
+                  <div class="asym-pct">%</div>
+                  <div class="asym-status">未輸入資料</div>
+                </div>
+                <div class="asym-item asym-empty" id="asymLandNkg">
+                  <div class="asym-label">落地峰值/體重 N/kg</div>
+                  <div class="asym-value">—</div>
+                  <div class="asym-pct">%</div>
+                  <div class="asym-status">未輸入資料</div>
+                </div>
+                <div class="asym-item asym-empty" id="asymDJRSI">
+                  <div class="asym-label">Drop Jump RSI</div>
+                  <div class="asym-value">—</div>
+                  <div class="asym-pct">%</div>
+                  <div class="asym-status">未輸入資料</div>
+                </div>
+              </div>
+            </section>
+
             <section class="focus-card">
               <div class="focus-left">
                 <p class="card-kicker">Development Focus</p>
@@ -1920,6 +1980,7 @@
         : `✓ 同組樣本數：${s.sampleSize} 筆`;
 
       drawRadarChart(s);
+      displayAsymmetry(rec);
       $('reportCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -2112,6 +2173,54 @@
       window.addEventListener('resize', () => { if (currentScores) drawRadarChart(currentScores); });
     }
 
+
+
+    // ── 不對稱性分析 ──
+    function calcAsym(a, b) {
+      const x = parseFloat(a), y = parseFloat(b);
+      if (!isFinite(x) || !isFinite(y) || x <= 0 || y <= 0) return null;
+      return Math.abs(x - y) / Math.max(x, y) * 100;
+    }
+
+    function asymClass(val) {
+      if (val < 10)  return 'asym-good';
+      if (val <= 15) return 'asym-watch';
+      return 'asym-risk';
+    }
+
+    function asymStatus(val) {
+      if (val < 10)  return '✅ 對稱性良好';
+      if (val <= 15) return '⚠ 需要觀察';
+      return '🔴 建議優先處理';
+    }
+
+    function updateAsymItem(id, label, val) {
+      const el = $(id);
+      if (!el) return;
+      el.className = 'asym-item ' + (val !== null ? asymClass(val) : 'asym-empty');
+      el.innerHTML = `
+        <div class="asym-label">${label}</div>
+        <div class="asym-value">${val !== null ? val.toFixed(1) : '—'}</div>
+        <div class="asym-pct">%</div>
+        <div class="asym-status">${val !== null ? asymStatus(val) : '未輸入資料'}</div>
+      `;
+    }
+
+    function displayAsymmetry(rec) {
+      const card = $('asymmetryCard');
+      if (!card) return;
+
+      const landTime = calcAsym(rec.singleLegLandL, rec.singleLegLandR);
+      const landNkg  = calcAsym(rec.singleLegLandNkgL, rec.singleLegLandNkgR);
+      const djRSI    = calcAsym(rec.singleLegDJL, rec.singleLegDJR);
+
+      updateAsymItem('asymLandTime', '落地穩定時間', landTime);
+      updateAsymItem('asymLandNkg',  '落地峰值/體重 N/kg', landNkg);
+      updateAsymItem('asymDJRSI',    'Drop Jump RSI', djRSI);
+
+      // 顯示卡片（只要有任何一項有資料）
+      card.style.display = (landTime !== null || landNkg !== null || djRSI !== null) ? '' : 'none';
+    }
 
     // ── 語音輸入 ──
     function voiceInput(inputId) {
