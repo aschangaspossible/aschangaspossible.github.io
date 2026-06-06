@@ -1089,6 +1089,23 @@
     /* ── 樣本數提示 ── */
     #sampleSizeNote { font-size: 12px; margin-top: 4px; }
 
+
+    /* ── 合理值範圍警告 ── */
+    .range-warning {
+      color: #f59e0b;
+      font-size: 11px;
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    input.out-of-range {
+      border-color: #f59e0b !important;
+      background: #fffbeb;
+    }
+    input.out-of-range:focus {
+      border-color: #d97706 !important;
+    }
     /* ── 語音輸入按鈕 ── */
     .voice-row {
       display: flex; gap: 8px; align-items: center;
@@ -1814,6 +1831,14 @@
         playerId:       ''
       };
       if (!rec.playerName) { alert('請輸入球員姓名再送出。'); return; }
+
+      // 檢查合理值範圍
+      const outOfRange = checkAllRanges();
+      if (outOfRange.length > 0) {
+        const labels = outOfRange.map(id => validRanges[id].label).join('、');
+        const ok = confirm(`⚠ 以下欄位數值超出合理範圍：\n${labels}\n\n請確認數值正確後，點「確定」繼續送出，或點「取消」返回修改。`);
+        if (!ok) return;
+      }
       if (!rec.birthday || !rec.testDate) { alert('請填入西元生日與檢測日期。'); return; }
 
       $('loadingMsg').style.display = 'block';
@@ -1998,6 +2023,69 @@
       });
     }
 
+
+    // ── 合理值範圍定義（供輸入警告使用）──
+    const validRanges = {
+      height:          { min: 100,  max: 220,  label: '身高' },
+      weight:          { min: 20,   max: 120,  label: '體重' },
+      legLength:       { min: 40,   max: 120,  label: '腿長' },
+      armLength:       { min: 30,   max: 100,  label: '臂長' },
+      sprint10m:       { min: 1.5,  max: 3.5,  label: '10m 衝刺' },
+      spiderRun:       { min: 8.0,  max: 22.0, label: '蜘蛛跑' },
+      agility515L:     { min: 3.5,  max: 8.0,  label: '5-10-5 左側' },
+      agility515R:     { min: 3.5,  max: 8.0,  label: '5-10-5 右側' },
+      cmjHeight:       { min: 10,   max: 85,   label: '擺臂反向跳' },
+      broadJump:       { min: 80,   max: 350,  label: '跳遠' },
+      lateralJumpL:    { min: 60,   max: 260,  label: '側向跳左腳' },
+      lateralJumpR:    { min: 60,   max: 260,  label: '側向跳右腳' },
+      singleLegLandL:  { min: 0.1,  max: 3.0,  label: '單腿落地左腳' },
+      singleLegLandR:  { min: 0.1,  max: 3.0,  label: '單腿落地右腳' },
+      singleLegLandNkgL: { min: 0.5, max: 12.0, label: '落地峰值左腳' },
+      singleLegLandNkgR: { min: 0.5, max: 12.0, label: '落地峰值右腳' },
+      singleLegDJL:    { min: 0.2,  max: 3.5,  label: 'DJ RSI 左腳' },
+      singleLegDJR:    { min: 0.2,  max: 3.5,  label: 'DJ RSI 右腳' },
+      rotationalThrowL:{ min: 1.0,  max: 18.0, label: '轉體投擲左側' },
+      rotationalThrowR:{ min: 1.0,  max: 18.0, label: '轉體投擲右側' },
+      servingThrow:    { min: 1.0,  max: 18.0, label: '發球投擲' },
+      IFT30_15:        { min: 10,   max: 28,   label: '30-15 IFT' },
+    };
+
+    function checkRange(id) {
+      const range = validRanges[id];
+      if (!range) return true;
+      const input = $(id);
+      if (!input) return true;
+      const val = parseFloat(input.value);
+
+      // Remove existing warning
+      const existing = input.parentElement.querySelector('.range-warning');
+      if (existing) existing.remove();
+      input.classList.remove('out-of-range');
+
+      if (!isFinite(val) || input.value.trim() === '') return true;
+
+      if (val < range.min || val > range.max) {
+        input.classList.add('out-of-range');
+        const warn = document.createElement('div');
+        warn.className = 'range-warning';
+        warn.innerHTML = `⚠ 數值超出合理範圍（${range.min}–${range.max}）`;
+        input.parentElement.appendChild(warn);
+        return false;
+      }
+      return true;
+    }
+
+    function checkAllRanges() {
+      const outOfRange = Object.keys(validRanges).filter(id => {
+        const input = $(id);
+        if (!input || input.value.trim() === '') return false;
+        const val = parseFloat(input.value);
+        const r = validRanges[id];
+        return isFinite(val) && (val < r.min || val > r.max);
+      });
+      return outOfRange;
+    }
+
     // ── 初始化 ──
     function init() {
       setVal('testDate', todayISO());
@@ -2007,6 +2095,11 @@
       $('passwordBtn').addEventListener('click', verifyPassword);
       $('passwordInput').addEventListener('keydown', e => { if (e.key === 'Enter') verifyPassword(); });
       $('submitBtn').addEventListener('click', submitRecord);
+      // 合理值範圍即時檢查
+      Object.keys(validRanges).forEach(id => {
+        const el = $(id);
+        if (el) el.addEventListener('blur', () => checkRange(id));
+      });
       $('printBtn').addEventListener('click', () => window.print());
       $('resetBtn').addEventListener('click', resetForm);
       $('scrollTopBtn').addEventListener('click', () =>
