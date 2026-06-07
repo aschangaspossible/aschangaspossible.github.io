@@ -1071,6 +1071,24 @@
     .section-optional-note {
       font-size: 12px; color: var(--muted); margin: 0 0 10px;
     }
+
+    /* ── 心跳恢復率自動計算顯示 ── */
+    .hr-recovery-display {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      margin-top: 10px;
+    }
+    .hr-recovery-box {
+      border-radius: 12px; padding: 12px 14px;
+      background: var(--surface-soft); border: 1.5px solid var(--line);
+      text-align: center;
+    }
+    .hr-recovery-box.has-value {
+      background: var(--primary-soft); border-color: var(--primary);
+    }
+    .hr-recovery-label { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+    .hr-recovery-value { font-size: 26px; font-weight: 900; color: var(--primary); }
+    .hr-recovery-pct   { font-size: 12px; color: var(--muted); }
+    .hr-recovery-empty { font-size: 13px; color: var(--muted); }
     /* ── 不對稱性分析卡 ── */
     .asym-card { margin-top: 16px; }
     .asym-grid {
@@ -1546,12 +1564,46 @@
               </label>
             </div>
 
-            <label style="margin-top:8px">30-15 IFT 心跳恢復率 % <span class="optional-badge">選填</span>
-              <div class="voice-row">
-                <input id="IFTrecovery" type="number" step="0.1" placeholder="例：52.3" />
-                <button class="mic-btn" type="button" onclick="voiceInput('IFTrecovery')" title="語音輸入">🎤</button>
+            <p class="hint" style="margin-top:10px">30-15 IFT 心跳數據 <span class="optional-badge">選填</span>｜填入後自動計算恢復率</p>
+            <div class="grid-2" style="margin-top:6px">
+              <label>最高心跳 bpm
+                <div class="voice-row">
+                  <input id="IFTmaxHR" type="number" step="1" placeholder="例：196"
+                    oninput="calcHRRecovery()" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('IFTmaxHR')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+              <label>1分鐘後心率 bpm
+                <div class="voice-row">
+                  <input id="IFTHR1min" type="number" step="1" placeholder="例：152"
+                    oninput="calcHRRecovery()" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('IFTHR1min')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+            </div>
+            <div class="grid-2">
+              <label>3分鐘後心率 bpm
+                <div class="voice-row">
+                  <input id="IFTHR3min" type="number" step="1" placeholder="例：118"
+                    oninput="calcHRRecovery()" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('IFTHR3min')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+            </div>
+            <div class="hr-recovery-display" id="hrRecoveryDisplay" style="display:none">
+              <div class="hr-recovery-box" id="hrR1box">
+                <div class="hr-recovery-label">1 分鐘恢復率</div>
+                <div class="hr-recovery-value" id="hrR1val">—</div>
+                <div class="hr-recovery-pct">%</div>
               </div>
-            </label>
+              <div class="hr-recovery-box" id="hrR3box">
+                <div class="hr-recovery-label">3 分鐘恢復率</div>
+                <div class="hr-recovery-value" id="hrR3val">—</div>
+                <div class="hr-recovery-pct">%</div>
+              </div>
+            </div>
+            <input type="hidden" id="IFTrecovery1" />
+            <input type="hidden" id="IFTrecovery3" />
           </section>
 
           <!-- 教練備註 -->
@@ -1850,7 +1902,7 @@
 
   <script>
     // ===== 設定：部署 Apps Script 後，把 URL 貼在這裡 =====
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby7N1xVgdGYKI-0-5lS258FQ8UMclm07YZjrnpfovk6GLc4YOwnL8g_q6xotr-4uVWQ/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyzgY8nW9dIqzMOdrT9kB94A2DY94i_94QNlx404saKtfF1aDvW--r2y9OjgahLIjzr/exec';
 
     const metricConfig = [
       {
@@ -2002,7 +2054,11 @@
         squatUnit:      getVal('squatUnit'),
         pullUp:         getNum('pullUp'),
         pullUpUnit:     getVal('pullUpUnit'),
-        IFTrecovery:    getNum('IFTrecovery'),
+        IFTmaxHR:       getNum('IFTmaxHR'),
+        IFTHR1min:      getNum('IFTHR1min'),
+        IFTHR3min:      getNum('IFTHR3min'),
+        IFTrecovery1:   parseFloat($('IFTrecovery1')?.value) || null,
+        IFTrecovery3:   parseFloat($('IFTrecovery3')?.value) || null,
         notes:          getVal('coachNote'),
         playerId:       ''
       };
@@ -2201,6 +2257,31 @@
     }
 
 
+
+    // ── 30-15 IFT 心跳恢復率即時計算 ──
+    function calcHRRecovery() {
+      const maxHR = getNum('IFTmaxHR');
+      const hr1   = getNum('IFTHR1min');
+      const hr3   = getNum('IFTHR3min');
+      const display = $('hrRecoveryDisplay');
+      if (!display) return;
+
+      const r1 = (maxHR && hr1 && maxHR > hr1) ? Math.round((maxHR - hr1) / maxHR * 1000) / 10 : null;
+      const r3 = (maxHR && hr3 && maxHR > hr3) ? Math.round((maxHR - hr3) / maxHR * 1000) / 10 : null;
+
+      if (r1 !== null || r3 !== null) {
+        display.style.display = '';
+        $('hrR1val').textContent = r1 !== null ? r1 : '—';
+        $('hrR3val').textContent = r3 !== null ? r3 : '—';
+        $('hrR1box').classList.toggle('has-value', r1 !== null);
+        $('hrR3box').classList.toggle('has-value', r3 !== null);
+        if ($('IFTrecovery1')) $('IFTrecovery1').value = r1 ?? '';
+        if ($('IFTrecovery3')) $('IFTrecovery3').value = r3 ?? '';
+      } else {
+        display.style.display = 'none';
+      }
+    }
+
     // ── 合理值範圍定義（供輸入警告使用）──
     const validRanges = {
       height:          { min: 100,  max: 220,  label: '身高' },
@@ -2233,7 +2314,9 @@
       isoUpperLimb:    { min: 50,   max: 800,  label: '上肢等長測試' },
       squat:           { min: 0,    max: 300,  label: '深蹲' },
       pullUp:          { min: 0,    max: 100,  label: '引體向上' },
-      IFTrecovery:     { min: 10,   max: 100,  label: '30-15IFT 心跳恢復率' },
+      IFTmaxHR:        { min: 100,  max: 230,  label: '30-15IFT 最高心跳' },
+      IFTHR1min:       { min: 50,   max: 200,  label: '1分鐘後心率' },
+      IFTHR3min:       { min: 40,   max: 180,  label: '3分鐘後心率' },
     };
 
     function checkRange(id) {
