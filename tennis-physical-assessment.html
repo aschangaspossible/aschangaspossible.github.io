@@ -1048,6 +1048,29 @@
     }
 
 
+
+    /* ── 一般檢測項目：單位下拉 + 選填標記 ── */
+    .optional-badge {
+      font-size: 10px; font-weight: 700; color: var(--muted);
+      background: var(--surface-soft); border-radius: 6px;
+      padding: 2px 7px; margin-left: 6px; letter-spacing: .3px;
+      vertical-align: middle;
+    }
+    .unit-row {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .unit-row input { flex: 1; margin: 0; }
+    .unit-row select {
+      width: 76px; height: 38px; border-radius: 10px;
+      border: 1.5px solid var(--line); background: var(--surface-soft);
+      font-size: 13px; font-weight: 600; color: var(--ink);
+      padding: 0 6px; cursor: pointer; flex-shrink: 0;
+    }
+    .unit-row select:focus { border-color: var(--primary); outline: none; }
+    .unit-row .mic-btn { margin-top: 0; }
+    .section-optional-note {
+      font-size: 12px; color: var(--muted); margin: 0 0 10px;
+    }
     /* ── 不對稱性分析卡 ── */
     .asym-card { margin-top: 16px; }
     .asym-grid {
@@ -1445,6 +1468,88 @@
               <div class="voice-row">
                 <input id="IFT30_15" type="number" step="0.5" placeholder="例：18.5" />
                 <button class="mic-btn" type="button" onclick="voiceInput('IFT30_15')" title="語音輸入">🎤</button>
+              </div>
+            </label>
+          </section>
+
+
+          <!-- 一般檢測項目 -->
+          <section class="form-section">
+            <div class="form-section-title">一般檢測項目 <span class="optional-badge">選填</span></div>
+            <p class="section-optional-note">以下項目不納入雷達圖，但資料會儲存至後台供縱向追蹤。不是每次都需要全部填寫。</p>
+
+            <div class="grid-2">
+              <label>30m 衝刺 sec <span class="optional-badge">選填</span>
+                <div class="voice-row">
+                  <input id="sprint30m" type="number" step="0.01" placeholder="例：4.2" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('sprint30m')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+              <label>發球速度 km/h <span class="optional-badge">選填</span>
+                <div class="voice-row">
+                  <input id="serveSpeed" type="number" step="0.5" placeholder="例：150" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('serveSpeed')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+            </div>
+
+            <div class="grid-2">
+              <label>握力 kg <span class="optional-badge">選填</span>
+                <div class="voice-row">
+                  <input id="gripStrength" type="number" step="0.5" placeholder="例：32" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('gripStrength')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+              <label>10/5 Hop RSI m/s <span class="optional-badge">選填</span>
+                <div class="voice-row">
+                  <input id="hop10_5" type="number" step="0.01" placeholder="例：2.1" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('hop10_5')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+            </div>
+
+            <div class="grid-2">
+              <label>等長中段拉 N/kg <span class="optional-badge">選填</span>
+                <div class="voice-row">
+                  <input id="isoMidThigh" type="number" step="0.1" placeholder="例：3.5" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('isoMidThigh')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+              <label>上肢等長測試 N <span class="optional-badge">選填</span>
+                <div class="voice-row">
+                  <input id="isoUpperLimb" type="number" step="1" placeholder="例：320" />
+                  <button class="mic-btn" type="button" onclick="voiceInput('isoUpperLimb')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+            </div>
+
+            <div class="grid-2">
+              <label>深蹲 <span class="optional-badge">選填</span>
+                <div class="unit-row">
+                  <input id="squat" type="number" step="0.5" placeholder="數值" />
+                  <select id="squatUnit">
+                    <option value="kg">kg</option>
+                    <option value="次">次</option>
+                  </select>
+                  <button class="mic-btn" type="button" onclick="voiceInput('squat')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+              <label>引體向上 <span class="optional-badge">選填</span>
+                <div class="unit-row">
+                  <input id="pullUp" type="number" step="0.5" placeholder="數值" />
+                  <select id="pullUpUnit">
+                    <option value="次">次</option>
+                    <option value="秒">秒</option>
+                  </select>
+                  <button class="mic-btn" type="button" onclick="voiceInput('pullUp')" title="語音輸入">🎤</button>
+                </div>
+              </label>
+            </div>
+
+            <label style="margin-top:8px">30-15 IFT 心跳恢復率 % <span class="optional-badge">選填</span>
+              <div class="voice-row">
+                <input id="IFTrecovery" type="number" step="0.1" placeholder="例：52.3" />
+                <button class="mic-btn" type="button" onclick="voiceInput('IFTrecovery')" title="語音輸入">🎤</button>
               </div>
             </label>
           </section>
@@ -1887,6 +1992,17 @@
         rotationalThrowR:  getNum('rotationalThrowR'),
         servingThrow:      getNum('servingThrow'),
         IFT30_15:          getNum('IFT30_15'),
+        sprint30m:      getNum('sprint30m'),
+        serveSpeed:     getNum('serveSpeed'),
+        gripStrength:   getNum('gripStrength'),
+        hop10_5:        getNum('hop10_5'),
+        isoMidThigh:    getNum('isoMidThigh'),
+        isoUpperLimb:   getNum('isoUpperLimb'),
+        squat:          getNum('squat'),
+        squatUnit:      getVal('squatUnit'),
+        pullUp:         getNum('pullUp'),
+        pullUpUnit:     getVal('pullUpUnit'),
+        IFTrecovery:    getNum('IFTrecovery'),
         notes:          getVal('coachNote'),
         playerId:       ''
       };
@@ -2109,6 +2225,15 @@
       rotationalThrowR:{ min: 1.0,  max: 18.0, label: '轉體投擲右側' },
       servingThrow:    { min: 1.0,  max: 18.0, label: '發球投擲' },
       IFT30_15:        { min: 10,   max: 28,   label: '30-15 IFT' },
+      sprint30m:       { min: 3.0,  max: 6.5,  label: '30m 衝刺' },
+      serveSpeed:      { min: 60,   max: 250,  label: '發球速度' },
+      gripStrength:    { min: 10,   max: 80,   label: '握力' },
+      hop10_5:         { min: 0.5,  max: 4.0,  label: '10/5 Hop RSI' },
+      isoMidThigh:     { min: 1.0,  max: 8.0,  label: '等長中段拉' },
+      isoUpperLimb:    { min: 50,   max: 800,  label: '上肢等長測試' },
+      squat:           { min: 0,    max: 300,  label: '深蹲' },
+      pullUp:          { min: 0,    max: 100,  label: '引體向上' },
+      IFTrecovery:     { min: 10,   max: 100,  label: '30-15IFT 心跳恢復率' },
     };
 
     function checkRange(id) {
