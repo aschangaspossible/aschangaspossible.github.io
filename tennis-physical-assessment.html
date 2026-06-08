@@ -1957,14 +1957,7 @@
       if (a === null) return b; if (b === null) return a;
       return (a + b) / 2;
     }
-        sessionPassword = pw;
-        // 密碼已移除
-      } catch (err) {
-        errEl.textContent = '網路錯誤，請確認連線後重試';
-        errEl.style.display = 'block';
-        btn.disabled = false; btn.textContent = '確認進入';
-      }
-    }
+
 
     // ── 送出並儲存 ──
     async function submitRecord() {
