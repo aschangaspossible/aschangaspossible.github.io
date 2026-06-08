@@ -1067,6 +1067,11 @@
 
 
 
+
+    /* ── D 欄：其他測試補充 勾選清單 ── */
+    .dextra-checklist { display:grid; grid-template-columns:repeat(2,1fr); gap:4px 14px; margin-top:6px; }
+    .dextra-check { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:500; cursor:pointer; }
+    .dextra-check input { width:auto; margin:0; flex-shrink:0; }
     /* ── 一般檢測項目：單位下拉 + 選填標記 ── */
     .optional-badge {
       font-size: 10px; font-weight: 700; color: var(--muted);
@@ -1626,6 +1631,16 @@
             <input type="hidden" id="IFTrecovery3" />
           </section>
 
+          <!-- D 欄：其他測試的補充 -->
+          <section class="form-section">
+            <div class="form-section-title">報告 D 欄：其他測試的補充 <span class="optional-badge">選填</span></div>
+            <p class="section-optional-note">勾選想額外呈現在報告「D｜其他測試的補充」的項目（會帶數值），也可自由打字補充。</p>
+            <div id="dExtraChecklist" class="dextra-checklist"></div>
+            <label style="margin-top:10px">自由補充文字
+              <textarea id="dExtraText" placeholder="例：本次加測反應測試 0.25 秒；左踝舊傷已恢復，可正常訓練…"></textarea>
+            </label>
+          </section>
+
           <!-- 教練備註 -->
           <section class="form-section">
             <div class="form-section-title">教練補充觀察</div>
@@ -2070,6 +2085,8 @@
         IFTrecovery1:   parseFloat($('IFTrecovery1')?.value) || null,
         IFTrecovery3:   parseFloat($('IFTrecovery3')?.value) || null,
         notes:          getVal('coachNote'),
+        dExtraSelected: Array.from(document.querySelectorAll('#dExtraChecklist input:checked')).map(c=>c.value),
+        dExtraText:     getVal('dExtraText'),
         playerId:       ''
       };
     }
@@ -2098,6 +2115,10 @@
       if (rec.squatUnit) setVal('squatUnit', rec.squatUnit);
       if (rec.pullUpUnit) setVal('pullUpUnit', rec.pullUpUnit);
       if (typeof calcHRRecovery === 'function') calcHRRecovery();
+      if (Array.isArray(rec.dExtraSelected)) {
+        document.querySelectorAll('#dExtraChecklist input').forEach(c => { c.checked = rec.dExtraSelected.includes(c.value); });
+      }
+      if (rec.dExtraText !== undefined) setVal('dExtraText', rec.dExtraText);
     }
 
     async function submitRecord() {
@@ -2178,26 +2199,18 @@
       renderList('courtList',    courts.slice(0,3),     '🎾');
       renderList('focusList',    focuses.slice(0,3),    '▸');
 
-      // D｜其他測試的補充：列出有填的一般檢測項目
+      // D｜其他測試的補充：教練勾選的項目（帶數值）+ 自由文字
       const otherTests = [];
-      const addOther = (val, label, unit) => {
-        if (val !== null && val !== undefined && val !== '' && !(typeof val === 'number' && val <= 0))
-          otherTests.push(`${label}：${val}${unit || ''}`);
-      };
-      addOther(rec.sprint30m,    '30m 衝刺', ' 秒');
-      addOther(rec.serveSpeed,   '發球速度', ' km/h');
-      addOther(rec.gripStrength, '握力', ' kg');
-      addOther(rec.hop10_5,      '10/5 Hop RSI', ' m/s');
-      addOther(rec.isoMidThigh,  '等長中段拉', ' N/kg');
-      addOther(rec.isoUpperLimb, '上肢等長', ' N');
-      if (rec.squat)  addOther(rec.squat,  '深蹲', ' ' + (rec.squatUnit || ''));
-      if (rec.pullUp) addOther(rec.pullUp, '引體向上', ' ' + (rec.pullUpUnit || ''));
-      const maxHR = toNum(rec.IFTmaxHR);
-      if (maxHR > 0 && toNum(rec.IFTHR1min) > 0)
-        addOther(r2((maxHR - toNum(rec.IFTHR1min)) / maxHR * 100), '1分鐘心跳恢復率', ' %');
-      if (maxHR > 0 && toNum(rec.IFTHR3min) > 0)
-        addOther(r2((maxHR - toNum(rec.IFTHR3min)) / maxHR * 100), '3分鐘心跳恢復率', ' %');
-      renderList('otherTestList', otherTests.length ? otherTests : ['本次未進行其他補充測試'], '📋');
+      (rec.dExtraSelected || []).forEach(id => {
+        const item = dExtraItems.find(it => it.id === id);
+        if (!item) return;
+        const v = item.get(rec);
+        if (v !== null && v !== undefined && v !== '') otherTests.push(`${item.label}：${v}${item.unit || ''}`);
+      });
+      if (rec.dExtraText) {
+        rec.dExtraText.split(/\r?\n/).map(s => s.trim()).filter(Boolean).forEach(line => otherTests.push(line));
+      }
+      renderList('otherTestList', otherTests.length ? otherTests : ['本次未挑選補充項目'], '📋');
 
       const a515 = avg2(rec.agility515L, rec.agility515R);
       const land = avg2(rec.singleLegLandL, rec.singleLegLandR);
@@ -2304,12 +2317,13 @@
        'sprint10m','spiderRun','agility515L','agility515R','cmjHeight','broadJump',
        'lateralJumpL','lateralJumpR','singleLegLandL','singleLegLandR',
        'singleLegLandNkgL','singleLegLandNkgR','singleLegDJL','singleLegDJR',
-       'rotationalThrowL','rotationalThrowR','servingThrow','IFT30_15','coachNote']
+       'rotationalThrowL','rotationalThrowR','servingThrow','IFT30_15','coachNote','dExtraText']
         .forEach(id => setVal(id, ''));
       setVal('gender', '男'); setVal('dominantHand', '右手');
       setVal('testDate', todayISO()); setVal('academyName', '奕晉網球學院');
       photoDataUrl = ''; logoDataUrl = '';
       $('reportPhoto').src = defaultPhoto;
+      document.querySelectorAll('#dExtraChecklist input:checked').forEach(c => c.checked = false);
       currentDraftId = null;
       if ($('currentDraftBadge')) $('currentDraftBadge').style.display = 'none';
     }
@@ -2562,6 +2576,7 @@
 
       window.addEventListener('resize', () => { if (currentScores) drawRadarChart(currentScores); });
 
+      renderDExtraChecklist();  // 產生 D 欄勾選清單
       loadDraftList();  // 開啟時載入草稿清單
     }
 
@@ -2616,6 +2631,40 @@
 
 
     // ── 預覽報告（不儲存）──
+    // ── D 欄：其他測試的補充（可勾選的所有檢測項目）──
+    const dExtraItems = [
+      {id:'sprint10m', label:'10m 衝刺', unit:' 秒', get:r=>r.sprint10m},
+      {id:'avg515', label:'5-10-5 平均', unit:' 秒', get:r=>{const a=avg2(r.agility515L,r.agility515R);return a?r2(a):null;}},
+      {id:'spiderRun', label:'蜘蛛跑', unit:' 秒', get:r=>r.spiderRun},
+      {id:'cmjHeight', label:'擺臂反向跳', unit:' cm', get:r=>r.cmjHeight},
+      {id:'broadJump', label:'跳遠', unit:' cm', get:r=>r.broadJump},
+      {id:'lateralAvg', label:'側向跳平均', unit:' cm', get:r=>{const a=avg2(r.lateralJumpL,r.lateralJumpR);return a?r2(a):null;}},
+      {id:'landAvg', label:'單腿落地時間', unit:' 秒', get:r=>{const a=avg2(r.singleLegLandL,r.singleLegLandR);return a?r2(a):null;}},
+      {id:'nkgAvg', label:'單腿落地 N/kg', unit:' N/kg', get:r=>{const a=avg2(r.singleLegLandNkgL,r.singleLegLandNkgR);return a?r2(a):null;}},
+      {id:'djAvg', label:'單腿DJ RSI', unit:' m/s', get:r=>{const a=avg2(r.singleLegDJL,r.singleLegDJR);return a?r2(a):null;}},
+      {id:'rThrowAvg', label:'轉體投擲', unit:' m', get:r=>{const a=avg2(r.rotationalThrowL,r.rotationalThrowR);return a?r2(a):null;}},
+      {id:'servingThrow', label:'發球投擲', unit:' m', get:r=>r.servingThrow},
+      {id:'IFT30_15', label:'30-15 IFT', unit:' km/h', get:r=>r.IFT30_15},
+      {id:'sprint30m', label:'30m 衝刺', unit:' 秒', get:r=>r.sprint30m},
+      {id:'serveSpeed', label:'發球速度', unit:' km/h', get:r=>r.serveSpeed},
+      {id:'gripStrength', label:'握力', unit:' kg', get:r=>r.gripStrength},
+      {id:'hop10_5', label:'10/5 Hop RSI', unit:' m/s', get:r=>r.hop10_5},
+      {id:'isoMidThigh', label:'等長中段拉', unit:' N/kg', get:r=>r.isoMidThigh},
+      {id:'isoUpperLimb', label:'上肢等長', unit:' N', get:r=>r.isoUpperLimb},
+      {id:'squat', label:'深蹲', unit:'', get:r=>r.squat?r.squat+' '+(r.squatUnit||''):null},
+      {id:'pullUp', label:'引體向上', unit:'', get:r=>r.pullUp?r.pullUp+' '+(r.pullUpUnit||''):null},
+      {id:'hr1', label:'1分鐘心跳恢復率', unit:' %', get:r=>{const m=toNum(r.IFTmaxHR),h=toNum(r.IFTHR1min);return (m>0&&h>0)?r2((m-h)/m*100):null;}},
+      {id:'hr3', label:'3分鐘心跳恢復率', unit:' %', get:r=>{const m=toNum(r.IFTmaxHR),h=toNum(r.IFTHR3min);return (m>0&&h>0)?r2((m-h)/m*100):null;}},
+    ];
+
+    function renderDExtraChecklist() {
+      const box = $('dExtraChecklist');
+      if (!box) return;
+      box.innerHTML = dExtraItems.map(it =>
+        `<label class="dextra-check"><input type="checkbox" value="${it.id}" /> ${it.label}</label>`
+      ).join('');
+    }
+
     function previewReport() {
       const rec = collectFormData();
       if (!rec.playerName) rec.playerName = '測試球員';
