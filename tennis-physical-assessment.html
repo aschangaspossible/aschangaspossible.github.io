@@ -1159,6 +1159,46 @@
       border-color: #d97706 !important;
     }
 
+
+    /* ── 草稿功能 ── */
+    .draft-panel {
+      background: #fff8ed; border: 1.5px solid #f5d9a8;
+      border-radius: 14px; padding: 16px; margin-bottom: 18px;
+    }
+    .draft-panel-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px;
+    }
+    .draft-panel-head h3 { margin: 0; font-size: 15px; color: #92590c; }
+    .draft-refresh {
+      font-size: 12px; color: #92590c; cursor: pointer;
+      background: none; border: none; text-decoration: underline;
+    }
+    .draft-item {
+      background: #fff; border: 1px solid #f0e0c5; border-radius: 10px;
+      padding: 10px 12px; margin-bottom: 8px;
+    }
+    .draft-item:last-child { margin-bottom: 0; }
+    .draft-item-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 6px;
+    }
+    .draft-item-name { font-weight: 700; font-size: 14px; color: var(--ink); }
+    .draft-item-meta { font-size: 11px; color: var(--muted); }
+    .draft-item-progress { font-size: 11px; color: var(--muted); margin-bottom: 8px; letter-spacing: 1px; }
+    .draft-item-actions { display: flex; gap: 8px; }
+    .draft-btn {
+      font-size: 12px; padding: 5px 12px; border-radius: 8px;
+      cursor: pointer; border: none; font-weight: 600;
+    }
+    .draft-btn-load { background: var(--primary); color: #fff; }
+    .draft-btn-del  { background: #fee2e2; color: #991b1b; }
+    .draft-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 8px; }
+    #currentDraftBadge {
+      display: none; background: var(--primary-soft); color: var(--primary);
+      font-size: 12px; font-weight: 600; padding: 6px 12px;
+      border-radius: 8px; margin-bottom: 10px;
+    }
     /* ── 檔案上傳按鈕 ── */
     .file-upload-label {
       display: inline-flex; align-items: center; gap: 8px;
@@ -1241,7 +1281,17 @@
           <p id="sampleSizeNote" class="hint"></p>
         </div>
 
+        <div class="draft-panel no-print" id="draftPanel">
+          <div class="draft-panel-head">
+            <h3>📋 未完成的檢測草稿</h3>
+            <button class="draft-refresh" type="button" id="draftRefreshBtn">↻ 重新整理</button>
+          </div>
+          <div id="draftList"><div class="draft-empty">載入中…</div></div>
+        </div>
+
+
         <div class="form-body">
+          <div id="currentDraftBadge">✏️ 目前正在編輯草稿：<span id="currentDraftName"></span></div>
           <!-- 球員基本資料 -->
           <section class="form-section">
             <div class="form-section-title">球員基本資料</div>
@@ -1616,6 +1666,7 @@
           <!-- 操作按鈕 -->
           <section class="form-section">
             <div class="button-grid">
+              <button class="btn btn-light" id="saveDraftBtn" type="button" style="border:1.5px solid #f5a623;color:#92590c">💾 儲存草稿（稍後繼續）</button>
               <button class="btn btn-light" id="previewBtn" type="button" style="border-style:dashed">👁 預覽報告（不儲存）</button>
               <button class="btn btn-teal" id="submitBtn" type="button">送出並產生報告</button>
               <button class="btn btn-light" id="printBtn" type="button">列印 / PDF</button>
@@ -1902,7 +1953,7 @@
 
   <script>
     // ===== 設定：部署 Apps Script 後，把 URL 貼在這裡 =====
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyzgY8nW9dIqzMOdrT9kB94A2DY94i_94QNlx404saKtfF1aDvW--r2y9OjgahLIjzr/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzui0D7wBTHs02oqO87bbabZdvdvEW0FuHtmxMWfQAot30pm5C62AkjBvQSxltp8ldE/exec';
 
     const metricConfig = [
       {
@@ -1965,6 +2016,7 @@
     let photoDataUrl    = '';
     let logoDataUrl     = '';
     let currentScores   = null;
+    let currentDraftId  = null;  // 目前編輯中的草稿 ID
 
     const $ = id => document.getElementById(id);
 
@@ -1987,8 +2039,9 @@
 
 
     // ── 送出並儲存 ──
-    async function submitRecord() {
-      const rec = {
+    // ── 收集表單所有欄位（草稿與送出共用）──
+    function collectFormData() {
+      return {
         playerName:     getVal('playerName'),
         gender:         getVal('gender'),
         birthday:       getVal('birthday'),
@@ -2036,6 +2089,37 @@
         notes:          getVal('coachNote'),
         playerId:       ''
       };
+    }
+
+    // ── 把草稿資料填回表單 ──
+    function fillFormData(rec) {
+      const setMap = {
+        playerName:'playerName', birthday:'birthday', height:'height', weight:'weight',
+        legLength:'legLength', armLength:'armLength', coach:'coachName', academyName:'academyName',
+        sprint10m:'sprint10m', spiderRun:'spiderRun', agility515L:'agility515L', agility515R:'agility515R',
+        cmjHeight:'cmjHeight', broadJump:'broadJump', lateralJumpL:'lateralJumpL', lateralJumpR:'lateralJumpR',
+        singleLegLandL:'singleLegLandL', singleLegLandR:'singleLegLandR',
+        singleLegLandNkgL:'singleLegLandNkgL', singleLegLandNkgR:'singleLegLandNkgR',
+        singleLegDJL:'singleLegDJL', singleLegDJR:'singleLegDJR',
+        rotationalThrowL:'rotationalThrowL', rotationalThrowR:'rotationalThrowR',
+        servingThrow:'servingThrow', IFT30_15:'IFT30_15',
+        sprint30m:'sprint30m', serveSpeed:'serveSpeed', gripStrength:'gripStrength', hop10_5:'hop10_5',
+        isoMidThigh:'isoMidThigh', isoUpperLimb:'isoUpperLimb', squat:'squat', pullUp:'pullUp',
+        IFTmaxHR:'IFTmaxHR', IFTHR1min:'IFTHR1min', IFTHR3min:'IFTHR3min', notes:'coachNote'
+      };
+      Object.entries(setMap).forEach(([k, id]) => {
+        if (rec[k] !== undefined && rec[k] !== null && rec[k] !== '') setVal(id, rec[k]);
+      });
+      if (rec.gender) setVal('gender', rec.gender);
+      if (rec.dominantHand) setVal('dominantHand', rec.dominantHand);
+      if (rec.squatUnit) setVal('squatUnit', rec.squatUnit);
+      if (rec.pullUpUnit) setVal('pullUpUnit', rec.pullUpUnit);
+      if (typeof calcHRRecovery === 'function') calcHRRecovery();
+    }
+
+    async function submitRecord() {
+      const rec = collectFormData();
+      if (currentDraftId) rec.draftId = currentDraftId;  // 送出後自動刪草稿
       if (!rec.playerName) { alert('請輸入球員姓名再送出。'); return; }
 
       // 檢查合理值範圍
@@ -2058,6 +2142,9 @@
         if (result.error) { alert('錯誤：' + result.error); return; }
         currentScores = result.scores;
         displayReport(rec, result);
+        currentDraftId = null;
+        $('currentDraftBadge').style.display = 'none';
+        loadDraftList();
         const warnMsg = result.scores.insufficientSample
           ? '\n\n⚠ 同組樣本不足 10 筆，分數僅供參考，資料累積後會更精準。' : '';
         alert(`已儲存！檢測編號：${result.testId}${warnMsg}`);
@@ -2219,6 +2306,100 @@
       setVal('testDate', todayISO()); setVal('academyName', '奕晉網球學院');
       photoDataUrl = ''; logoDataUrl = '';
       $('reportPhoto').src = defaultPhoto;
+      currentDraftId = null;
+      if ($('currentDraftBadge')) $('currentDraftBadge').style.display = 'none';
+    }
+
+
+    // ── 草稿功能 ──
+    async function saveDraft() {
+      const rec = collectFormData();
+      if (!rec.playerName) { alert('請至少輸入球員姓名再儲存草稿。'); return; }
+      if (currentDraftId) rec.draftId = currentDraftId;
+
+      const btn = $('saveDraftBtn');
+      btn.disabled = true; btn.textContent = '儲存中…';
+      try {
+        const params = new URLSearchParams({
+          action: 'saveDraft', password: sessionPassword, data: JSON.stringify(rec)
+        });
+        const resp = await fetch(`${SCRIPT_URL}?${params}`);
+        const result = await resp.json();
+        if (result.error) { alert('錯誤：' + result.error); return; }
+        currentDraftId = result.draftId;
+        $('currentDraftName').textContent = rec.playerName;
+        $('currentDraftBadge').style.display = 'block';
+        loadDraftList();
+        alert(`已儲存草稿：${rec.playerName}\n下次可從上方草稿清單繼續輸入。`);
+      } catch (err) {
+        alert('網路錯誤，請稍後再試。');
+      } finally {
+        btn.disabled = false; btn.textContent = '💾 儲存草稿（稍後繼續）';
+      }
+    }
+
+    async function loadDraftList() {
+      const listEl = $('draftList');
+      if (!listEl) return;
+      try {
+        const params = new URLSearchParams({ action: 'listDrafts', password: sessionPassword });
+        const resp = await fetch(`${SCRIPT_URL}?${params}`);
+        const result = await resp.json();
+        const drafts = result.drafts || [];
+        if (!drafts.length) {
+          listEl.innerHTML = '<div class="draft-empty">目前沒有未完成的草稿</div>';
+          $('draftPanel').style.display = 'none';
+          return;
+        }
+        $('draftPanel').style.display = 'block';
+        listEl.innerHTML = drafts.map(d => {
+          const t = d.updatedAt ? new Date(d.updatedAt).toLocaleString('zh-TW', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+          return `<div class="draft-item">
+            <div class="draft-item-top">
+              <span class="draft-item-name">${escapeHtml(d.playerName||'未命名')}</span>
+              <span class="draft-item-meta">${escapeHtml(d.coach||'')} ｜ ${t}</span>
+            </div>
+            <div class="draft-item-progress">${escapeHtml(d.progress||'')}</div>
+            <div class="draft-item-actions">
+              <button class="draft-btn draft-btn-load" onclick="loadDraft('${d.draftId}')">▶ 繼續輸入</button>
+              <button class="draft-btn draft-btn-del" onclick="deleteDraft('${d.draftId}','${escapeHtml(d.playerName||'')}')">🗑 刪除</button>
+            </div>
+          </div>`;
+        }).join('');
+      } catch (err) {
+        listEl.innerHTML = '<div class="draft-empty">草稿載入失敗，請點重新整理</div>';
+      }
+    }
+
+    async function loadDraft(draftId) {
+      try {
+        const params = new URLSearchParams({ action: 'loadDraft', password: sessionPassword, draftId });
+        const resp = await fetch(`${SCRIPT_URL}?${params}`);
+        const result = await resp.json();
+        if (result.error) { alert('錯誤：' + result.error); return; }
+        fillFormData(result.rec);
+        currentDraftId = draftId;
+        $('currentDraftName').textContent = result.rec.playerName || '';
+        $('currentDraftBadge').style.display = 'block';
+        $('assessmentForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (err) {
+        alert('網路錯誤，請稍後再試。');
+      }
+    }
+
+    async function deleteDraft(draftId, name) {
+      if (!confirm(`確定要刪除「${name}」的草稿嗎？此動作無法復原。`)) return;
+      try {
+        const params = new URLSearchParams({ action: 'deleteDraft', password: sessionPassword, draftId });
+        await fetch(`${SCRIPT_URL}?${params}`);
+        if (currentDraftId === draftId) {
+          currentDraftId = null;
+          $('currentDraftBadge').style.display = 'none';
+        }
+        loadDraftList();
+      } catch (err) {
+        alert('網路錯誤，請稍後再試。');
+      }
     }
 
     function setupImageInput(inputId, cb) {
@@ -2337,6 +2518,8 @@
 
       $('previewBtn').addEventListener('click', previewReport);
       $('submitBtn').addEventListener('click', submitRecord);
+      $('saveDraftBtn').addEventListener('click', saveDraft);
+      $('draftRefreshBtn').addEventListener('click', loadDraftList);
       // 合理值範圍即時檢查
       Object.keys(validRanges).forEach(id => {
         const el = $(id);
@@ -2360,6 +2543,8 @@
       });
 
       window.addEventListener('resize', () => { if (currentScores) drawRadarChart(currentScores); });
+
+      loadDraftList();  // 開啟時載入草稿清單
     }
 
 
