@@ -983,6 +983,11 @@
       }
     }
 
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
     @media print {
       body {
         background: white;
@@ -996,7 +1001,7 @@
       }
 
       .site {
-        width: 100%;
+        width: auto;
         margin: 0;
         padding: 0;
       }
@@ -1006,44 +1011,55 @@
         margin: 0;
       }
 
+      .report-wrap {
+        display: block;
+      }
+
+      /* 固定設計寬度 1000px，再用 zoom 縮放鋪滿 A4 直式寬度（210mm≈794px）*/
       .report-card {
+        width: 1000px;
+        zoom: 0.66;
         box-shadow: none;
         border: 0;
         border-radius: 0;
+        overflow: visible;
+        break-inside: avoid;
       }
 
+      .report-card::before { display: none; }
+
+      /* 內距與間距收緊，讓內容鋪滿整頁高度 */
       .report-inner {
-        padding: 14mm;
+        padding: 22px 30px;
+        gap: 9px;
       }
+
+      /* 雷達圖在列印時縮小高度，省出垂直空間 */
+      .radar-box { min-height: 0; aspect-ratio: 1 / 0.6; }
+      .card { padding: 14px; }
+      .card-title-row { margin-bottom: 8px; }
+      .summary-card { padding: 12px 14px; }
+      .metric-card { padding: 10px; }
+      .asym-item { padding: 10px; }
+      .divider { margin: 0; }
 
       .report-top {
-        grid-template-columns: 250px 1fr 220px;
+        grid-template-columns: 280px 1fr 240px;
         text-align: left;
+        min-height: 0;
       }
 
-      .report-title {
-        text-align: center;
-      }
+      .report-title { text-align: center; }
+      .academy-block { justify-items: end; text-align: right; }
+      .divider { margin: 2px 0; }
+      .overview { grid-template-columns: 46% 1fr; gap: 16px; }
+      .summary-strip { grid-template-columns: repeat(4, 1fr); }
+      .data-grid { grid-template-columns: repeat(6, 1fr); }
+      .focus-card { grid-template-columns: 0.85fr 1.2fr; }
 
-      .academy-block {
-        justify-items: end;
-        text-align: right;
-      }
-
-      .overview {
-        grid-template-columns: 46% 1fr;
-      }
-
-      .summary-strip {
-        grid-template-columns: repeat(4, 1fr);
-      }
-
-      .data-grid {
-        grid-template-columns: repeat(6, 1fr);
-      }
-
-      .focus-card {
-        grid-template-columns: 0.85fr 1.2fr;
+      /* 區塊不要被分頁切斷 */
+      .summary-strip, .overview, .card, .asym-card, .focus-card {
+        break-inside: avoid;
       }
     }
 
