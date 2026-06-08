@@ -1617,6 +1617,7 @@
           <!-- 操作按鈕 -->
           <section class="form-section">
             <div class="button-grid">
+              <button class="btn btn-light" id="previewBtn" type="button" style="border-style:dashed">👁 預覽報告（不儲存）</button>
               <button class="btn btn-teal" id="submitBtn" type="button">送出並產生報告</button>
               <button class="btn btn-light" id="printBtn" type="button">列印 / PDF</button>
               <button class="btn btn-light" id="resetBtn" type="button">重設</button>
@@ -2363,6 +2364,7 @@
 
       $('passwordBtn').addEventListener('click', verifyPassword);
       $('passwordInput').addEventListener('keydown', e => { if (e.key === 'Enter') verifyPassword(); });
+      $('previewBtn').addEventListener('click', previewReport);
       $('submitBtn').addEventListener('click', submitRecord);
       // 合理值範圍即時檢查
       Object.keys(validRanges).forEach(id => {
@@ -2428,6 +2430,73 @@
 
       // 顯示卡片（只要有任何一項有資料）
       card.style.display = (landTime !== null || landNkg !== null || djRSI !== null) ? '' : 'none';
+    }
+
+
+    // ── 預覽報告（不儲存）──
+    function previewReport() {
+      const rec = {
+        playerName:     getVal('playerName')     || '測試球員',
+        gender:         getVal('gender'),
+        birthday:       getVal('birthday'),
+        height:         getNum('height'),
+        weight:         getNum('weight'),
+        dominantHand:   getVal('dominantHand'),
+        testDate:       getVal('testDate')        || todayISO(),
+        coach:          getVal('coachName'),
+        academyName:    getVal('academyName'),
+        sprint10m:      getNum('sprint10m'),
+        spiderRun:      getNum('spiderRun'),
+        agility515L:    getNum('agility515L'),
+        agility515R:    getNum('agility515R'),
+        cmjHeight:      getNum('cmjHeight'),
+        broadJump:      getNum('broadJump'),
+        lateralJumpL:   getNum('lateralJumpL'),
+        lateralJumpR:   getNum('lateralJumpR'),
+        singleLegLandL: getNum('singleLegLandL'),
+        singleLegLandR: getNum('singleLegLandR'),
+        singleLegLandNkgL: getNum('singleLegLandNkgL'),
+        singleLegLandNkgR: getNum('singleLegLandNkgR'),
+        singleLegDJL:   getNum('singleLegDJL'),
+        singleLegDJR:   getNum('singleLegDJR'),
+        rotationalThrowL: getNum('rotationalThrowL'),
+        rotationalThrowR: getNum('rotationalThrowR'),
+        servingThrow:   getNum('servingThrow'),
+        IFT30_15:       getNum('IFT30_15'),
+        notes:          getVal('coachNote'),
+      };
+
+      // 計算年齡
+      let age = '—';
+      if (rec.birthday) {
+        const ms = new Date(getVal('testDate') || todayISO()) - new Date(rec.birthday);
+        age = (ms / (365.25 * 24 * 3600 * 1000)).toFixed(1);
+      }
+
+      // 模擬 result 結構（分數全部顯示 50，代表「尚無比較資料」）
+      const mockResult = {
+        scores: {
+          speedAgility: 50, lowerPower: 50, singleLegDecel: 50,
+          rotational: 50, throwing: 50, cardio: 50,
+          total: 50, bestAbility: '預覽模式', weakestAbility: '預覽模式',
+          sampleSize: 0, insufficientSample: true
+        },
+        age,
+        testId: 'PREVIEW'
+      };
+
+      currentScores = mockResult.scores;
+      displayReport(rec, mockResult);
+
+      // 在報告頂部加上預覽提示
+      const nameEl = $('reportName');
+      if (nameEl && !nameEl.textContent.includes('【預覽】')) {
+        nameEl.textContent = '【預覽】' + nameEl.textContent;
+      }
+      const noteEl = $('sampleSizeNote');
+      if (noteEl) noteEl.textContent = '⚠ 預覽模式：雷達分數未實際計算，送出後才會與同組球員比較';
+
+      $('reportCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     // ── 語音輸入 ──
