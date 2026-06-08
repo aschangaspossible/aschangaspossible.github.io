@@ -1116,7 +1116,7 @@
       .asym-grid { grid-template-columns: repeat(1, 1fr); }
     }
     /* ── 密碼覆蓋層 ── */
-.pw-box .pw-icon { font-size: 36px; margin-bottom: 10px; }
+.pw-box
     .pw-box h2 { margin: 0 0 4px; color: var(--ink); font-size: 22px; }
     .pw-box p  { color: var(--muted); margin: 0 0 28px; font-size: 14px; }
     .pw-box input[type="password"] {
@@ -1126,12 +1126,7 @@
       transition: border-color .2s;
     }
     .pw-box input[type="password"]:focus { border-color: var(--primary); }
-    .pw-box .pw-btn {
-      width: 100%; background: var(--primary); color: #fff;
-      border: none; border-radius: 12px; padding: 14px;
-      font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit;
-      transition: background .2s;
-    }
+    .pw-box
     .pw-box .pw-btn:hover { background: var(--primary-dark); }
     .pw-box .pw-btn:disabled { opacity: .6; cursor: default; }
     #passwordError { color: var(--red); font-size: 13px; margin: 10px 0 0; }
@@ -1189,15 +1184,6 @@
 </head>
 
 <body>
-  <!-- 密碼覆蓋層 -->
-<h2>Tennis Performance Lab</h2>
-      <p>奕晉網球學院體能檢測系統</p>
-      <input id="passwordInput" type="password" placeholder="請輸入教練密碼" />
-      <button id="passwordBtn" class="pw-btn">確認進入</button>
-      <p id="passwordError" style="display:none;"></p>
-    </div>
-  </div>
-
   <main class="site">
     <section class="hero no-print">
       <div class="hero-content">
@@ -1972,7 +1958,7 @@
       return (a + b) / 2;
     }
         sessionPassword = pw;
-        $('passwordOverlay').style.display = 'none';
+        // 密碼已移除
       } catch (err) {
         errEl.textContent = '網路錯誤，請確認連線後重試';
         errEl.style.display = 'block';
