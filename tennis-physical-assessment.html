@@ -1620,6 +1620,7 @@
           <section class="form-section">
             <div class="button-grid">
               <button class="btn btn-light" id="saveDraftBtn" type="button" style="border:1.5px solid #f5a623;color:#92590c">💾 儲存草稿（稍後繼續）</button>
+              <button class="btn btn-light" id="saveNextBtn" type="button" style="border:1.5px solid #0f766e;color:#0f766e">➕ 儲存並換下一位</button>
               <button class="btn btn-light" id="previewBtn" type="button" style="border-style:dashed">👁 預覽報告（不儲存）</button>
               <button class="btn btn-teal" id="submitBtn" type="button">送出並產生報告</button>
               <button class="btn btn-light" id="printBtn" type="button">列印 / PDF</button>
@@ -2265,13 +2266,16 @@
 
 
     // ── 草稿功能 ──
-    async function saveDraft() {
+    async function saveDraft(nextPlayer) {
       const rec = collectFormData();
       if (!rec.playerName) { alert('請至少輸入球員姓名再儲存草稿。'); return; }
       if (currentDraftId) rec.draftId = currentDraftId;
 
-      const btn = $('saveDraftBtn');
+      const btn = nextPlayer ? $('saveNextBtn') : $('saveDraftBtn');
+      const origText = btn.textContent;
       btn.disabled = true; btn.textContent = '儲存中…';
+      // 兩個按鈕一起鎖，避免重複送出
+      $('saveDraftBtn').disabled = true; $('saveNextBtn').disabled = true;
       try {
         const params = new URLSearchParams({
           action: 'saveDraft', password: sessionPassword, data: JSON.stringify(rec)
@@ -2279,15 +2283,25 @@
         const resp = await fetch(`${SCRIPT_URL}?${params}`);
         const result = await resp.json();
         if (result.error) { alert('錯誤：' + result.error); return; }
-        currentDraftId = result.draftId;
-        $('currentDraftName').textContent = rec.playerName;
-        $('currentDraftBadge').style.display = 'block';
-        loadDraftList();
-        alert(`已儲存草稿：${rec.playerName}\n下次可從上方草稿清單繼續輸入。`);
+        const savedName = rec.playerName;
+        if (nextPlayer) {
+          // 儲存後清空表單，準備輸入下一位
+          resetForm();  // resetForm 內會把 currentDraftId 設為 null
+          loadDraftList();
+          $('assessmentForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          alert(`已儲存「${savedName}」的草稿，表單已清空，可輸入下一位球員。`);
+        } else {
+          currentDraftId = result.draftId;
+          $('currentDraftName').textContent = savedName;
+          $('currentDraftBadge').style.display = 'block';
+          loadDraftList();
+          alert(`已儲存草稿：${savedName}\n下次可從上方草稿清單繼續輸入。`);
+        }
       } catch (err) {
         alert('網路錯誤，請稍後再試。');
       } finally {
-        btn.disabled = false; btn.textContent = '💾 儲存草稿（稍後繼續）';
+        btn.textContent = origText;
+        $('saveDraftBtn').disabled = false; $('saveNextBtn').disabled = false;
       }
     }
 
@@ -2471,7 +2485,8 @@
 
       $('previewBtn').addEventListener('click', previewReport);
       $('submitBtn').addEventListener('click', submitRecord);
-      $('saveDraftBtn').addEventListener('click', saveDraft);
+      $('saveDraftBtn').addEventListener('click', () => saveDraft(false));
+      $('saveNextBtn').addEventListener('click', () => saveDraft(true));
       $('draftRefreshBtn').addEventListener('click', loadDraftList);
       // 合理值範圍即時檢查
       Object.keys(validRanges).forEach(id => {
