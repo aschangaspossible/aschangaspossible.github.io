@@ -1068,6 +1068,10 @@
 
 
 
+
+    /* ── 最重要數據 自選下拉 ── */
+    .key-metric-selectors { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:6px; }
+    .key-metric-selectors select { width:100%; height:38px; border-radius:10px; border:1.5px solid var(--line); background:var(--surface-soft); font-size:13px; padding:0 8px; cursor:pointer; }
     /* ── D 欄：其他測試補充 勾選清單 ── */
     .dextra-checklist { display:grid; grid-template-columns:repeat(2,1fr); gap:4px 14px; margin-top:6px; }
     .dextra-check { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:500; cursor:pointer; }
@@ -1641,6 +1645,13 @@
             </label>
           </section>
 
+          <!-- 最重要數據：自選欄位 -->
+          <section class="form-section">
+            <div class="form-section-title">報告「最重要數據」欄位 <span class="optional-badge">可自選</span></div>
+            <p class="section-optional-note">報告會顯示 6 格重點數據，可自由挑選要呈現哪些項目（預設為速度與爆發類）。</p>
+            <div id="keyMetricSelectors" class="key-metric-selectors"></div>
+          </section>
+
           <!-- 教練備註 -->
           <section class="form-section">
             <div class="form-section-title">教練補充觀察</div>
@@ -1800,7 +1811,7 @@
                 </div>
               </div>
 
-              <div class="data-grid">
+              <div class="data-grid" id="dataGrid">
                 <div class="metric-card">
                   <div class="metric-label">10m Sprint</div>
                   <div class="metric-value" id="metricSprint">—</div>
@@ -2087,6 +2098,7 @@
         notes:          getVal('coachNote'),
         dExtraSelected: Array.from(document.querySelectorAll('#dExtraChecklist input:checked')).map(c=>c.value),
         dExtraText:     getVal('dExtraText'),
+        keyMetrics:     [0,1,2,3,4,5].map(i => $('keyMetric'+i) ? $('keyMetric'+i).value : null).filter(Boolean),
         playerId:       ''
       };
     }
@@ -2119,6 +2131,7 @@
         document.querySelectorAll('#dExtraChecklist input').forEach(c => { c.checked = rec.dExtraSelected.includes(c.value); });
       }
       if (rec.dExtraText !== undefined) setVal('dExtraText', rec.dExtraText);
+      if (Array.isArray(rec.keyMetrics)) rec.keyMetrics.forEach((id,i)=>{ const s=$('keyMetric'+i); if(s&&id) s.value=id; });
     }
 
     async function submitRecord() {
@@ -2212,14 +2225,22 @@
       }
       renderList('otherTestList', otherTests.length ? otherTests : ['本次未挑選補充項目'], '📋');
 
-      const a515 = avg2(rec.agility515L, rec.agility515R);
-      const land = avg2(rec.singleLegLandL, rec.singleLegLandR);
-      $('metricSprint').textContent  = rec.sprint10m  ?? '—';
-      $('metricJump').textContent    = rec.broadJump  ?? '—';
-      $('metricCMJ').textContent     = rec.cmjHeight  ?? '—';
-      $('metricAgility').textContent = a515 !== null  ? a515.toFixed(2) : '—';
-      $('metricLand').textContent    = land !== null  ? land.toFixed(2) : '—';
-      $('metricSpider').textContent  = rec.spiderRun  ?? '—';
+      // 最重要數據：依教練自選的 6 項動態產生
+      const keyM = (rec.keyMetrics && rec.keyMetrics.length) ? rec.keyMetrics : defaultKeyMetrics;
+      const grid = $('dataGrid');
+      if (grid) {
+        grid.innerHTML = keyM.map(id => {
+          const it = dExtraItems.find(x => x.id === id);
+          if (!it) return '';
+          const v = it.get(rec);
+          const show = (v !== null && v !== undefined && v !== '') ? v : '—';
+          return `<div class="metric-card">
+            <div class="metric-label">${it.label}</div>
+            <div class="metric-value">${show}</div>
+            <div class="metric-unit">${(it.unit || '').trim()}</div>
+          </div>`;
+        }).join('');
+      }
 
       const coachNote = rec.notes || '建議持續追蹤球員弱項，並安排 6 週訓練週期進行複測。';
       $('recommendationText').innerHTML = `<strong>訓練建議：</strong>${escapeHtml(coachNote)}`;
@@ -2324,6 +2345,7 @@
       photoDataUrl = ''; logoDataUrl = '';
       $('reportPhoto').src = defaultPhoto;
       document.querySelectorAll('#dExtraChecklist input:checked').forEach(c => c.checked = false);
+      defaultKeyMetrics.forEach((d,i)=>{ const s=$('keyMetric'+i); if(s) s.value=d; });
       currentDraftId = null;
       if ($('currentDraftBadge')) $('currentDraftBadge').style.display = 'none';
     }
@@ -2577,6 +2599,7 @@
       window.addEventListener('resize', () => { if (currentScores) drawRadarChart(currentScores); });
 
       renderDExtraChecklist();  // 產生 D 欄勾選清單
+      renderKeyMetricSelectors();  // 產生最重要數據自選下拉
       loadDraftList();  // 開啟時載入草稿清單
     }
 
@@ -2663,6 +2686,16 @@
       box.innerHTML = dExtraItems.map(it =>
         `<label class="dextra-check"><input type="checkbox" value="${it.id}" /> ${it.label}</label>`
       ).join('');
+    }
+
+    // ── 最重要數據：6 格自選下拉 ──
+    const defaultKeyMetrics = ['sprint10m','broadJump','cmjHeight','avg515','landAvg','spiderRun'];
+    function renderKeyMetricSelectors() {
+      const box = $('keyMetricSelectors');
+      if (!box) return;
+      const opts = dExtraItems.map(it => `<option value="${it.id}">${it.label}</option>`).join('');
+      box.innerHTML = defaultKeyMetrics.map((d, i) => `<select id="keyMetric${i}">${opts}</select>`).join('');
+      defaultKeyMetrics.forEach((d, i) => { const s = $('keyMetric' + i); if (s) s.value = d; });
     }
 
     function previewReport() {
