@@ -1067,7 +1067,6 @@
       padding: 0 6px; cursor: pointer; flex-shrink: 0;
     }
     .unit-row select:focus { border-color: var(--primary); outline: none; }
-    .unit-row .mic-btn { margin-top: 0; }
     .section-optional-note {
       font-size: 12px; color: var(--muted); margin: 0 0 10px;
     }
@@ -1215,28 +1214,11 @@
     .file-upload-name {
       font-size: 11px; color: var(--muted); margin-top: 4px; display: block;
     }
-    /* ── 語音輸入按鈕 ── */
+    /* ── 輸入框排列 ── */
     .voice-row {
       display: flex; gap: 8px; align-items: center;
     }
     .voice-row input { flex: 1; margin: 0; }
-    .mic-btn {
-      flex-shrink: 0; width: 38px; height: 38px;
-      border: 1.5px solid var(--line); border-radius: 10px;
-      background: var(--surface-soft); cursor: pointer;
-      font-size: 16px; display: flex; align-items: center;
-      justify-content: center; transition: all .2s;
-      padding: 0; margin-top: 22px;
-    }
-    .mic-btn:hover { border-color: var(--primary); background: var(--primary-soft); }
-    .mic-btn.listening {
-      background: #fee2e2; border-color: var(--red);
-      animation: pulse 1s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50%       { transform: scale(1.12); }
-    }
   </style>
 </head>
 
@@ -1379,13 +1361,11 @@
               <label>10m 衝刺 sec
                 <div class="voice-row">
                   <input id="sprint10m" type="number" step="0.01" placeholder="例：1.98" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('sprint10m')" title="語音輸入">🎤</button>
                 </div>
               </label>
               <label>蜘蛛跑 sec
                 <div class="voice-row">
                   <input id="spiderRun" type="number" step="0.01" placeholder="例：12.5" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('spiderRun')" title="語音輸入">🎤</button>
                 </div>
               </label>
             </div>
@@ -1394,13 +1374,11 @@
               <label>5-10-5 左側 sec
                 <div class="voice-row">
                   <input id="agility515L" type="number" step="0.01" placeholder="例：4.82" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('agility515L')" title="語音輸入">🎤</button>
                 </div>
               </label>
               <label>5-10-5 右側 sec
                 <div class="voice-row">
                   <input id="agility515R" type="number" step="0.01" placeholder="例：4.95" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('agility515R')" title="語音輸入">🎤</button>
                 </div>
               </label>
             </div>
@@ -1415,13 +1393,11 @@
               <label>擺臂反向跳 cm
                 <div class="voice-row">
                   <input id="cmjHeight" type="number" step="0.1" placeholder="例：38" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('cmjHeight')" title="語音輸入">🎤</button>
                 </div>
               </label>
               <label>跳遠 cm
                 <div class="voice-row">
                   <input id="broadJump" type="number" step="0.1" placeholder="例：180" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('broadJump')" title="語音輸入">🎤</button>
                 </div>
               </label>
             </div>
@@ -1430,13 +1406,11 @@
               <label>側向跳 左腳 cm
                 <div class="voice-row">
                   <input id="lateralJumpL" type="number" step="0.1" placeholder="例：130" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('lateralJumpL')" title="語音輸入">🎤</button>
                 </div>
               </label>
               <label>側向跳 右腳 cm
                 <div class="voice-row">
                   <input id="lateralJumpR" type="number" step="0.1" placeholder="例：128" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('lateralJumpR')" title="語音輸入">🎤</button>
                 </div>
               </label>
             </div>
@@ -1451,13 +1425,11 @@
               <label>單腿落地 左腳 sec
                 <div class="voice-row">
                   <input id="singleLegLandL" type="number" step="0.01" placeholder="例：0.62" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('singleLegLandL')" title="語音輸入">🎤</button>
                 </div>
               </label>
               <label>單腿落地 右腳 sec
                 <div class="voice-row">
                   <input id="singleLegLandR" type="number" step="0.01" placeholder="例：0.71" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('singleLegLandR')" title="語音輸入">🎤</button>
                 </div>
               </label>
             </div>
@@ -1467,13 +1439,11 @@
               <label>單腿落地 左腳 N/kg
                 <div class="voice-row">
                   <input id="singleLegLandNkgL" type="number" step="0.01" placeholder="例：2.8" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('singleLegLandNkgL')" title="語音輸入">🎤</button>
                 </div>
               </label>
               <label>單腿落地 右腳 N/kg
                 <div class="voice-row">
                   <input id="singleLegLandNkgR" type="number" step="0.01" placeholder="例：2.9" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('singleLegLandNkgR')" title="語音輸入">🎤</button>
                 </div>
               </label>
             </div>
@@ -1483,13 +1453,11 @@
               <label>單腿DJ 左腳 RSI m/s
                 <div class="voice-row">
                   <input id="singleLegDJL" type="number" step="0.01" placeholder="例：1.2" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('singleLegDJL')" title="語音輸入">🎤</button>
                 </div>
               </label>
               <label>單腿DJ 右腳 RSI m/s
                 <div class="voice-row">
                   <input id="singleLegDJR" type="number" step="0.01" placeholder="例：1.1" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('singleLegDJR')" title="語音輸入">🎤</button>
                 </div>
               </label>
             </div>
@@ -1503,13 +1471,11 @@
               <label>轉體投擲 左側 m
                 <div class="voice-row">
                   <input id="rotationalThrowL" type="number" step="0.1" placeholder="例：5.2" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('rotationalThrowL')" title="語音輸入">🎤</button>
                 </div>
               </label>
               <label>轉體投擲 右側 m
                 <div class="voice-row">
                   <input id="rotationalThrowR" type="number" step="0.1" placeholder="例：5.5" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('rotationalThrowR')" title="語音輸入">🎤</button>
                 </div>
               </label>
             </div>
@@ -1522,7 +1488,6 @@
             <label>發球投擲 m
               <div class="voice-row">
                 <input id="servingThrow" type="number" step="0.1" placeholder="例：6.0" />
-                <button class="mic-btn" type="button" onclick="voiceInput('servingThrow')" title="語音輸入">🎤</button>
               </div>
             </label>
           </section>
@@ -1534,7 +1499,6 @@
             <label>30-15 IFT km/h
               <div class="voice-row">
                 <input id="IFT30_15" type="number" step="0.5" placeholder="例：18.5" />
-                <button class="mic-btn" type="button" onclick="voiceInput('IFT30_15')" title="語音輸入">🎤</button>
               </div>
             </label>
           </section>
@@ -1549,13 +1513,11 @@
               <label>30m 衝刺 sec <span class="optional-badge">選填</span>
                 <div class="voice-row">
                   <input id="sprint30m" type="number" step="0.01" placeholder="例：4.2" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('sprint30m')" title="語音輸入">🎤</button>
                 </div>
               </label>
               <label>發球速度 km/h <span class="optional-badge">選填</span>
                 <div class="voice-row">
                   <input id="serveSpeed" type="number" step="0.5" placeholder="例：150" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('serveSpeed')" title="語音輸入">🎤</button>
                 </div>
               </label>
             </div>
@@ -1564,13 +1526,11 @@
               <label>握力 kg <span class="optional-badge">選填</span>
                 <div class="voice-row">
                   <input id="gripStrength" type="number" step="0.5" placeholder="例：32" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('gripStrength')" title="語音輸入">🎤</button>
                 </div>
               </label>
               <label>10/5 Hop RSI m/s <span class="optional-badge">選填</span>
                 <div class="voice-row">
                   <input id="hop10_5" type="number" step="0.01" placeholder="例：2.1" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('hop10_5')" title="語音輸入">🎤</button>
                 </div>
               </label>
             </div>
@@ -1579,13 +1539,11 @@
               <label>等長中段拉 N/kg <span class="optional-badge">選填</span>
                 <div class="voice-row">
                   <input id="isoMidThigh" type="number" step="0.1" placeholder="例：3.5" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('isoMidThigh')" title="語音輸入">🎤</button>
                 </div>
               </label>
               <label>上肢等長測試 N <span class="optional-badge">選填</span>
                 <div class="voice-row">
                   <input id="isoUpperLimb" type="number" step="1" placeholder="例：320" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('isoUpperLimb')" title="語音輸入">🎤</button>
                 </div>
               </label>
             </div>
@@ -1598,7 +1556,6 @@
                     <option value="kg">kg</option>
                     <option value="次">次</option>
                   </select>
-                  <button class="mic-btn" type="button" onclick="voiceInput('squat')" title="語音輸入">🎤</button>
                 </div>
               </label>
               <label>引體向上 <span class="optional-badge">選填</span>
@@ -1608,7 +1565,6 @@
                     <option value="次">次</option>
                     <option value="秒">秒</option>
                   </select>
-                  <button class="mic-btn" type="button" onclick="voiceInput('pullUp')" title="語音輸入">🎤</button>
                 </div>
               </label>
             </div>
@@ -1619,14 +1575,12 @@
                 <div class="voice-row">
                   <input id="IFTmaxHR" type="number" step="1" placeholder="例：196"
                     oninput="calcHRRecovery()" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('IFTmaxHR')" title="語音輸入">🎤</button>
                 </div>
               </label>
               <label>1分鐘後心率 bpm
                 <div class="voice-row">
                   <input id="IFTHR1min" type="number" step="1" placeholder="例：152"
                     oninput="calcHRRecovery()" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('IFTHR1min')" title="語音輸入">🎤</button>
                 </div>
               </label>
             </div>
@@ -1635,7 +1589,6 @@
                 <div class="voice-row">
                   <input id="IFTHR3min" type="number" step="1" placeholder="例：118"
                     oninput="calcHRRecovery()" />
-                  <button class="mic-btn" type="button" onclick="voiceInput('IFTHR3min')" title="語音輸入">🎤</button>
                 </div>
               </label>
             </div>
@@ -2661,41 +2614,6 @@
       if (noteEl) noteEl.textContent = '⚠ 預覽模式：雷達分數未實際計算，送出後才會與同組球員比較';
 
       $('reportCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    // ── 語音輸入 ──
-    function voiceInput(inputId) {
-      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SR) { alert('請使用 Chrome 瀏覽器以啟用語音輸入功能'); return; }
-
-      const recognition = new SR();
-      const btn = document.querySelector(`.mic-btn[onclick="voiceInput('${inputId}')"]`);
-
-      recognition.lang = 'zh-TW';
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 3;
-
-      recognition.onstart = () => {
-        if (btn) { btn.classList.add('listening'); btn.textContent = '⏺'; }
-      };
-
-      recognition.onresult = (e) => {
-        const transcript = e.results[0][0].transcript;
-        const match = transcript.match(/\d+(\.\d+)?/);
-        if (match) {
-          const input = document.getElementById(inputId);
-          if (input) { input.value = match[0]; input.dispatchEvent(new Event('input')); }
-        }
-      };
-
-      recognition.onerror = () => {};
-
-      recognition.onend = () => {
-        if (btn) { btn.classList.remove('listening'); btn.textContent = '🎤'; }
-      };
-
-      recognition.start();
     }
 
     init();
