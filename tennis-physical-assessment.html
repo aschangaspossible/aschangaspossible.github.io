@@ -1158,6 +1158,23 @@
     input.out-of-range:focus {
       border-color: #d97706 !important;
     }
+
+    /* ── 檔案上傳按鈕 ── */
+    .file-upload-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--primary-soft); color: var(--primary);
+      border: 1.5px dashed var(--primary); border-radius: 10px;
+      padding: 10px 16px; cursor: pointer; font-weight: 600;
+      font-size: 14px; transition: all .2s; margin-top: 4px;
+      width: 100%; box-sizing: border-box;
+    }
+    .file-upload-label:hover {
+      background: var(--primary); color: #fff;
+    }
+    .file-upload-label input[type="file"] { display: none; }
+    .file-upload-name {
+      font-size: 11px; color: var(--muted); margin-top: 4px; display: block;
+    }
     /* ── 語音輸入按鈕 ── */
     .voice-row {
       display: flex; gap: 8px; align-items: center;
@@ -1229,12 +1246,22 @@
           <section class="form-section">
             <div class="form-section-title">球員基本資料</div>
 
-            <label>球員照片
-              <input id="photoInput" type="file" accept="image/*" />
-            </label>
-            <label>Academy Logo
-              <input id="logoInput" type="file" accept="image/*" />
-            </label>
+            <div>
+              <div style="font-size:14px;font-weight:600;margin-bottom:4px">球員照片</div>
+              <label class="file-upload-label">
+                📷 選擇照片
+                <input id="photoInput" type="file" accept="image/*" />
+              </label>
+              <span class="file-upload-name" id="photoFileName">未選擇檔案</span>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:600;margin-bottom:4px">Academy Logo</div>
+              <label class="file-upload-label">
+                🏫 選擇 Logo
+                <input id="logoInput" type="file" accept="image/*" />
+              </label>
+              <span class="file-upload-name" id="logoFileName">未選擇檔案</span>
+            </div>
 
             <div class="grid-2">
               <label>姓名
@@ -2321,8 +2348,16 @@
         $('assessmentForm').scrollIntoView({ behavior: 'smooth', block: 'start' })
       );
 
-      setupImageInput('photoInput', r => { photoDataUrl = r; $('reportPhoto').src = r; });
-      setupImageInput('logoInput',  r => { logoDataUrl  = r; });
+      setupImageInput('photoInput', r => {
+        photoDataUrl = r; $('reportPhoto').src = r;
+        const n = $('photoInput').files?.[0]?.name || '';
+        if ($('photoFileName')) $('photoFileName').textContent = n || '已選擇';
+      });
+      setupImageInput('logoInput',  r => {
+        logoDataUrl  = r;
+        const n = $('logoInput').files?.[0]?.name || '';
+        if ($('logoFileName')) $('logoFileName').textContent = n || '已選擇';
+      });
 
       window.addEventListener('resize', () => { if (currentScores) drawRadarChart(currentScores); });
     }
