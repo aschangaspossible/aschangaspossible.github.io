@@ -1018,7 +1018,7 @@
       /* 固定設計寬度 1000px，再用 zoom 縮放鋪滿 A4 直式寬度（210mm≈794px）*/
       .report-card {
         width: 1000px;
-        zoom: 0.66;
+        zoom: 0.59;
         margin: 0 auto;            /* 置中，左右留白平均 */
         box-shadow: none;
         border: 0;
@@ -1037,6 +1037,7 @@
 
       /* 雷達圖在列印時縮小高度，省出垂直空間 */
       .radar-box { min-height: 0; aspect-ratio: 1 / 0.6; }
+      .analysis-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
       .card { padding: 13px; }
       .card-title-row { margin-bottom: 6px; }
       .summary-card { padding: 10px 13px; }
@@ -1764,6 +1765,14 @@
                     </h4>
                     <ul class="analysis-list" id="courtList"></ul>
                   </div>
+
+                  <div class="analysis-box">
+                    <h4>
+                      D｜其他測試的補充
+                      <span class="tag tag-court">EXTRA</span>
+                    </h4>
+                    <ul class="analysis-list" id="otherTestList"></ul>
+                  </div>
                 </div>
               </div>
             </section>
@@ -2008,6 +2017,9 @@
       return (a + b) / 2;
     }
 
+    function toNum(v) { const n = parseFloat(v); return isFinite(n) ? n : 0; }
+    function r2(v) { return isFinite(v) ? Math.round(v * 100) / 100 : ''; }
+
 
     // ── 送出並儲存 ──
     // ── 收集表單所有欄位（草稿與送出共用）──
@@ -2165,6 +2177,27 @@
       renderList('improveList',  weaknesses.slice(0,3), '⚠️');
       renderList('courtList',    courts.slice(0,3),     '🎾');
       renderList('focusList',    focuses.slice(0,3),    '▸');
+
+      // D｜其他測試的補充：列出有填的一般檢測項目
+      const otherTests = [];
+      const addOther = (val, label, unit) => {
+        if (val !== null && val !== undefined && val !== '' && !(typeof val === 'number' && val <= 0))
+          otherTests.push(`${label}：${val}${unit || ''}`);
+      };
+      addOther(rec.sprint30m,    '30m 衝刺', ' 秒');
+      addOther(rec.serveSpeed,   '發球速度', ' km/h');
+      addOther(rec.gripStrength, '握力', ' kg');
+      addOther(rec.hop10_5,      '10/5 Hop RSI', ' m/s');
+      addOther(rec.isoMidThigh,  '等長中段拉', ' N/kg');
+      addOther(rec.isoUpperLimb, '上肢等長', ' N');
+      if (rec.squat)  addOther(rec.squat,  '深蹲', ' ' + (rec.squatUnit || ''));
+      if (rec.pullUp) addOther(rec.pullUp, '引體向上', ' ' + (rec.pullUpUnit || ''));
+      const maxHR = toNum(rec.IFTmaxHR);
+      if (maxHR > 0 && toNum(rec.IFTHR1min) > 0)
+        addOther(r2((maxHR - toNum(rec.IFTHR1min)) / maxHR * 100), '1分鐘心跳恢復率', ' %');
+      if (maxHR > 0 && toNum(rec.IFTHR3min) > 0)
+        addOther(r2((maxHR - toNum(rec.IFTHR3min)) / maxHR * 100), '3分鐘心跳恢復率', ' %');
+      renderList('otherTestList', otherTests.length ? otherTests : ['本次未進行其他補充測試'], '📋');
 
       const a515 = avg2(rec.agility515L, rec.agility515R);
       const land = avg2(rec.singleLegLandL, rec.singleLegLandR);
@@ -2584,36 +2617,9 @@
 
     // ── 預覽報告（不儲存）──
     function previewReport() {
-      const rec = {
-        playerName:     getVal('playerName')     || '測試球員',
-        gender:         getVal('gender'),
-        birthday:       getVal('birthday'),
-        height:         getNum('height'),
-        weight:         getNum('weight'),
-        dominantHand:   getVal('dominantHand'),
-        testDate:       getVal('testDate')        || todayISO(),
-        coach:          getVal('coachName'),
-        academyName:    getVal('academyName'),
-        sprint10m:      getNum('sprint10m'),
-        spiderRun:      getNum('spiderRun'),
-        agility515L:    getNum('agility515L'),
-        agility515R:    getNum('agility515R'),
-        cmjHeight:      getNum('cmjHeight'),
-        broadJump:      getNum('broadJump'),
-        lateralJumpL:   getNum('lateralJumpL'),
-        lateralJumpR:   getNum('lateralJumpR'),
-        singleLegLandL: getNum('singleLegLandL'),
-        singleLegLandR: getNum('singleLegLandR'),
-        singleLegLandNkgL: getNum('singleLegLandNkgL'),
-        singleLegLandNkgR: getNum('singleLegLandNkgR'),
-        singleLegDJL:   getNum('singleLegDJL'),
-        singleLegDJR:   getNum('singleLegDJR'),
-        rotationalThrowL: getNum('rotationalThrowL'),
-        rotationalThrowR: getNum('rotationalThrowR'),
-        servingThrow:   getNum('servingThrow'),
-        IFT30_15:       getNum('IFT30_15'),
-        notes:          getVal('coachNote'),
-      };
+      const rec = collectFormData();
+      if (!rec.playerName) rec.playerName = '測試球員';
+      if (!rec.testDate) rec.testDate = todayISO();
 
       // 計算年齡
       let age = '—';
