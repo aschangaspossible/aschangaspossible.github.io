@@ -1116,18 +1116,7 @@
       .asym-grid { grid-template-columns: repeat(1, 1fr); }
     }
     /* ── 密碼覆蓋層 ── */
-    #passwordOverlay {
-      position: fixed; inset: 0;
-      background: rgba(8, 34, 60, 0.93);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 9999; backdrop-filter: blur(6px);
-    }
-    .pw-box {
-      background: #fff; border-radius: 24px;
-      padding: 48px 40px; width: min(420px, 90vw);
-      box-shadow: 0 40px 80px rgba(0,0,0,0.3); text-align: center;
-    }
-    .pw-box .pw-icon { font-size: 36px; margin-bottom: 10px; }
+.pw-box .pw-icon { font-size: 36px; margin-bottom: 10px; }
     .pw-box h2 { margin: 0 0 4px; color: var(--ink); font-size: 22px; }
     .pw-box p  { color: var(--muted); margin: 0 0 28px; font-size: 14px; }
     .pw-box input[type="password"] {
@@ -1201,10 +1190,7 @@
 
 <body>
   <!-- 密碼覆蓋層 -->
-  <div id="passwordOverlay">
-    <div class="pw-box">
-      <div class="pw-icon">🎾</div>
-      <h2>Tennis Performance Lab</h2>
+<h2>Tennis Performance Lab</h2>
       <p>奕晉網球學院體能檢測系統</p>
       <input id="passwordInput" type="password" placeholder="請輸入教練密碼" />
       <button id="passwordBtn" class="pw-btn">確認進入</button>
@@ -1962,7 +1948,7 @@
     );
     const defaultPhoto = `data:image/svg+xml;charset=UTF-8,${defaultPhotoSvg}`;
 
-    let sessionPassword = '';
+    let sessionPassword = 'yijin2026';  // 密碼內建，無需登入頁
     let photoDataUrl    = '';
     let logoDataUrl     = '';
     let currentScores   = null;
@@ -1985,25 +1971,6 @@
       if (a === null) return b; if (b === null) return a;
       return (a + b) / 2;
     }
-
-    // ── 密碼驗證 ──
-    async function verifyPassword() {
-      const pw    = $('passwordInput').value.trim();
-      if (!pw) return;
-      const errEl = $('passwordError');
-      const btn   = $('passwordBtn');
-      btn.disabled = true; btn.textContent = '驗證中…';
-      errEl.style.display = 'none';
-      try {
-        const params = new URLSearchParams({ action: 'getPlayers', password: pw });
-        const resp = await fetch(`${SCRIPT_URL}?${params}`);
-        const data = await resp.json();
-        if (data.error) {
-          errEl.textContent = data.error === '密碼錯誤' ? '密碼錯誤，請再試一次' : '連線失敗：' + data.error;
-          errEl.style.display = 'block';
-          btn.disabled = false; btn.textContent = '確認進入';
-          return;
-        }
         sessionPassword = pw;
         $('passwordOverlay').style.display = 'none';
       } catch (err) {
@@ -2362,8 +2329,6 @@
       setVal('academyName', '奕晉網球學院');
       $('reportPhoto').src = defaultPhoto;
 
-      $('passwordBtn').addEventListener('click', verifyPassword);
-      $('passwordInput').addEventListener('keydown', e => { if (e.key === 'Enter') verifyPassword(); });
       $('previewBtn').addEventListener('click', previewReport);
       $('submitBtn').addEventListener('click', submitRecord);
       // 合理值範圍即時檢查
