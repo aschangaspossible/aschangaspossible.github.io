@@ -1461,16 +1461,16 @@
               </label>
             </div>
 
-            <p class="hint" style="margin-top:8px">落地峰值/體重（N/kg，越低越好）</p>
+            <p class="hint" style="margin-top:8px">落地峰值（輸入測得的總牛頓 N；系統自動 ÷ 體重換算 N/kg，越低越好）</p>
             <div class="grid-2">
-              <label>單腿落地 左腳 N/kg
+              <label>單腿落地 左腳 總牛頓 N
                 <div class="voice-row">
-                  <input id="singleLegLandNkgL" type="number" step="0.01" placeholder="例：2.8" />
+                  <input id="singleLegLandForceL" type="number" step="1" placeholder="例：1800" />
                 </div>
               </label>
-              <label>單腿落地 右腳 N/kg
+              <label>單腿落地 右腳 總牛頓 N
                 <div class="voice-row">
-                  <input id="singleLegLandNkgR" type="number" step="0.01" placeholder="例：2.9" />
+                  <input id="singleLegLandForceR" type="number" step="1" placeholder="例：1850" />
                 </div>
               </label>
             </div>
@@ -2072,8 +2072,8 @@
         lateralJumpR:   getNum('lateralJumpR'),
         singleLegLandL: getNum('singleLegLandL'),
         singleLegLandR: getNum('singleLegLandR'),
-        singleLegLandNkgL: getNum('singleLegLandNkgL'),
-        singleLegLandNkgR: getNum('singleLegLandNkgR'),
+        singleLegLandForceL: getNum('singleLegLandForceL'),
+        singleLegLandForceR: getNum('singleLegLandForceR'),
         singleLegDJL:      getNum('singleLegDJL'),
         singleLegDJR:      getNum('singleLegDJR'),
         rotationalThrowL:  getNum('rotationalThrowL'),
@@ -2111,7 +2111,7 @@
         sprint10m:'sprint10m', spiderRun:'spiderRun', agility515L:'agility515L', agility515R:'agility515R',
         cmjHeight:'cmjHeight', broadJump:'broadJump', lateralJumpL:'lateralJumpL', lateralJumpR:'lateralJumpR',
         singleLegLandL:'singleLegLandL', singleLegLandR:'singleLegLandR',
-        singleLegLandNkgL:'singleLegLandNkgL', singleLegLandNkgR:'singleLegLandNkgR',
+        singleLegLandForceL:'singleLegLandForceL', singleLegLandForceR:'singleLegLandForceR',
         singleLegDJL:'singleLegDJL', singleLegDJR:'singleLegDJR',
         rotationalThrowL:'rotationalThrowL', rotationalThrowR:'rotationalThrowR',
         servingThrow:'servingThrow', IFT30_15:'IFT30_15',
@@ -2337,7 +2337,7 @@
       ['playerName','birthday','height','weight','legLength','armLength','coachName',
        'sprint10m','spiderRun','agility515L','agility515R','cmjHeight','broadJump',
        'lateralJumpL','lateralJumpR','singleLegLandL','singleLegLandR',
-       'singleLegLandNkgL','singleLegLandNkgR','singleLegDJL','singleLegDJR',
+       'singleLegLandForceL','singleLegLandForceR','singleLegDJL','singleLegDJR',
        'rotationalThrowL','rotationalThrowR','servingThrow','IFT30_15','coachNote','dExtraText']
         .forEach(id => setVal(id, ''));
       setVal('gender', '男'); setVal('dominantHand', '右手');
@@ -2506,8 +2506,8 @@
       lateralJumpR:    { min: 60,   max: 260,  label: '側向跳右腳' },
       singleLegLandL:  { min: 0.1,  max: 3.0,  label: '單腿落地左腳' },
       singleLegLandR:  { min: 0.1,  max: 3.0,  label: '單腿落地右腳' },
-      singleLegLandNkgL: { min: 0.5, max: 12.0, label: '落地峰值左腳' },
-      singleLegLandNkgR: { min: 0.5, max: 12.0, label: '落地峰值右腳' },
+      singleLegLandForceL: { min: 200, max: 6000, label: '落地峰值左腳(N)' },
+      singleLegLandForceR: { min: 200, max: 6000, label: '落地峰值右腳(N)' },
       singleLegDJL:    { min: 0.2,  max: 3.5,  label: 'DJ RSI 左腳' },
       singleLegDJR:    { min: 0.2,  max: 3.5,  label: 'DJ RSI 右腳' },
       rotationalThrowL:{ min: 1.0,  max: 18.0, label: '轉體投擲左側' },
@@ -2641,7 +2641,7 @@
       if (!card) return;
 
       const landTime = calcAsym(rec.singleLegLandL, rec.singleLegLandR);
-      const landNkg  = calcAsym(rec.singleLegLandNkgL, rec.singleLegLandNkgR);
+      const landNkg  = calcAsym(rec.singleLegLandForceL, rec.singleLegLandForceR);
       const djRSI    = calcAsym(rec.singleLegDJL, rec.singleLegDJR);
 
       updateAsymItem('asymLandTime', '落地穩定時間', landTime);
@@ -2663,7 +2663,7 @@
       {id:'broadJump', label:'跳遠', unit:' cm', get:r=>r.broadJump},
       {id:'lateralAvg', label:'側向跳平均', unit:' cm', get:r=>{const a=avg2(r.lateralJumpL,r.lateralJumpR);return a?r2(a):null;}},
       {id:'landAvg', label:'單腿落地時間', unit:' 秒', get:r=>{const a=avg2(r.singleLegLandL,r.singleLegLandR);return a?r2(a):null;}},
-      {id:'nkgAvg', label:'單腿落地 N/kg', unit:' N/kg', get:r=>{const a=avg2(r.singleLegLandNkgL,r.singleLegLandNkgR);return a?r2(a):null;}},
+      {id:'nkgAvg', label:'單腿落地 N/kg', unit:' N/kg', get:r=>{const w=toNum(r.weight),a=avg2(r.singleLegLandForceL,r.singleLegLandForceR);return (w>0&&a)?r2(a/w):null;}},
       {id:'djAvg', label:'單腿DJ RSI', unit:' m/s', get:r=>{const a=avg2(r.singleLegDJL,r.singleLegDJR);return a?r2(a):null;}},
       {id:'rThrowAvg', label:'轉體投擲', unit:' m', get:r=>{const a=avg2(r.rotationalThrowL,r.rotationalThrowR);return a?r2(a):null;}},
       {id:'servingThrow', label:'發球投擲', unit:' m', get:r=>r.servingThrow},
