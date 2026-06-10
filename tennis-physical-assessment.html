@@ -396,6 +396,14 @@
       gap: 22px;
     }
 
+    .report-watermark {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: url("logo-watermark.png") center 50% / 48% no-repeat;
+      opacity: 0.08;
+      pointer-events: none;
+    }
     .report-card {
       position: relative;
       overflow: hidden;
@@ -415,6 +423,8 @@
     }
 
     .report-inner {
+      position: relative;
+      z-index: 1;
       padding: clamp(22px, 3.2vw, 36px);
       display: grid;
       gap: 24px;
@@ -1041,6 +1051,7 @@
       }
 
       /* 雷達圖在列印時縮小高度，省出垂直空間 */
+      .report-card.fill { zoom: 0.77; }   /* 無不對稱性區塊時放大填滿整頁 */
       .radar-box { min-height: 0; aspect-ratio: 1 / 0.6; }
       .analysis-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
       /* 分析區標題縮小，避免 2 欄窄空間換行 */
@@ -1690,6 +1701,7 @@
 
       <section class="report-wrap">
         <article class="report-card" id="reportCard">
+          <div class="report-watermark"></div>
           <div class="report-inner">
             <section class="report-top">
               <div class="player-block">
@@ -2662,6 +2674,8 @@
       // 只有任一項不對稱性 > 15%（需優先處理）時才顯示，平常隱藏讓報告清爽
       const over15 = [landTime, landNkg, djRSI].some(v => v !== null && v > 15);
       card.style.display = over15 ? '' : 'none';
+      // 沒有不對稱性區塊時，報告放大填滿整頁（避免底部空白）
+      const rc = $('reportCard'); if (rc) rc.classList.toggle('fill', !over15);
     }
 
 
