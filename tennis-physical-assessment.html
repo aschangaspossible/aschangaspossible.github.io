@@ -1359,19 +1359,19 @@
             </label>
 
             <div class="grid-2">
-              <label>身高 cm
+              <label>身高 Height cm
                 <input id="height" type="number" step="0.1" placeholder="例：158" />
               </label>
-              <label>體重 kg
+              <label>體重 Weight kg
                 <input id="weight" type="number" step="0.1" placeholder="例：47" />
               </label>
             </div>
 
             <div class="grid-2">
-              <label>腿長 cm
+              <label>腿長 Leg Length cm
                 <input id="legLength" type="number" step="0.1" placeholder="例：85" />
               </label>
-              <label>臂長 cm
+              <label>臂長 Arm Length cm
                 <input id="armLength" type="number" step="0.1" placeholder="例：72" />
               </label>
             </div>
@@ -1405,12 +1405,12 @@
             <p class="hint">單位：秒（越低越好）</p>
 
             <div class="grid-2">
-              <label>10m 衝刺 sec
+              <label>10m衝刺 (10m Sprint) sec
                 <div class="voice-row">
                   <input id="sprint10m" type="number" step="0.01" placeholder="例：1.98" />
                 </div>
               </label>
-              <label>蜘蛛跑 sec
+              <label>蜘蛛跑 (Spider Run) sec
                 <div class="voice-row">
                   <input id="spiderRun" type="number" step="0.01" placeholder="例：12.5" />
                 </div>
@@ -1418,12 +1418,12 @@
             </div>
 
             <div class="grid-2">
-              <label>5-10-5 左側 sec
+              <label>5-10-5變向 左 (5-10-5 Left) sec
                 <div class="voice-row">
                   <input id="agility515L" type="number" step="0.01" placeholder="例：4.82" />
                 </div>
               </label>
-              <label>5-10-5 右側 sec
+              <label>5-10-5變向 右 (5-10-5 Right) sec
                 <div class="voice-row">
                   <input id="agility515R" type="number" step="0.01" placeholder="例：4.95" />
                 </div>
@@ -1437,12 +1437,12 @@
             <p class="hint">單位：cm（越高越好）</p>
 
             <div class="grid-2">
-              <label>擺臂反向跳 cm
+              <label>擺臂反向跳 (CMJ) cm
                 <div class="voice-row">
                   <input id="cmjHeight" type="number" step="0.1" placeholder="例：38" />
                 </div>
               </label>
-              <label>跳遠 cm
+              <label>跳遠 (Broad Jump) cm
                 <div class="voice-row">
                   <input id="broadJump" type="number" step="0.1" placeholder="例：180" />
                 </div>
@@ -1450,12 +1450,12 @@
             </div>
 
             <div class="grid-2">
-              <label>側向跳 左腳 cm
+              <label>側向跳 左 (Skater Jump L) cm
                 <div class="voice-row">
                   <input id="lateralJumpL" type="number" step="0.1" placeholder="例：130" />
                 </div>
               </label>
-              <label>側向跳 右腳 cm
+              <label>側向跳 右 (Skater Jump R) cm
                 <div class="voice-row">
                   <input id="lateralJumpR" type="number" step="0.1" placeholder="例：128" />
                 </div>
@@ -1469,12 +1469,12 @@
             <p class="hint">落地穩定所需時間（秒，越低越好）</p>
 
             <div class="grid-2">
-              <label>單腿落地 左腳 sec
+              <label>單腿落地穩定 左 (SL Landing L) sec
                 <div class="voice-row">
                   <input id="singleLegLandL" type="number" step="0.01" placeholder="例：0.62" />
                 </div>
               </label>
-              <label>單腿落地 右腳 sec
+              <label>單腿落地穩定 右 (SL Landing R) sec
                 <div class="voice-row">
                   <input id="singleLegLandR" type="number" step="0.01" placeholder="例：0.71" />
                 </div>
@@ -1483,12 +1483,12 @@
 
             <p class="hint" style="margin-top:8px">落地峰值（輸入測得的總牛頓 N；系統自動 ÷ 體重換算 N/kg，越低越好）</p>
             <div class="grid-2">
-              <label>單腿落地 左腳 總牛頓 N
+              <label>單腿落地峰值力 左 (Landing Force L) 總牛頓 N
                 <div class="voice-row">
                   <input id="singleLegLandForceL" type="number" step="1" placeholder="例：1800" />
                 </div>
               </label>
-              <label>單腿落地 右腳 總牛頓 N
+              <label>單腿落地峰值力 右 (Landing Force R) 總牛頓 N
                 <div class="voice-row">
                   <input id="singleLegLandForceR" type="number" step="1" placeholder="例：1850" />
                 </div>
@@ -1497,12 +1497,12 @@
 
             <p class="hint" style="margin-top:8px">Single leg drop jump RSI（m/s，越高越好）</p>
             <div class="grid-2">
-              <label>單腿DJ 左腳 RSI m/s
+              <label>單腿DJ 左 (SL Drop Jump L) RSI m/s
                 <div class="voice-row">
                   <input id="singleLegDJL" type="number" step="0.01" placeholder="例：1.2" />
                 </div>
               </label>
-              <label>單腿DJ 右腳 RSI m/s
+              <label>單腿DJ 右 (SL Drop Jump R) RSI m/s
                 <div class="voice-row">
                   <input id="singleLegDJR" type="number" step="0.01" placeholder="例：1.1" />
                 </div>
@@ -1515,12 +1515,12 @@
             <div class="form-section-title">轉體爆發</div>
             <p class="hint">藥球轉體投擲距離（m，越遠越好）</p>
             <div class="grid-2">
-              <label>轉體投擲 左側 m
+              <label>轉體投擲 左 (Rotational Throw L) m
                 <div class="voice-row">
                   <input id="rotationalThrowL" type="number" step="0.1" placeholder="例：5.2" />
                 </div>
               </label>
-              <label>轉體投擲 右側 m
+              <label>轉體投擲 右 (Rotational Throw R) m
                 <div class="voice-row">
                   <input id="rotationalThrowR" type="number" step="0.1" placeholder="例：5.5" />
                 </div>
@@ -1532,7 +1532,7 @@
           <section class="form-section">
             <div class="form-section-title">投擲</div>
             <p class="hint">藥球發球模式投擲距離（m，越遠越好）</p>
-            <label>發球投擲 m
+            <label>發球投擲 (Serve-style Throw) m
               <div class="voice-row">
                 <input id="servingThrow" type="number" step="0.1" placeholder="例：6.0" />
               </div>
@@ -1557,12 +1557,12 @@
             <p class="section-optional-note">以下項目不納入雷達圖，但資料會儲存至後台供縱向追蹤。不是每次都需要全部填寫。</p>
 
             <div class="grid-2">
-              <label>30m 衝刺 sec <span class="optional-badge">選填</span>
+              <label>30m衝刺 (30m Sprint) sec <span class="optional-badge">選填</span>
                 <div class="voice-row">
                   <input id="sprint30m" type="number" step="0.01" placeholder="例：4.2" />
                 </div>
               </label>
-              <label>發球速度 km/h <span class="optional-badge">選填</span>
+              <label>發球速度 (Serve Speed) km/h <span class="optional-badge">選填</span>
                 <div class="voice-row">
                   <input id="serveSpeed" type="number" step="0.5" placeholder="例：150" />
                 </div>
@@ -1570,12 +1570,12 @@
             </div>
 
             <div class="grid-2">
-              <label>握力 kg <span class="optional-badge">選填</span>
+              <label>握力 (Grip Strength) kg <span class="optional-badge">選填</span>
                 <div class="voice-row">
                   <input id="gripStrength" type="number" step="0.5" placeholder="例：32" />
                 </div>
               </label>
-              <label>10/5 Hop RSI m/s <span class="optional-badge">選填</span>
+              <label>10/5 Hop (10/5 Hop RSI) m/s <span class="optional-badge">選填</span>
                 <div class="voice-row">
                   <input id="hop10_5" type="number" step="0.01" placeholder="例：2.1" />
                 </div>
@@ -1583,12 +1583,12 @@
             </div>
 
             <div class="grid-2">
-              <label>等長中段拉 總牛頓 N <span class="optional-badge">選填</span>
+              <label>等長中段拉 (IMTP) 總牛頓 N <span class="optional-badge">選填</span>
                 <div class="voice-row">
                   <input id="isoMidThighForce" type="number" step="1" placeholder="例：1600（系統自動÷體重）" />
                 </div>
               </label>
-              <label>上肢等長測試 N <span class="optional-badge">選填</span>
+              <label>上肢等長測試 (Upper-body ISO) N <span class="optional-badge">選填</span>
                 <div class="voice-row">
                   <input id="isoUpperLimb" type="number" step="1" placeholder="例：320" />
                 </div>
@@ -1596,7 +1596,7 @@
             </div>
 
             <div class="grid-2">
-              <label>深蹲 <span class="optional-badge">選填</span>
+              <label>深蹲 (Squat) <span class="optional-badge">選填</span>
                 <div class="unit-row">
                   <input id="squat" type="number" step="0.5" placeholder="數值" />
                   <select id="squatUnit">
@@ -1605,7 +1605,7 @@
                   </select>
                 </div>
               </label>
-              <label>引體向上 <span class="optional-badge">選填</span>
+              <label>引體向上 (Pull-up) <span class="optional-badge">選填</span>
                 <div class="unit-row">
                   <input id="pullUp" type="number" step="0.5" placeholder="數值" />
                   <select id="pullUpUnit">
@@ -1618,13 +1618,13 @@
 
             <p class="hint" style="margin-top:10px">30-15 IFT 心跳數據 <span class="optional-badge">選填</span>｜填入後自動計算恢復率</p>
             <div class="grid-2" style="margin-top:6px">
-              <label>最高心跳 bpm
+              <label>最高心跳 (Max HR) bpm
                 <div class="voice-row">
                   <input id="IFTmaxHR" type="number" step="1" placeholder="例：196"
                     oninput="calcHRRecovery()" />
                 </div>
               </label>
-              <label>1分鐘後心率 bpm
+              <label>1分鐘後心率 (1-min HR) bpm
                 <div class="voice-row">
                   <input id="IFTHR1min" type="number" step="1" placeholder="例：152"
                     oninput="calcHRRecovery()" />
@@ -1632,7 +1632,7 @@
               </label>
             </div>
             <div class="grid-2">
-              <label>3分鐘後心率 bpm
+              <label>3分鐘後心率 (3-min HR) bpm
                 <div class="voice-row">
                   <input id="IFTHR3min" type="number" step="1" placeholder="例：118"
                     oninput="calcHRRecovery()" />
@@ -2680,28 +2680,28 @@
     // ── 預覽報告（不儲存）──
     // ── D 欄：其他測試的補充（可勾選的所有檢測項目）──
     const dExtraItems = [
-      {id:'sprint10m', label:'10m 衝刺', unit:' 秒', get:r=>r.sprint10m},
-      {id:'avg515', label:'5-10-5 平均', unit:' 秒', get:r=>{const a=avg2(r.agility515L,r.agility515R);return a?r2(a):null;}},
-      {id:'spiderRun', label:'蜘蛛跑', unit:' 秒', get:r=>r.spiderRun},
-      {id:'cmjHeight', label:'擺臂反向跳', unit:' cm', get:r=>r.cmjHeight},
-      {id:'broadJump', label:'跳遠', unit:' cm', get:r=>r.broadJump},
-      {id:'lateralAvg', label:'側向跳平均', unit:' cm', get:r=>{const a=avg2(r.lateralJumpL,r.lateralJumpR);return a?r2(a):null;}},
-      {id:'landAvg', label:'單腿落地時間', unit:' 秒', get:r=>{const a=avg2(r.singleLegLandL,r.singleLegLandR);return a?r2(a):null;}},
-      {id:'nkgAvg', label:'單腿落地 N/kg', unit:' N/kg', get:r=>{const w=toNum(r.weight),a=avg2(r.singleLegLandForceL,r.singleLegLandForceR);return (w>0&&a)?r2(a/w):null;}},
-      {id:'djAvg', label:'單腿DJ RSI', unit:' m/s', get:r=>{const a=avg2(r.singleLegDJL,r.singleLegDJR);return a?r2(a):null;}},
-      {id:'rThrowAvg', label:'轉體投擲', unit:' m', get:r=>{const a=avg2(r.rotationalThrowL,r.rotationalThrowR);return a?r2(a):null;}},
-      {id:'servingThrow', label:'發球投擲', unit:' m', get:r=>r.servingThrow},
+      {id:'sprint10m', label:'10m衝刺 (10m Sprint)', unit:' 秒', get:r=>r.sprint10m},
+      {id:'avg515', label:'5-10-5變向 (5-10-5 Avg)', unit:' 秒', get:r=>{const a=avg2(r.agility515L,r.agility515R);return a?r2(a):null;}},
+      {id:'spiderRun', label:'蜘蛛跑 (Spider Run)', unit:' 秒', get:r=>r.spiderRun},
+      {id:'cmjHeight', label:'擺臂反向跳 (CMJ)', unit:' cm', get:r=>r.cmjHeight},
+      {id:'broadJump', label:'跳遠 (Broad Jump)', unit:' cm', get:r=>r.broadJump},
+      {id:'lateralAvg', label:'側向跳 (Skater Jump)', unit:' cm', get:r=>{const a=avg2(r.lateralJumpL,r.lateralJumpR);return a?r2(a):null;}},
+      {id:'landAvg', label:'單腿落地穩定 (SL Landing)', unit:' 秒', get:r=>{const a=avg2(r.singleLegLandL,r.singleLegLandR);return a?r2(a):null;}},
+      {id:'nkgAvg', label:'單腿落地峰值 (Landing Force)', unit:' N/kg', get:r=>{const w=toNum(r.weight),a=avg2(r.singleLegLandForceL,r.singleLegLandForceR);return (w>0&&a)?r2(a/w):null;}},
+      {id:'djAvg', label:'單腿DJ (SL Drop Jump RSI)', unit:' m/s', get:r=>{const a=avg2(r.singleLegDJL,r.singleLegDJR);return a?r2(a):null;}},
+      {id:'rThrowAvg', label:'轉體投擲 (Rotational Throw)', unit:' m', get:r=>{const a=avg2(r.rotationalThrowL,r.rotationalThrowR);return a?r2(a):null;}},
+      {id:'servingThrow', label:'發球投擲 (Serve Throw)', unit:' m', get:r=>r.servingThrow},
       {id:'IFT30_15', label:'30-15 IFT', unit:' km/h', get:r=>r.IFT30_15},
-      {id:'sprint30m', label:'30m 衝刺', unit:' 秒', get:r=>r.sprint30m},
-      {id:'serveSpeed', label:'發球速度', unit:' km/h', get:r=>r.serveSpeed},
-      {id:'gripStrength', label:'握力', unit:' kg', get:r=>r.gripStrength},
-      {id:'hop10_5', label:'10/5 Hop RSI', unit:' m/s', get:r=>r.hop10_5},
-      {id:'isoMidThigh', label:'等長中段拉', unit:' N/kg', get:r=>{const w=toNum(r.weight);return (w>0&&r.isoMidThighForce)?r2(r.isoMidThighForce/w):null;}},
-      {id:'isoUpperLimb', label:'上肢等長', unit:' N', get:r=>r.isoUpperLimb},
-      {id:'squat', label:'深蹲', unit:'', get:r=>r.squat?r.squat+' '+(r.squatUnit||''):null},
-      {id:'pullUp', label:'引體向上', unit:'', get:r=>r.pullUp?r.pullUp+' '+(r.pullUpUnit||''):null},
-      {id:'hr1', label:'1分鐘心跳恢復率', unit:' %', get:r=>{const m=toNum(r.IFTmaxHR),h=toNum(r.IFTHR1min);return (m>0&&h>0)?r2((m-h)/m*100):null;}},
-      {id:'hr3', label:'3分鐘心跳恢復率', unit:' %', get:r=>{const m=toNum(r.IFTmaxHR),h=toNum(r.IFTHR3min);return (m>0&&h>0)?r2((m-h)/m*100):null;}},
+      {id:'sprint30m', label:'30m衝刺 (30m Sprint)', unit:' 秒', get:r=>r.sprint30m},
+      {id:'serveSpeed', label:'發球速度 (Serve Speed)', unit:' km/h', get:r=>r.serveSpeed},
+      {id:'gripStrength', label:'握力 (Grip Strength)', unit:' kg', get:r=>r.gripStrength},
+      {id:'hop10_5', label:'10/5 Hop (RSI)', unit:' m/s', get:r=>r.hop10_5},
+      {id:'isoMidThigh', label:'等長中段拉 (IMTP)', unit:' N/kg', get:r=>{const w=toNum(r.weight);return (w>0&&r.isoMidThighForce)?r2(r.isoMidThighForce/w):null;}},
+      {id:'isoUpperLimb', label:'上肢等長 (Upper ISO)', unit:' N', get:r=>r.isoUpperLimb},
+      {id:'squat', label:'深蹲 (Squat)', unit:'', get:r=>r.squat?r.squat+' '+(r.squatUnit||''):null},
+      {id:'pullUp', label:'引體向上 (Pull-up)', unit:'', get:r=>r.pullUp?r.pullUp+' '+(r.pullUpUnit||''):null},
+      {id:'hr1', label:'1分鐘心跳恢復率 (1-min HR Recovery)', unit:' %', get:r=>{const m=toNum(r.IFTmaxHR),h=toNum(r.IFTHR1min);return (m>0&&h>0)?r2((m-h)/m*100):null;}},
+      {id:'hr3', label:'3分鐘心跳恢復率 (3-min HR Recovery)', unit:' %', get:r=>{const m=toNum(r.IFTmaxHR),h=toNum(r.IFTHR3min);return (m>0&&h>0)?r2((m-h)/m*100):null;}},
     ];
 
     function renderDExtraChecklist() {
