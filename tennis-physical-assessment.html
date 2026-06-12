@@ -507,29 +507,6 @@
       font-weight: 800;
     }
 
-    .logo-box {
-      width: 92px;
-      height: 92px;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      border-radius: 24px;
-      background: #f1f5f9;
-      border: 1px solid var(--line);
-      color: var(--primary-dark);
-      font-size: 12px;
-      font-weight: 1000;
-      line-height: 1.15;
-      text-align: center;
-    }
-
-    .logo-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      padding: 10px;
-    }
-
     .divider {
       height: 1px;
       background: linear-gradient(90deg, transparent, var(--line), transparent);
@@ -1333,14 +1310,6 @@
               </label>
               <span class="file-upload-name" id="photoFileName">未選擇檔案</span>
             </div>
-            <div>
-              <div style="font-size:14px;font-weight:600;margin-bottom:4px">Academy Logo</div>
-              <label class="file-upload-label">
-                🏫 選擇 Logo
-                <input id="logoInput" type="file" accept="image/*" />
-              </label>
-              <span class="file-upload-name" id="logoFileName">未選擇檔案</span>
-            </div>
 
             <div class="grid-2">
               <label>姓名
@@ -1721,10 +1690,6 @@
               </div>
 
               <div class="academy-block">
-                <div class="logo-box" id="reportLogoBox">
-                  <span>ACADEMY<br />LOGO</span>
-                </div>
-
                 <div>
                   <div id="reportDate">檢測日期｜2026-05-13</div>
                   <div id="reportCoach">教練｜Coach Mark</div>
@@ -2041,7 +2006,6 @@
 
     let sessionPassword = 'yijin2026';  // 密碼內建，無需登入頁
     let photoDataUrl    = '';
-    let logoDataUrl     = '';
     let currentScores   = null;
     let currentDraftId  = null;  // 目前編輯中的草稿 ID
 
@@ -2208,10 +2172,6 @@
       $('reportCoach').textContent = `教練｜${rec.coach || '-'}`;
       $('reportAcademy').textContent = rec.academyName || '奕晉網球學院';
 
-      $('reportLogoBox').innerHTML = logoDataUrl
-        ? `<img src="${logoDataUrl}" alt="Academy Logo" />`
-        : `<span>ACADEMY<br />LOGO</span>`;
-
       $('overallScore').textContent = s.total;
       $('bestAbility').textContent  = s.bestAbility  || '-';
       $('mainFocus').textContent    = s.weakestAbility || '-';
@@ -2363,7 +2323,7 @@
         .forEach(id => setVal(id, ''));
       setVal('gender', '男'); setVal('dominantHand', '右手');
       setVal('testDate', todayISO()); setVal('academyName', '奕晉網球學院');
-      photoDataUrl = ''; logoDataUrl = '';
+      photoDataUrl = '';
       $('reportPhoto').src = defaultPhoto;
       document.querySelectorAll('#dExtraChecklist input:checked').forEach(c => c.checked = false);
       defaultKeyMetrics.forEach((d,i)=>{ const s=$('keyMetric'+i); if(s) s.value=d; });
@@ -2611,12 +2571,6 @@
         const n = $('photoInput').files?.[0]?.name || '';
         if ($('photoFileName')) $('photoFileName').textContent = n || '已選擇';
       });
-      setupImageInput('logoInput',  r => {
-        logoDataUrl  = r;
-        const n = $('logoInput').files?.[0]?.name || '';
-        if ($('logoFileName')) $('logoFileName').textContent = n || '已選擇';
-      });
-
       window.addEventListener('resize', () => { if (currentScores) drawRadarChart(currentScores); });
 
       renderDExtraChecklist();  // 產生 D 欄勾選清單
