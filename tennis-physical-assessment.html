@@ -2576,6 +2576,10 @@
       renderDExtraChecklist();  // 產生 D 欄勾選清單
       renderKeyMetricSelectors();  // 產生最重要數據自選下拉
       loadDraftList();  // 開啟時載入草稿清單
+
+      // 初次載入先畫一張預設雷達圖（中性值），避免報告區雷達圖空白
+      currentScores = { speedAgility:50, lowerPower:50, singleLegDecel:50, rotational:50, throwing:50, cardio:50 };
+      setTimeout(() => drawRadarChart(currentScores), 100);
     }
 
 
