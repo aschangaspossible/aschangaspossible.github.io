@@ -1295,6 +1295,16 @@
           <div id="draftList"><div class="draft-empty">載入中…</div></div>
         </div>
 
+        <div class="draft-panel no-print" id="recordPanel" style="background:#eef6f5;border-color:#bcdedb">
+          <div class="draft-panel-head">
+            <h3 style="color:#0f766e">📂 查詢歷史報告（重新列印）</h3>
+            <button class="draft-refresh" type="button" id="recordRefreshBtn" style="color:#0f766e">↻ 載入 / 重新整理</button>
+          </div>
+          <input id="recordSearch" type="text" placeholder="🔍 輸入球員姓名篩選…"
+                 style="width:100%;box-sizing:border-box;margin:0 0 10px;padding:8px 12px;border:1px solid #bcdedb;border-radius:8px;font-size:13px" />
+          <div id="recordList"><div class="draft-empty">點上方「載入 / 重新整理」列出已送出的檢測紀錄</div></div>
+        </div>
+
 
         <div class="form-body">
           <div id="currentDraftBadge">✏️ 目前正在編輯草稿：<span id="currentDraftName"></span></div>
@@ -2319,8 +2329,12 @@
        'sprint10m','spiderRun','agility515L','agility515R','cmjHeight','broadJump',
        'lateralJumpL','lateralJumpR','singleLegLandL','singleLegLandR',
        'singleLegLandForceL','singleLegLandForceR','singleLegDJL','singleLegDJR',
-       'rotationalThrowL','rotationalThrowR','servingThrow','IFT30_15','coachNote','dExtraText']
+       'rotationalThrowL','rotationalThrowR','servingThrow','IFT30_15','coachNote','dExtraText',
+       // 一般檢測項目 + IFT 心跳（先前漏清，會殘留到下一位）
+       'sprint30m','serveSpeed','gripStrength','hop10_5','isoMidThighForce','isoUpperLimb',
+       'squat','pullUp','IFTmaxHR','IFTHR1min','IFTHR3min','IFTrecovery1','IFTrecovery3']
         .forEach(id => setVal(id, ''));
+      setVal('squatUnit', 'kg'); setVal('pullUpUnit', '次');
       setVal('gender', '男'); setVal('dominantHand', '右手');
       setVal('testDate', todayISO()); setVal('academyName', '奕晉網球學院');
       photoDataUrl = '';
@@ -2336,7 +2350,16 @@
     async function saveDraft(nextPlayer) {
       const rec = collectFormData();
       if (!rec.playerName) { alert('請至少輸入球員姓名再儲存草稿。'); return; }
-      if (currentDraftId) rec.draftId = currentDraftId;
+      if (currentDraftId) {
+        if (nextPlayer) {
+          // 「儲存並換下一位」：只有當表單仍是「正在編輯的那位球員」(同名) 時才沿用 draftId，
+          // 否則視為新球員 → 不帶 draftId，後台會建立新草稿，避免覆蓋掉上一位的資料。
+          const editingName = ($('currentDraftName')?.textContent || '').trim();
+          if (editingName && editingName === (rec.playerName || '').trim()) rec.draftId = currentDraftId;
+        } else {
+          rec.draftId = currentDraftId;
+        }
+      }
 
       const btn = nextPlayer ? $('saveNextBtn') : $('saveDraftBtn');
       const origText = btn.textContent;
@@ -2431,6 +2454,63 @@
           $('currentDraftBadge').style.display = 'none';
         }
         loadDraftList();
+      } catch (err) {
+        alert('網路錯誤，請稍後再試。');
+      }
+    }
+
+    // ── 歷史報告查詢 / 重印 ──
+    let allRecords = [];
+    async function loadRecordList() {
+      const listEl = $('recordList');
+      if (!listEl) return;
+      listEl.innerHTML = '<div class="draft-empty">載入中…</div>';
+      try {
+        const params = new URLSearchParams({ action: 'listRecords', password: sessionPassword });
+        const resp = await fetch(`${SCRIPT_URL}?${params}`);
+        const result = await resp.json();
+        if (result.error) { listEl.innerHTML = '<div class="draft-empty">錯誤：' + escapeHtml(result.error) + '</div>'; return; }
+        allRecords = result.records || [];
+        renderRecordList();
+      } catch (err) {
+        listEl.innerHTML = '<div class="draft-empty">網路錯誤，請稍後再試。</div>';
+      }
+    }
+
+    function renderRecordList() {
+      const listEl = $('recordList');
+      if (!listEl) return;
+      const kw = ($('recordSearch')?.value || '').trim().toLowerCase();
+      const rows = allRecords.filter(r => !kw || String(r.playerName || '').toLowerCase().includes(kw));
+      if (!rows.length) {
+        listEl.innerHTML = '<div class="draft-empty">' +
+          (allRecords.length ? '查無符合的球員' : '目前沒有已送出的檢測紀錄') + '</div>';
+        return;
+      }
+      listEl.innerHTML = rows.map(r => `
+        <div class="draft-item">
+          <div class="draft-item-top">
+            <span class="draft-item-name">${escapeHtml(r.playerName || '未命名')}
+              <span style="font-weight:400;color:var(--muted)">${escapeHtml(r.gender || '')}</span></span>
+            <span class="draft-item-meta">${escapeHtml(r.testDate || '')}</span>
+          </div>
+          <div class="draft-item-progress">編號 ${escapeHtml(r.testId)}　${escapeHtml(r.ageGroup || '')}${r.age ? '　' + r.age + ' 歲' : ''}</div>
+          <div class="draft-item-actions">
+            <button class="draft-btn draft-btn-load" onclick="openRecord('${r.testId}')">📄 叫出報告</button>
+          </div>
+        </div>`).join('');
+    }
+
+    async function openRecord(testId) {
+      try {
+        const params = new URLSearchParams({ action: 'loadRecord', password: sessionPassword, testId });
+        const resp = await fetch(`${SCRIPT_URL}?${params}`);
+        const result = await resp.json();
+        if (result.error) { alert('錯誤：' + result.error); return; }
+        photoDataUrl = '';                       // 歷史紀錄沒有存照片 → 用預設照片
+        currentScores = result.scores;
+        displayReport(result.rec, { scores: result.scores, age: result.age });
+        alert(`已叫出「${result.rec.playerName || ''}」的報告（編號 ${testId}）。\n請按報告上方「列印 / PDF」輸出。`);
       } catch (err) {
         alert('網路錯誤，請稍後再試。');
       }
@@ -2555,6 +2635,8 @@
       $('saveDraftBtn').addEventListener('click', () => saveDraft(false));
       $('saveNextBtn').addEventListener('click', () => saveDraft(true));
       $('draftRefreshBtn').addEventListener('click', loadDraftList);
+      $('recordRefreshBtn').addEventListener('click', loadRecordList);
+      $('recordSearch').addEventListener('input', renderRecordList);
       // 合理值範圍即時檢查
       Object.keys(validRanges).forEach(id => {
         const el = $(id);
