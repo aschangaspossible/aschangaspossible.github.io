@@ -2146,10 +2146,15 @@
       $('loadingMsg').style.display = 'block';
       $('submitBtn').disabled = true;
       try {
-        const params = new URLSearchParams({
-          action: 'saveRecord', password: sessionPassword, data: JSON.stringify(rec)
+        // 用 POST（text/plain 屬簡單請求，免 CORS 預檢）把照片一起送上去，避開 GET 網址長度限制
+        const resp   = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'saveRecord', password: sessionPassword,
+            data: JSON.stringify(rec), photo: photoDataUrl || ''
+          })
         });
-        const resp   = await fetch(`${SCRIPT_URL}?${params}`);
         const result = await resp.json();
         if (result.error) { alert('錯誤：' + result.error); return; }
         currentScores = result.scores;
@@ -2507,7 +2512,7 @@
         const resp = await fetch(`${SCRIPT_URL}?${params}`);
         const result = await resp.json();
         if (result.error) { alert('錯誤：' + result.error); return; }
-        photoDataUrl = '';                       // 歷史紀錄沒有存照片 → 用預設照片
+        photoDataUrl = result.photo || '';       // 有存照片就帶回，沒有則用預設照片
         currentScores = result.scores;
         displayReport(result.rec, { scores: result.scores, age: result.age });
         alert(`已叫出「${result.rec.playerName || ''}」的報告（編號 ${testId}）。\n請按報告上方「列印 / PDF」輸出。`);
@@ -2523,6 +2528,35 @@
         reader.onload = () => cb(reader.result);
         reader.readAsDataURL(file);
       });
+    }
+
+    // 把照片縮成小張 JPEG（頭像用），確保能存進 Google Sheets 單格（<50000 字元）
+    function resizeImage(dataUrl, maxDim, quality) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if (w >= h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
+          else if (h > w && h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
+          const c = document.createElement('canvas'); c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          try { resolve(c.toDataURL('image/jpeg', quality)); }
+          catch (err) { resolve(dataUrl); }
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+      });
+    }
+    // 逐步壓到 45000 字元以下（後台另有 49000 上限保護）
+    async function compressPhoto(dataUrl) {
+      let best = dataUrl;
+      for (const d of [360, 300, 240]) {
+        for (const q of [0.7, 0.55, 0.45]) {
+          best = await resizeImage(dataUrl, d, q);
+          if (best.length <= 45000) return best;
+        }
+      }
+      return best;
     }
 
 
@@ -2648,9 +2682,11 @@
         $('assessmentForm').scrollIntoView({ behavior: 'smooth', block: 'start' })
       );
 
-      setupImageInput('photoInput', r => {
-        photoDataUrl = r; $('reportPhoto').src = r;
+      setupImageInput('photoInput', async r => {
         const n = $('photoInput').files?.[0]?.name || '';
+        if ($('photoFileName')) $('photoFileName').textContent = n ? (n + '（壓縮中…）') : '處理中…';
+        const small = await compressPhoto(r);   // 壓縮後再存，重印時才放得進資料庫
+        photoDataUrl = small; $('reportPhoto').src = small;
         if ($('photoFileName')) $('photoFileName').textContent = n || '已選擇';
       });
       window.addEventListener('resize', () => { if (currentScores) drawRadarChart(currentScores); });
