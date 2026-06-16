@@ -1073,6 +1073,19 @@
     .dextra-checklist { display:grid; grid-template-columns:repeat(2,1fr); gap:4px 14px; margin-top:6px; }
     .dextra-check { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:500; cursor:pointer; }
     .dextra-check input { width:auto; margin:0; flex-shrink:0; }
+    /* ── 活動度測試：V/X 通過切換 ── */
+    .mob-row { display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; padding:8px 0; border-bottom:1px dashed var(--line,#e5e7eb); }
+    .mob-row:last-child { border-bottom:none; }
+    .mob-name { flex:1 1 150px; font-size:14px; font-weight:600; }
+    .mob-ctrls { display:flex; align-items:center; gap:14px; }
+    .mob-side { display:flex; align-items:center; gap:5px; }
+    .mob-side-label { font-size:12px; color:var(--muted,#6b7280); font-weight:600; }
+    .mob-toggle { display:inline-flex; gap:4px; }
+    .mob-btn { width:34px; height:30px; padding:0; border:1.5px solid #d1d5db; background:#fff; border-radius:7px; font-size:16px; font-weight:800; line-height:1; cursor:pointer; color:#9ca3af; transition:all .12s; }
+    .mob-btn.mob-pass.active { background:#16a34a; border-color:#16a34a; color:#fff; }
+    .mob-btn.mob-fail.active { background:#dc2626; border-color:#dc2626; color:#fff; }
+    .mob-show { display:flex; align-items:center; gap:5px; font-size:12.5px; font-weight:500; color:var(--muted,#6b7280); cursor:pointer; margin-left:auto; }
+    .mob-show input { width:auto; margin:0; flex-shrink:0; }
     /* ── 一般檢測項目：單位下拉 + 選填標記 ── */
     .optional-badge {
       font-size: 10px; font-weight: 700; color: var(--muted);
@@ -1634,6 +1647,13 @@
             <input type="hidden" id="IFTrecovery3" />
           </section>
 
+          <!-- 活動度測試（通過/未通過） -->
+          <section class="form-section">
+            <div class="form-section-title">活動度測試 <span class="optional-badge">選填</span></div>
+            <p class="section-optional-note">點 <strong style="color:#16a34a">✓</strong> 表示通過、<strong style="color:#dc2626">✗</strong> 表示未通過（再點一次可取消）。勾選「呈現報告」的項目會出現在報告「D｜其他補充」。通過與否會同步記錄到數據後台。</p>
+            <div id="mobilityContainer"></div>
+          </section>
+
           <!-- D 欄：其他測試的補充 -->
           <section class="form-section">
             <div class="form-section-title">報告 D 欄：其他測試的補充 <span class="optional-badge">選填</span></div>
@@ -2094,6 +2114,8 @@
         dExtraSelected: Array.from(document.querySelectorAll('#dExtraChecklist input:checked')).map(c=>c.value),
         dExtraText:     getVal('dExtraText'),
         keyMetrics:     [0,1,2,3,4,5].map(i => $('keyMetric'+i) ? $('keyMetric'+i).value : null).filter(Boolean),
+        mobility:       collectMobility(),
+        mobilityShow:   Array.from(document.querySelectorAll('.mob-show-cb:checked')).map(c=>c.value),
         playerId:       ''
       };
     }
@@ -2127,6 +2149,7 @@
       }
       if (rec.dExtraText !== undefined) setVal('dExtraText', rec.dExtraText);
       if (Array.isArray(rec.keyMetrics)) rec.keyMetrics.forEach((id,i)=>{ const s=$('keyMetric'+i); if(s&&id) s.value=id; });
+      clearMobility(); restoreMobility(rec);  // 活動度測試 V/X + 呈現報告勾選
     }
 
     async function submitRecord() {
@@ -2219,7 +2242,42 @@
       if (rec.dExtraText) {
         rec.dExtraText.split(/\r?\n/).map(s => s.trim()).filter(Boolean).forEach(line => otherTests.push(line));
       }
-      renderList('otherTestList', otherTests.length ? otherTests : ['本次未挑選補充項目'], '📋');
+      // 活動度測試：教練勾選「呈現報告」的項目（✓ 綠 / ✗ 紅）
+      const mobLines = [];
+      const mobSym = v => v==='pass' ? '<span style="color:#16a34a;font-weight:700">✓ 通過</span>'
+                        : v==='fail' ? '<span style="color:#dc2626;font-weight:700">✗ 未通過</span>'
+                        : '<span style="color:#9ca3af">—</span>';
+      (rec.mobilityShow || []).forEach(id => {
+        const it = mobilityItems.find(x => x.id === id);
+        const d  = (rec.mobility || {})[id];
+        if (!it || !d) return;
+        if (it.bilateral) {
+          if (!d.L && !d.R) return;
+          mobLines.push(`${it.label}：左 ${mobSym(d.L)}　右 ${mobSym(d.R)}`);
+        } else {
+          if (!d.v) return;
+          mobLines.push(`${it.label}：${mobSym(d.v)}`);
+        }
+      });
+      const otherUl = $('otherTestList');
+      if (otherUl) {
+        otherUl.innerHTML = '';
+        otherTests.forEach(text => {  // 文字/數值項目 → 跳脫 HTML
+          const li = document.createElement('li');
+          li.innerHTML = `<span>📋</span><span>${escapeHtml(text)}</span>`;
+          otherUl.appendChild(li);
+        });
+        mobLines.forEach(html => {     // 活動度需保留顏色 → 直接塞 innerHTML
+          const li = document.createElement('li');
+          li.innerHTML = `<span>🤸</span><span>${html}</span>`;
+          otherUl.appendChild(li);
+        });
+        if (!otherUl.children.length) {
+          const li = document.createElement('li');
+          li.innerHTML = `<span>📋</span><span>本次未挑選補充項目</span>`;
+          otherUl.appendChild(li);
+        }
+      }
 
       // 最重要數據：依教練自選的 6 項動態產生
       const keyM = (rec.keyMetrics && rec.keyMetrics.length) ? rec.keyMetrics : defaultKeyMetrics;
@@ -2345,6 +2403,7 @@
       photoDataUrl = '';
       $('reportPhoto').src = defaultPhoto;
       document.querySelectorAll('#dExtraChecklist input:checked').forEach(c => c.checked = false);
+      clearMobility();
       defaultKeyMetrics.forEach((d,i)=>{ const s=$('keyMetric'+i); if(s) s.value=d; });
       currentDraftId = null;
       if ($('currentDraftBadge')) $('currentDraftBadge').style.display = 'none';
@@ -2692,6 +2751,7 @@
       window.addEventListener('resize', () => { if (currentScores) drawRadarChart(currentScores); });
 
       renderDExtraChecklist();  // 產生 D 欄勾選清單
+      renderMobility();  // 產生活動度測試 V/X 區塊
       renderKeyMetricSelectors();  // 產生最重要數據自選下拉
       loadDraftList();  // 開啟時載入草稿清單
 
@@ -2786,6 +2846,75 @@
       box.innerHTML = dExtraItems.map(it =>
         `<label class="dextra-check"><input type="checkbox" value="${it.id}" /> ${it.label}</label>`
       ).join('');
+    }
+
+    // ── 活動度測試（通過 ✓ / 未通過 ✗）──
+    const mobilityItems = [
+      {id:'trunkFlexExt',   label:'軀幹前屈／後伸 (Trunk Flex/Ext)',      bilateral:false},
+      {id:'hipRot',         label:'髖旋轉 (Hip Rotation)',                bilateral:true},
+      {id:'shoulderRot',    label:'肩關節旋轉 (Shoulder Rotation)',        bilateral:true},
+      {id:'hipShoulderSep', label:'髖-肩分離 (Hip-Shoulder Separation)',   bilateral:true},
+      {id:'ankleDF',        label:'踝背屈 (Ankle Dorsiflexion)',          bilateral:true},
+    ];
+    function mobBtns(key) {
+      return `<span class="mob-toggle" data-key="${key}" data-state="">
+        <button type="button" class="mob-btn mob-pass" data-val="pass" onclick="setMob('${key}','pass')">✓</button>
+        <button type="button" class="mob-btn mob-fail" data-val="fail" onclick="setMob('${key}','fail')">✗</button>
+      </span>`;
+    }
+    function setMob(key, val) {
+      const wrap = document.querySelector(`.mob-toggle[data-key="${key}"]`);
+      if (!wrap) return;
+      const cur = wrap.getAttribute('data-state') || '';
+      const next = (cur === val) ? '' : val;   // 再點同一鍵 = 取消
+      wrap.setAttribute('data-state', next);
+      wrap.querySelectorAll('.mob-btn').forEach(b => b.classList.toggle('active', b.dataset.val === next));
+    }
+    function mobState(key) {
+      const w = document.querySelector(`.mob-toggle[data-key="${key}"]`);
+      return w ? (w.getAttribute('data-state') || '') : '';
+    }
+    function renderMobility() {
+      const box = $('mobilityContainer');
+      if (!box) return;
+      box.innerHTML = mobilityItems.map(it => {
+        const ctrl = it.bilateral
+          ? `<span class="mob-side"><span class="mob-side-label">左</span>${mobBtns(it.id+'_L')}</span>
+             <span class="mob-side"><span class="mob-side-label">右</span>${mobBtns(it.id+'_R')}</span>`
+          : mobBtns(it.id+'_v');
+        return `<div class="mob-row">
+          <span class="mob-name">${it.label}</span>
+          <span class="mob-ctrls">${ctrl}</span>
+          <label class="mob-show"><input type="checkbox" class="mob-show-cb" value="${it.id}" /> 呈現報告</label>
+        </div>`;
+      }).join('');
+    }
+    function collectMobility() {
+      const m = {};
+      mobilityItems.forEach(it => {
+        if (it.bilateral) m[it.id] = { L: mobState(it.id+'_L'), R: mobState(it.id+'_R') };
+        else m[it.id] = { v: mobState(it.id+'_v') };
+      });
+      return m;
+    }
+    function restoreMobility(rec) {
+      if (rec.mobility) {
+        mobilityItems.forEach(it => {
+          const d = rec.mobility[it.id]; if (!d) return;
+          if (it.bilateral) { if (d.L) setMob(it.id+'_L', d.L); if (d.R) setMob(it.id+'_R', d.R); }
+          else if (d.v) setMob(it.id+'_v', d.v);
+        });
+      }
+      if (Array.isArray(rec.mobilityShow)) {
+        document.querySelectorAll('.mob-show-cb').forEach(c => { c.checked = rec.mobilityShow.includes(c.value); });
+      }
+    }
+    function clearMobility() {
+      document.querySelectorAll('.mob-toggle').forEach(w => {
+        w.setAttribute('data-state', '');
+        w.querySelectorAll('.mob-btn').forEach(b => b.classList.remove('active'));
+      });
+      document.querySelectorAll('.mob-show-cb:checked').forEach(c => c.checked = false);
     }
 
     // ── 最重要數據：6 格自選下拉 ──
