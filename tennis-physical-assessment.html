@@ -2561,8 +2561,25 @@
           <div class="draft-item-progress">編號 ${escapeHtml(r.testId)}　${escapeHtml(r.ageGroup || '')}${r.age ? '　' + r.age + ' 歲' : ''}</div>
           <div class="draft-item-actions">
             <button class="draft-btn draft-btn-load" onclick="openRecord('${r.testId}')">📄 叫出報告</button>
+            <button class="draft-btn draft-btn-del" onclick="deleteRecordUI('${r.testId}','${escapeHtml(r.playerName||'')}')">🗑 刪除</button>
           </div>
         </div>`).join('');
+    }
+
+    // 刪除一筆已送出的檢測紀錄（二次確認，避免誤刪）
+    async function deleteRecordUI(testId, name) {
+      if (!confirm(`確定要永久刪除「${name}」的檢測紀錄（編號 ${testId}）嗎？\n\n此動作無法復原，會一併移除該筆的雷達圖分數，且不再納入常模。`)) return;
+      try {
+        const params = new URLSearchParams({ action: 'deleteRecord', password: sessionPassword, testId });
+        const resp = await fetch(`${SCRIPT_URL}?${params}`);
+        const result = await resp.json();
+        if (result.error) { alert('刪除失敗：' + result.error); return; }
+        allRecords = allRecords.filter(r => r.testId !== testId);
+        renderRecordList();
+        alert(`已刪除「${name}」的檢測紀錄（編號 ${testId}）。`);
+      } catch (err) {
+        alert('網路錯誤，請稍後再試。');
+      }
     }
 
     async function openRecord(testId) {
