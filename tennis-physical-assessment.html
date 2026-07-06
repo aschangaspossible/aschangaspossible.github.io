@@ -1186,6 +1186,8 @@
       display: flex;
       align-items: center;
       gap: 4px;
+      flex-basis: 100%;   /* 在 .voice-row (flex) 中強制換到下一行整行顯示，不擠壓輸入框 */
+      width: 100%;
     }
     input.out-of-range {
       border-color: #f59e0b !important;
@@ -1253,7 +1255,7 @@
     }
     /* ── 輸入框排列 ── */
     .voice-row {
-      display: flex; gap: 8px; align-items: center;
+      display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
     }
     .voice-row input { flex: 1; margin: 0; }
   </style>
