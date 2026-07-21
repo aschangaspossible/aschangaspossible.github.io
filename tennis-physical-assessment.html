@@ -1654,6 +1654,15 @@
             <div class="form-section-title">活動度測試 <span class="optional-badge">選填</span></div>
             <p class="section-optional-note">點 <strong style="color:#16a34a">✓</strong> 表示通過、<strong style="color:#dc2626">✗</strong> 表示未通過（再點一次可取消）。勾選「呈現報告」的項目會出現在報告「D｜其他補充」。通過與否會同步記錄到數據後台。</p>
             <div id="mobilityContainer"></div>
+            <div style="margin-top:14px;border-top:1px dashed #e2e2e2;padding-top:12px">
+              <div style="font-size:14px;font-weight:600;margin-bottom:4px">📷 活動度照片 <span class="optional-badge">選填</span></div>
+              <p class="section-optional-note" style="margin-top:0">可一次選多張（各測項的照片）。送出後會自動存進該球員本次檢測的雲端資料夾，日後可回顧。照片會壓縮上傳。</p>
+              <label class="file-upload-label">
+                📷 選擇照片（可多張）
+                <input id="mobilityPhotoInput" type="file" accept="image/*" multiple />
+              </label>
+              <span class="file-upload-name" id="mobilityPhotoName">未選擇檔案</span>
+            </div>
           </section>
 
           <!-- D 欄：其他測試的補充 -->
@@ -2038,6 +2047,7 @@
 
     let sessionPassword = 'yijin2026';  // 密碼內建，無需登入頁
     let photoDataUrl    = '';
+    let mobilityPhotoData = [];   // 活動度照片：[{name, dataUrl}]，送出時隨 POST 上傳到 Drive
     let currentScores   = null;
     let currentDraftId  = null;  // 目前編輯中的草稿 ID
 
@@ -2177,7 +2187,8 @@
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
             action: 'saveRecord', password: sessionPassword,
-            data: JSON.stringify(rec), photo: photoDataUrl || ''
+            data: JSON.stringify(rec), photo: photoDataUrl || '',
+            mobilityPhotos: mobilityPhotoData || []
           })
         });
         const result = await resp.json();
@@ -2189,7 +2200,12 @@
         loadDraftList();
         const warnMsg = result.scores.insufficientSample
           ? '\n\n⚠ 同組樣本不足 10 筆，分數僅供參考，資料累積後會更精準。' : '';
-        alert(`已儲存！檢測編號：${result.testId}${warnMsg}`);
+        const photoMsg = result.mobilityFolder
+          ? `\n\n📷 已上傳 ${mobilityPhotoData.length} 張活動度照片到雲端資料夾。` : '';
+        alert(`已儲存！檢測編號：${result.testId}${photoMsg}${warnMsg}`);
+        mobilityPhotoData = [];
+        if ($('mobilityPhotoInput')) $('mobilityPhotoInput').value = '';
+        if ($('mobilityPhotoName')) $('mobilityPhotoName').textContent = '未選擇檔案';
       } catch (err) {
         alert('網路錯誤，請稍後再試。');
       } finally {
@@ -2404,6 +2420,9 @@
       setVal('testDate', todayISO()); setVal('academyName', '奕晉網球學院');
       photoDataUrl = '';
       $('reportPhoto').src = defaultPhoto;
+      mobilityPhotoData = [];
+      if ($('mobilityPhotoInput')) $('mobilityPhotoInput').value = '';
+      if ($('mobilityPhotoName')) $('mobilityPhotoName').textContent = '未選擇檔案';
       document.querySelectorAll('#dExtraChecklist input:checked').forEach(c => c.checked = false);
       clearMobility();
       defaultKeyMetrics.forEach((d,i)=>{ const s=$('keyMetric'+i); if(s) s.value=d; });
@@ -2766,6 +2785,23 @@
         const small = await compressPhoto(r);   // 壓縮後再存，重印時才放得進資料庫
         photoDataUrl = small; $('reportPhoto').src = small;
         if ($('photoFileName')) $('photoFileName').textContent = n || '已選擇';
+      });
+
+      // 活動度照片（可多張）→ 存 Drive，壓縮尺寸較大以保留動作細節（非塞入單格，故可放寬）
+      $('mobilityPhotoInput').addEventListener('change', async e => {
+        const files = Array.from(e.target.files || []);
+        const nameEl = $('mobilityPhotoName');
+        if (!files.length) { mobilityPhotoData = []; if (nameEl) nameEl.textContent = '未選擇檔案'; return; }
+        if (nameEl) nameEl.textContent = `處理中… (0/${files.length})`;
+        const out = [];
+        for (let i = 0; i < files.length; i++) {
+          const dataUrl = await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(files[i]); });
+          const resized = await resizeImage(dataUrl, 1024, 0.6);   // Drive 存檔，保留較多細節
+          out.push({ name: files[i].name.replace(/\.[^.]+$/, '') || ('photo' + (i + 1)), dataUrl: resized });
+          if (nameEl) nameEl.textContent = `處理中… (${i + 1}/${files.length})`;
+        }
+        mobilityPhotoData = out;
+        if (nameEl) nameEl.textContent = `已選 ${out.length} 張`;
       });
       window.addEventListener('resize', () => { if (currentScores) drawRadarChart(currentScores); });
 
