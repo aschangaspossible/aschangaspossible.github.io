@@ -565,6 +565,11 @@
       color: var(--red);
     }
 
+    /* 常模樣本不足 → 中性色，不要用紅色嚇家長（這不是球員的問題） */
+    .status-neutral {
+      color: #64748b;
+    }
+
     .overview {
       display: grid;
       grid-template-columns: 46% 1fr;
@@ -1029,6 +1034,8 @@
       .report-card.fill { zoom: 0.77; }   /* 無不對稱性區塊時放大填滿整頁 */
       .radar-box { min-height: 0; aspect-ratio: 1 / 0.6; }
       .analysis-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      /* D 區隱藏時，C 區補滿整列，避免右下角留一個空洞 */
+      .analysis-box-wide { grid-column: 1 / -1; }
       /* 分析區標題縮小，避免 2 欄窄空間換行 */
       .analysis-box h4 { font-size: 12px; gap: 6px; line-height: 1.2; margin-bottom: 7px; letter-spacing: -0.02em; }
       .analysis-box .tag { font-size: 8.5px; padding: 2px 6px; letter-spacing: 0.03em; flex-shrink: 0; }
@@ -2046,6 +2053,35 @@
       }
     ];
 
+    // ── 六維「能不能計分」判定 ────────────────────────────────
+    // 三種狀態：scored=有測且常模夠 / nonorm=有測但同齡樣本不足 / untested=本次沒測
+    // 後台 calcScores 的 pct() 需要同齡樣本 >= 2 筆才算得出百分位，
+    // 少於 2 筆時六維會全部落回預設 50 分 —— 那不是「中等」，是「算不出來」。
+    const metricRawFields = {
+      speedAgility:   ['sprint10m','agility515L','agility515R','spiderRun'],
+      lowerPower:     ['cmjHeight','broadJump','lateralJumpL','lateralJumpR'],
+      singleLegDecel: ['singleLegLandL','singleLegLandR','singleLegLandForceL','singleLegLandForceR','singleLegDJL','singleLegDJR'],
+      rotational:     ['rotationalThrowL','rotationalThrowR'],
+      throwing:       ['servingThrow'],
+      cardio:         ['IFT30_15']
+    };
+    const NORM_MIN_SAMPLE = 2;   // 算得出百分位的最低同齡樣本數
+    const NORM_GOOD_SAMPLE = 10; // 分數穩定的建議樣本數
+
+    function dimHasData(id, rec) {
+      return (metricRawFields[id] || []).some(f => {
+        const v = parseFloat(rec && rec[f]);
+        return isFinite(v) && v > 0;
+      });
+    }
+    function buildDimStates(rec, normReady) {
+      const out = {};
+      metricConfig.forEach(m => {
+        out[m.id] = !dimHasData(m.id, rec) ? 'untested' : (normReady ? 'scored' : 'nonorm');
+      });
+      return out;
+    }
+
     const defaultPhotoSvg = encodeURIComponent(
       `<svg xmlns="http://www.w3.org/2000/svg" width="260" height="260" viewBox="0 0 260 260">
         <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
@@ -2062,6 +2098,7 @@
     let photoDataUrl    = '';
     let mobilityPhotoData = [];   // 活動度照片：[{name, dataUrl}]，送出時隨 POST 上傳到 Drive
     let currentScores   = null;
+    let currentDimStates = null;   // 六維各自的計分狀態（scored / nonorm / untested）
     let currentDraftId  = null;  // 目前編輯中的草稿 ID
 
     const $ = id => document.getElementById(id);
@@ -2244,26 +2281,45 @@
       $('reportCoach').textContent = `教練｜${rec.coach || '-'}`;
       $('reportAcademy').textContent = rec.academyName || '奕晉網球學院';
 
-      $('overallScore').textContent = s.total;
-      $('bestAbility').textContent  = s.bestAbility  || '-';
-      $('mainFocus').textContent    = s.weakestAbility || '-';
+      // 同齡樣本夠不夠算百分位？不夠就整份報告不做「強弱項」推論
+      const sampleN   = Number(s.sampleSize) || 0;
+      const normReady = sampleN >= NORM_MIN_SAMPLE;
+      currentDimStates = buildDimStates(rec, normReady);
+      const scored    = metricConfig.filter(m => m.active && currentDimStates[m.id] === 'scored');
+      const testedCnt = metricConfig.filter(m => currentDimStates[m.id] !== 'untested').length;
+
+      $('overallScore').textContent = scored.length ? s.total : '—';
+      $('bestAbility').textContent  = scored.length ? (s.bestAbility  || '-') : '樣本建立中';
+      $('mainFocus').textContent    = scored.length ? (s.weakestAbility || '-') : '樣本建立中';
 
       const status = $('trainingStatus'), note = $('trainingStatusNote');
-      status.classList.remove('status-good','status-watch','status-risk');
-      if (s.total >= 75)      { status.textContent = '良好'; status.classList.add('status-good');  note.textContent = '整體表現成熟，可進入更高強度訓練'; }
+      status.classList.remove('status-good','status-watch','status-risk','status-neutral');
+      if (!scored.length) {
+        status.textContent = '待常模'; status.classList.add('status-neutral');
+        note.textContent = `同齡樣本 ${sampleN} 筆，尚無法評級`;
+      }
+      else if (s.total >= 75) { status.textContent = '良好'; status.classList.add('status-good');  note.textContent = '整體表現成熟，可進入更高強度訓練'; }
       else if (s.total >= 55) { status.textContent = '觀察'; status.classList.add('status-watch'); note.textContent = '具備基礎，需補強弱項能力'; }
       else                    { status.textContent = '補強'; status.classList.add('status-risk');  note.textContent = '建議先建立基礎穩定與移動品質'; }
 
       const strengths = [], weaknesses = [], courts = [], focuses = [];
-      metricConfig.filter(m => m.active).forEach(m => {
+      scored.forEach(m => {
         if (s[m.id] >= 55) { strengths.push(m.strength); }
         else { weaknesses.push(m.weakness); courts.push(m.court); focuses.push(m.focus); }
       });
 
-      renderList('strengthList', strengths.slice(0,3),  '✅');
-      renderList('improveList',  weaknesses.slice(0,3), '⚠️');
-      renderList('courtList',    courts.slice(0,3),     '🎾');
-      renderList('focusList',    focuses.slice(0,3),    '▸');
+      // 沒有任何維度算得出分數時，不要用預設 50 分去臆測強弱項
+      const noNorm = !scored.length;
+      renderList('strengthList', strengths.slice(0,3),  '✅',
+        noNorm ? '待同齡樣本累積後自動列出' : '本次此區無項目');
+      renderList('improveList',  weaknesses.slice(0,3), '⚠️',
+        noNorm ? `同齡樣本目前 ${sampleN} 筆，本次不做同齡比較。已完成 ${testedCnt} 個面向的檢測，數據皆已存檔，累積至 ${NORM_MIN_SAMPLE} 筆以上即自動產生分析。`
+               : '本次此區無項目');
+      renderList('courtList',    courts.slice(0,3),     '🎾',
+        noNorm ? '待能力分析產生後同步說明' : '本次此區無項目');
+      renderList('focusList',    focuses.slice(0,3),    '▸',
+        noNorm ? '本階段以基礎穩定與移動品質為主；左右差異若已標示紅燈，請優先處理。'
+               : '本次此區無項目');
 
       // D｜其他測試的補充：教練勾選的項目（帶數值）+ 自由文字
       const otherTests = [];
@@ -2306,11 +2362,13 @@
           li.innerHTML = `<span>🤸</span><span>${html}</span>`;
           otherUl.appendChild(li);
         });
-        if (!otherUl.children.length) {
-          const li = document.createElement('li');
-          li.innerHTML = `<span>📋</span><span>本次未挑選補充項目</span>`;
-          otherUl.appendChild(li);
-        }
+        // D 區沒內容就整格不顯示（別讓報告出現「本次未挑選補充項目」這種空欄位），
+        // 並讓 C 區補上空出來的半格，版面不留洞
+        const dBox = otherUl.closest('.analysis-box');
+        const cBox = ($('courtList') || {}).closest ? $('courtList').closest('.analysis-box') : null;
+        const dEmpty = !otherUl.children.length;
+        if (dBox) dBox.style.display = dEmpty ? 'none' : '';
+        if (cBox) cBox.classList.toggle('analysis-box-wide', dEmpty);
       }
 
       // 最重要數據：依教練自選的 6 項動態產生
@@ -2334,9 +2392,11 @@
       $('recommendationText').innerHTML = `<strong>訓練建議：</strong>${escapeHtml(coachNote)}`;
 
       const noteEl = $('sampleSizeNote');
-      if (noteEl) noteEl.textContent = s.insufficientSample
-        ? `⚠ 同組樣本 ${s.sampleSize} 筆（建議至少 10 筆），分數僅供參考`
-        : `✓ 同組樣本數：${s.sampleSize} 筆`;
+      if (noteEl) noteEl.textContent = !normReady
+        ? `⚠ 同組樣本 ${sampleN} 筆，尚無法計算百分位 — 本次僅呈現原始數據，不做同齡比較`
+        : (s.insufficientSample
+            ? `⚠ 同組樣本 ${sampleN} 筆（建議至少 ${NORM_GOOD_SAMPLE} 筆），分數僅供參考`
+            : `✓ 同組樣本數：${sampleN} 筆`);
 
       drawRadarChart(s);
       displayAsymmetry(rec);
@@ -2401,19 +2461,41 @@
         ctx.fill(); ctx.stroke();
       }
       poly(avg,    'rgba(120,130,145,0.22)', 'rgba(120,130,145,0.88)', 2);
+
+      // 哪幾維真的算得出分數？算不出來就不要畫成 50 分的實心圖形
+      const states    = currentDimStates || {};
+      const isScored  = metricConfig.map(m => (states[m.id] || 'nonorm') === 'scored');
+      const anyScored = isScored.some(Boolean);
+
+      if (!anyScored) {
+        ctx.save();
+        ctx.font = '700 13px system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans TC"';
+        ctx.fillStyle = '#64748b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('同齡樣本不足', cx, cy - 8);
+        ctx.font = '500 11px system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans TC"';
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText('本次不計分', cx, cy + 10);
+        ctx.restore();
+        return;
+      }
+
       poly(player, 'rgba(15,118,110,0.46)',  '#0f766e', 3);
       player.forEach((v, i) => {
         const r = R * Math.max(0, Math.min(100, v)) / 100;
         const a = start + i * step;
         ctx.beginPath(); ctx.arc(cx + Math.cos(a)*r, cy + Math.sin(a)*r, 4.5, 0, Math.PI*2);
         ctx.fillStyle = '#fff'; ctx.fill();
-        ctx.lineWidth = 3; ctx.strokeStyle = '#0f766e'; ctx.stroke();
+        ctx.lineWidth = 3;
+        // 未計分的維度：空心灰點 + 虛線，跟真的有分數的點區分開
+        if (isScored[i]) { ctx.strokeStyle = '#0f766e'; ctx.setLineDash([]); }
+        else             { ctx.strokeStyle = '#94a3b8'; ctx.setLineDash([2,2]); }
+        ctx.stroke(); ctx.setLineDash([]);
       });
     }
 
-    function renderList(id, items, icon) {
+    function renderList(id, items, icon, emptyText) {
       const ul = $(id); ul.innerHTML = '';
-      const list = items.length ? items : ['資料累積後自動分析'];
+      const list = items.length ? items : [emptyText || '資料累積後自動分析'];
       list.forEach(text => {
         const li = document.createElement('li');
         li.innerHTML = `<span>${icon}</span><span>${escapeHtml(text)}</span>`;
@@ -2828,8 +2910,9 @@
       renderKeyMetricSelectors();  // 產生最重要數據自選下拉
       loadDraftList();  // 開啟時載入草稿清單
 
-      // 初次載入先畫一張預設雷達圖（中性值），避免報告區雷達圖空白
+      // 初次載入先畫一張預設雷達圖（只有基準線，不畫球員能力），避免報告區雷達圖空白
       currentScores = { speedAgility:50, lowerPower:50, singleLegDecel:50, rotational:50, throwing:50, cardio:50 };
+      currentDimStates = null;
       setTimeout(() => drawRadarChart(currentScores), 100);
     }
 
