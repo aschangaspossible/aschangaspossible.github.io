@@ -1100,6 +1100,13 @@
       padding: 2px 7px; margin-left: 6px; letter-spacing: .3px;
       vertical-align: middle;
     }
+    /* 換算依賴提示：標在「腿長」「體重」上，提醒它們是其他測項的除數 */
+    .dep-badge {
+      font-size: 10px; font-weight: 700; color: #b45309;
+      background: #fff4e5; border: 1px solid #fcd9a4; border-radius: 6px;
+      padding: 2px 7px; margin-left: 6px; letter-spacing: .3px;
+      vertical-align: middle; cursor: help;
+    }
     .unit-row {
       display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
     }
@@ -1363,13 +1370,13 @@
               <label>身高 Height cm
                 <input id="height" type="number" step="0.1" placeholder="例：158" />
               </label>
-              <label>體重 Weight kg
+              <label>體重 Weight kg <span class="dep-badge" title="單腿落地力量、等長中段拉都要除以體重才能跨球員比較；沒填這兩項會白測">落地力量／中段拉需要</span>
                 <input id="weight" type="number" step="0.1" placeholder="例：47" />
               </label>
             </div>
 
             <div class="grid-2">
-              <label>腿長 Leg Length cm
+              <label>腿長 Leg Length cm <span class="dep-badge" title="側向跳要除以腿長才能跨球員比較；沒填的話側向跳會白測">側向跳需要</span>
                 <input id="legLength" type="number" step="0.1" placeholder="例：85" />
               </label>
               <label>臂長 Arm Length cm
@@ -2217,6 +2224,20 @@
       clearMobility(); restoreMobility(rec);  // 活動度測試 V/X + 呈現報告勾選
     }
 
+    // 正規化依賴：這些測項要除以「腿長」或「體重」才能跨球員比較。
+    // 缺了除數，後台會靜默存成 0，該測項就不列入計分與常模 —— 等於白測。
+    // 只有「測了卻沒填除數」才提醒，沒測的項目不會囉嗦。
+    const NORMALIZE_DEPS = [
+      { fields: ['lateralJumpL', 'lateralJumpR'],               label: '側向跳',       needs: 'legLength', needsLabel: '腿長' },
+      { fields: ['singleLegLandForceL', 'singleLegLandForceR'], label: '單腿落地力量', needs: 'weight',    needsLabel: '體重' },
+      { fields: ['isoMidThighForce'],                           label: '等長中段拉',   needs: 'weight',    needsLabel: '體重' },
+    ];
+    function checkNormalizeDeps(rec) {
+      return NORMALIZE_DEPS.filter(d =>
+        d.fields.some(f => toNum(rec[f]) > 0) && !(toNum(rec[d.needs]) > 0)
+      );
+    }
+
     async function submitRecord() {
       const rec = collectFormData();
       if (currentDraftId) rec.draftId = currentDraftId;  // 送出後自動刪草稿
@@ -2230,6 +2251,18 @@
         if (!ok) return;
       }
       if (!rec.birthday || !rec.testDate) { alert('請填入西元生日與檢測日期。'); return; }
+
+      // 缺換算欄位 → 該測項會被存成 0、白測，送出前擋一下
+      const missingDeps = checkNormalizeDeps(rec);
+      if (missingDeps.length > 0) {
+        const lines = missingDeps.map(d => `・${d.label} → 缺「${d.needsLabel}」`).join('\n');
+        const ok = confirm(
+          `⚠ 下列測項需要換算才能跟其他球員比較，但換算欄位沒填：\n\n${lines}\n\n` +
+          `直接送出的話，這些測項會存成 0，不列入計分與常模（等於白測）。\n\n` +
+          `點「取消」回去補填，點「確定」仍要送出。`
+        );
+        if (!ok) return;
+      }
 
       $('loadingMsg').style.display = 'block';
       $('submitBtn').disabled = true;
