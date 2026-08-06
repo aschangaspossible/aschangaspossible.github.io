@@ -1522,6 +1522,20 @@
           <section class="form-section">
             <div class="form-section-title">轉體爆發</div>
             <p class="hint">藥球轉體投擲距離（m，越遠越好）</p>
+            <label>本次藥球重量 (MB Weight)
+              <div class="unit-row">
+                <select id="mbWeight">
+                  <option value="">— 請選擇 —</option>
+                  <option value="1">1 kg</option>
+                  <option value="2">2 kg</option>
+                  <option value="3">3 kg</option>
+                </select>
+              </div>
+            </label>
+            <p class="hint" style="color:#b45309">
+              ⚠️ 此重量套用到本次所有藥球項目（轉體投擲／發球拋擲／過頭拋）。
+              <b>不同球重的成績不可互相比較</b>，外部常模一律是 2kg——沒填就無法判斷能不能對照。
+            </p>
             <div class="grid-2">
               <label>藥球轉體投擲 左 (Rotational MB Throw L) m
                 <div class="voice-row">
@@ -2163,6 +2177,7 @@
         rotationalThrowL:  getNum('rotationalThrowL'),
         rotationalThrowR:  getNum('rotationalThrowR'),
         servingThrow:      getNum('servingThrow'),
+        mbWeight:          getVal('mbWeight'),   // 本次藥球重量(kg)：不同球重不可互比，外部常模一律 2kg
         IFT30_15:          getNum('IFT30_15'),
         sprint30m:      getNum('sprint30m'),
         serveSpeed:     getNum('serveSpeed'),
@@ -2202,7 +2217,7 @@
         singleLegLandForceL:'singleLegLandForceL', singleLegLandForceR:'singleLegLandForceR',
         singleLegDJL:'singleLegDJL', singleLegDJR:'singleLegDJR',
         rotationalThrowL:'rotationalThrowL', rotationalThrowR:'rotationalThrowR',
-        servingThrow:'servingThrow', IFT30_15:'IFT30_15',
+        servingThrow:'servingThrow', IFT30_15:'IFT30_15', mbWeight:'mbWeight',
         sprint30m:'sprint30m', serveSpeed:'serveSpeed', gripStrength:'gripStrength', hop10_5:'hop10_5',
         isoMidThighForce:'isoMidThighForce', isoUpperLimb:'isoUpperLimb', squat:'squat', pullUp:'pullUp',
         mbOverheadThrow:'mbOverheadThrow', pushUp:'pushUp',
@@ -2546,7 +2561,7 @@
        'sprint30m','serveSpeed','gripStrength','hop10_5','isoMidThighForce','isoUpperLimb',
        'squat','pullUp','mbOverheadThrow','pushUp','IFTmaxHR','IFTHR1min','IFTHR3min','IFTrecovery1','IFTrecovery3']
         .forEach(id => setVal(id, ''));
-      setVal('squatUnit', 'kg'); setVal('pullUpUnit', '次');
+      setVal('squatUnit', 'kg'); setVal('pullUpUnit', '次'); setVal('mbWeight', '');
       setVal('gender', '男'); setVal('dominantHand', '右手');
       setVal('testDate', todayISO()); setVal('academyName', '奕晉網球學院');
       photoDataUrl = '';
