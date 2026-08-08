@@ -1787,7 +1787,7 @@
               <div class="summary-card">
                 <small>Overall Score</small>
                 <strong id="overallScore">67</strong>
-                <span>整體體能表現分數</span>
+                <span id="overallScoreNote">整體體能表現分數</span>
               </div>
 
               <div class="summary-card">
@@ -2333,13 +2333,26 @@
       // 同齡樣本夠不夠算百分位？不夠就整份報告不做「強弱項」推論
       const sampleN   = Number(s.sampleSize) || 0;
       const normReady = sampleN >= NORM_MIN_SAMPLE;
-      currentDimStates = buildDimStates(rec, normReady);
+      // 後台 v23 起會直接送來每個維度的權威狀態（scored / no_norm / untested）；
+      // 舊紀錄或舊後台沒有 dims → 退回前端自行推導（2026-08-04 的做法）
+      currentDimStates = s.dims
+        ? Object.keys(s.dims).reduce((o,k) => (o[k] = s.dims[k].state, o), {})
+        : buildDimStates(rec, normReady);
       const scored    = metricConfig.filter(m => m.active && currentDimStates[m.id] === 'scored');
       const testedCnt = metricConfig.filter(m => currentDimStates[m.id] !== 'untested').length;
+      const coverage  = (s.coverage != null) ? s.coverage : scored.length;
 
-      $('overallScore').textContent = scored.length ? s.total : '—';
-      $('bestAbility').textContent  = scored.length ? (s.bestAbility  || '-') : '樣本建立中';
-      $('mainFocus').textContent    = scored.length ? (s.weakestAbility || '-') : '樣本建立中';
+      // 總分永遠標示涵蓋度 —— 只測 1 維卻寫「整體體能表現分數」會誤導家長
+      $('overallScore').textContent = (scored.length && s.total != null) ? s.total : '—';
+      const covEl = $('overallScoreNote');
+      if (covEl) {
+        covEl.textContent = coverage
+          ? (coverage < metricConfig.length ? `僅測 ${coverage}/${metricConfig.length} 項能力` : '六項能力完整')
+          : '整體體能表現分數';
+        covEl.style.color = (coverage && coverage < 3) ? '#b45309' : '';
+      }
+      $('bestAbility').textContent  = scored.length >= 2 ? (s.bestAbility  || '-') : '樣本建立中';
+      $('mainFocus').textContent    = scored.length >= 2 ? (s.weakestAbility || '-') : '樣本建立中';
 
       const status = $('trainingStatus'), note = $('trainingStatusNote');
       status.classList.remove('status-good','status-watch','status-risk','status-neutral');
@@ -2353,7 +2366,9 @@
 
       const strengths = [], weaknesses = [], courts = [], focuses = [];
       scored.forEach(m => {
-        if (s[m.id] >= 55) { strengths.push(m.strength); }
+        const v = s[m.id];
+        if (v == null) return;                      // v23 起算不出來的維度回 null，不臆測
+        if (v >= 55) { strengths.push(m.strength); }
         else { weaknesses.push(m.weakness); courts.push(m.court); focuses.push(m.focus); }
       });
 
@@ -2441,7 +2456,13 @@
       $('recommendationText').innerHTML = `<strong>訓練建議：</strong>${escapeHtml(coachNote)}`;
 
       const noteEl = $('sampleSizeNote');
-      if (noteEl) noteEl.textContent = !normReady
+      if (noteEl && s.baselineVersion) {
+        // v23：對凍結基準計分 → 標註版本，家長/教練才知道分數是跟什麼比
+        const nList = scored.map(m => (s.dims[m.id] || {}).n).filter(Boolean);
+        const nTxt  = nList.length ? `各項基準 ${Math.min.apply(null,nList)}–${Math.max.apply(null,nList)} 人` : '';
+        noteEl.textContent = `對照 ${s.baselineVersion} 基準（${nTxt}）`;
+      }
+      else if (noteEl) noteEl.textContent = !normReady
         ? `⚠ 同組樣本 ${sampleN} 筆，尚無法計算百分位 — 本次僅呈現原始數據，不做同齡比較`
         : (s.insufficientSample
             ? `⚠ 同組樣本 ${sampleN} 筆（建議至少 ${NORM_GOOD_SAMPLE} 筆），分數僅供參考`
@@ -2465,6 +2486,8 @@
       ctx.clearRect(0, 0, W, H);
 
       const labels = metricConfig.map(m => m.short);
+      // 算不出來的維度用 50 當「頂點位置」只是為了畫得出多邊形，
+      // 但那個點會畫成空心虛線並在軸標寫「未測」，不會被誤讀成 50 分
       const player = metricConfig.map(m => scores?.[m.id] ?? 50);
       const avg    = metricConfig.map(() => 50);
       const cx = W / 2, cy = H / 2 + 8;
@@ -2490,11 +2513,18 @@
         ctx.lineTo(cx + Math.cos(a)*R, cy + Math.sin(a)*R);
         ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1; ctx.stroke();
         const lx = cx + Math.cos(a)*(R+32), ly = cy + Math.sin(a)*(R+30);
+        const st = (currentDimStates || {})[metricConfig[i].id];
         ctx.font = '800 13px system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans TC"';
-        ctx.fillStyle = '#344054';
+        ctx.fillStyle = (st && st !== 'scored') ? '#94a3b8' : '#344054';
         ctx.textAlign = lx > cx+10 ? 'left' : lx < cx-10 ? 'right' : 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(lbl, lx, ly);
+        // 沒計分的維度直接在軸標下方說明原因，避免家長把空心點讀成「0 分」或「50 分」
+        if (st && st !== 'scored') {
+          ctx.font = '500 10px system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans TC"';
+          ctx.fillStyle = '#b0bcc9';
+          ctx.fillText(st === 'untested' ? '未測' : '無基準', lx, ly + 13);
+        }
       });
 
       function poly(vals, fill, stroke, lw) {
