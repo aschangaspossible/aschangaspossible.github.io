@@ -2360,9 +2360,11 @@
         status.textContent = '待常模'; status.classList.add('status-neutral');
         note.textContent = `同齡樣本 ${sampleN} 筆，尚無法評級`;
       }
-      else if (s.total >= 75) { status.textContent = '良好'; status.classList.add('status-good');  note.textContent = '整體表現成熟，可進入更高強度訓練'; }
-      else if (s.total >= 55) { status.textContent = '觀察'; status.classList.add('status-watch'); note.textContent = '具備基礎，需補強弱項能力'; }
-      else                    { status.textContent = '補強'; status.classList.add('status-risk');  note.textContent = '建議先建立基礎穩定與移動品質'; }
+      // 門檻對齊百分位語意：50 = 同齡基準的中位數，不是「及格邊緣」。
+      // （v23 中點法把中位數修正回 50，門檻若停在 55，中位數的球員會被評成最低級）
+      else if (s.total >= 75) { status.textContent = '良好';   status.classList.add('status-good');  note.textContent = '同齡前段（約前 25%），可進入更高強度訓練'; }
+      else if (s.total >= 50) { status.textContent = '觀察';   status.classList.add('status-watch'); note.textContent = '達同齡中位水準，持續補強弱項'; }
+      else                    { status.textContent = '待加強'; status.classList.add('status-risk');  note.textContent = '低於同齡中位，建議先建立基礎穩定與移動品質'; }
 
       const strengths = [], weaknesses = [], courts = [], focuses = [];
       scored.forEach(m => {
