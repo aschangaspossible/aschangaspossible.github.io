@@ -1152,7 +1152,8 @@
       .coach-page { break-before: page; page-break-before: always; margin-top: 0; }
       .coach-page.on { display: block !important; }
       .coach-page:not(.on) { display: none !important; }
-      .report-card.coach-page { zoom: 0.72; }
+      /* 內容 1489px × 0.70 ≈ 1042px，A4 可用約 1062px。用 0.72 會變 1072px 溢成第 3 頁。 */
+      .report-card.coach-page { zoom: 0.70; }
       .cp-inner { padding: 24px 30px; gap: 13px; }
       .cp-raw { grid-template-columns: repeat(5, 1fr); }
 
