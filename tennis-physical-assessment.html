@@ -725,6 +725,55 @@
       gap: 14px;
     }
 
+    /* ── 最重要數據：vs 同齡對照條（v24）──
+       取代原本的 6 格數字卡。條往右＝隊內排名越前，中線＝同齡中位。 */
+    .metric-rows { display: block; border-top: 1px solid rgba(15,23,42,.09); }
+    .mrow {
+      display: grid;
+      grid-template-columns: 118px 78px 1fr 54px;
+      gap: 12px;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(15,23,42,.07);
+    }
+    .mrow-head {
+      border-bottom: 1px solid rgba(15,23,42,.09);
+      padding: 5px 0 6px;
+      font-size: 9px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+    .mbar-head { display: flex; justify-content: space-between; }
+    .mname { font-size: 12.5px; font-weight: 600; color: #1e293b; line-height: 1.25; }
+    .mv {
+      font-size: 19px; font-weight: 800; text-align: right; white-space: nowrap;
+      color: #0f172a; font-variant-numeric: tabular-nums;
+    }
+    .mv u { text-decoration: none; font-size: 10px; font-weight: 500; color: #64748b; margin-left: 2px; }
+    .mbar { position: relative; height: 24px; }
+    .maxis {
+      position: absolute; left: 0; right: 0; top: 11px; height: 4px;
+      background: #f1f5f9; border: 1px solid rgba(15,23,42,.06); border-radius: 3px;
+    }
+    .mmid { position: absolute; top: 6px; bottom: 6px; left: 50%; width: 1px; background: #94a3b8; }
+    .mfill { position: absolute; top: 11px; height: 4px; border-radius: 3px; }
+    .mfill.good { background: #16a34a; } .mfill.mild { background: #b45309; } .mfill.bad { background: #dc2626; }
+    .mtag {
+      position: absolute; top: -1px; white-space: nowrap; font-size: 9.5px;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric: tabular-nums;
+    }
+    .mtag.good { color: #16a34a; } .mtag.mild { color: #b45309; } .mtag.bad { color: #dc2626; }
+    .mnone {
+      position: absolute; inset: 0; display: flex; align-items: center;
+      font-size: 10.5px; color: #94a3b8;
+    }
+    .mtrend {
+      font-size: 10.5px; color: #cbd5e1; text-align: right;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+
     .metric-card {
       min-height: 114px;
       display: grid;
@@ -1057,6 +1106,11 @@
       .divider { margin: 2px 0; }
       .overview { grid-template-columns: 46% 1fr; gap: 16px; }
       .summary-strip { grid-template-columns: repeat(4, 1fr); }
+      .mrow { padding: 6px 0; grid-template-columns: 108px 70px 1fr 46px; gap: 10px; }
+      .mv { font-size: 16px; }
+      .mname { font-size: 11.5px; }
+      .mbar { height: 20px; }
+      .maxis, .mfill { top: 9px; }
       .data-grid { grid-template-columns: repeat(6, 1fr); }
       .focus-card { grid-template-columns: 0.85fr 1.2fr; }
 
@@ -2437,21 +2491,59 @@
         if (cBox) cBox.classList.toggle('analysis-box-wide', dEmpty);
       }
 
-      // 最重要數據：依教練自選的 6 項動態產生
+      // 最重要數據：依教練自選的項目產生「vs 同齡對照條」
+      // 後台 v24 送來 result.metrics（每項的隊內百分位）；沒有的話退回舊的數字卡片。
+      // 為什麼要對照條：維度分數會抹平差異 —— 王柏雨「速度與變向 52」其實是
+      // 10m 第 7 百分位 + 5-10-5 第 93 百分位平均出來的，卡片看不出這件事。
       const keyM = (rec.keyMetrics && rec.keyMetrics.length) ? rec.keyMetrics : defaultKeyMetrics;
       const grid = $('dataGrid');
+      const mList = (result && result.metrics) || [];
       if (grid) {
-        grid.innerHTML = keyM.map(id => {
-          const it = dExtraItems.find(x => x.id === id);
-          if (!it) return '';
-          const v = it.get(rec);
-          const show = (v !== null && v !== undefined && v !== '') ? v : '—';
-          return `<div class="metric-card">
-            <div class="metric-label">${it.label}</div>
-            <div class="metric-value">${show}</div>
-            <div class="metric-unit">${(it.unit || '').trim()}</div>
-          </div>`;
-        }).join('');
+        if (mList.length) {
+          grid.className = 'metric-rows';
+          grid.innerHTML = `<div class="mrow mrow-head">
+              <span>項目</span><span class="mv">本次</span>
+              <span class="mbar-head"><span>← 落後</span><span>中位</span><span>領先 →</span></span>
+              <span class="mtrend">vs 上次</span>
+            </div>` + mList.map(m => {
+            const unit = m.unit ? `<u>${escapeHtml(m.unit)}</u>` : '';
+            if (m.pct === null || m.pct === undefined) {
+              return `<div class="mrow">
+                <div class="mname">${escapeHtml(m.label)}</div>
+                <div class="mv">${m.value}${unit}</div>
+                <div class="mbar"><span class="mnone">無同齡基準 · 僅顯示數值</span></div>
+                <div class="mtrend">—</div></div>`;
+            }
+            // >50% 綠（中位之上即為正面）／40–50% 琥珀／<40% 紅
+            const tone = m.pct > 50 ? 'good' : (m.pct >= 40 ? 'mild' : 'bad');
+            const p = Math.max(2, Math.min(98, m.pct));
+            const bar = p >= 50
+              ? `<i class="mfill ${tone}" style="left:50%;width:${p-50}%"></i>`
+              : `<i class="mfill ${tone}" style="left:${p}%;width:${50-p}%"></i>`;
+            const note = m.rankNote ? `<b>${escapeHtml(m.rankNote)}</b>` : `贏過隊上 ${m.pct}%`;
+            const med  = (m.median !== null && m.median !== undefined) ? ` ｜ 中位 ${m.median}` : '';
+            const tagPos = p >= 50 ? `left:calc(${p}% + 8px)` : `left:calc(${p}% + 10px)`;
+            return `<div class="mrow">
+              <div class="mname">${escapeHtml(m.label)}</div>
+              <div class="mv">${m.value}${unit}</div>
+              <div class="mbar"><i class="maxis"></i><i class="mmid"></i>${bar}
+                <span class="mtag ${tone}" style="${tagPos}">${note}${med}</span></div>
+              <div class="mtrend">—</div></div>`;
+          }).join('');
+        } else {
+          grid.className = 'data-grid';
+          grid.innerHTML = keyM.map(id => {
+            const it = dExtraItems.find(x => x.id === id);
+            if (!it) return '';
+            const v = it.get(rec);
+            const show = (v !== null && v !== undefined && v !== '') ? v : '—';
+            return `<div class="metric-card">
+              <div class="metric-label">${it.label}</div>
+              <div class="metric-value">${show}</div>
+              <div class="metric-unit">${(it.unit || '').trim()}</div>
+            </div>`;
+          }).join('');
+        }
       }
 
       const coachNote = rec.notes || '建議持續追蹤球員弱項，並安排 6 週訓練週期進行複測。';
