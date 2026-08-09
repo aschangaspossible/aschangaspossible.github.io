@@ -1532,7 +1532,7 @@
                 <input id="coachName" type="text" placeholder="例：Adam Chang" />
               </label>
               <label>Academy 名稱
-                <input id="academyName" type="text" value="奕晉網球學院" />
+                <input id="academyName" type="text" placeholder="例：奕晉網球學院" />
               </label>
             </div>
           </section>
@@ -2086,8 +2086,8 @@
             </section>
 
             <footer class="signature">
-              <span>Tennis Performance Lab</span>
-              <span>Report System｜Physical Performance Assessment</span>
+              <span id="reportSignAcademy">奕晉網球學院</span>
+              <span>體能檢測報告｜Physical Performance Assessment</span>
             </footer>
           </div>
         </article>
@@ -2440,7 +2440,10 @@
       $('reportHand').textContent  = `慣用手｜${rec.dominantHand || '-'}`;
       $('reportDate').textContent  = `檢測日期｜${rec.testDate || '-'}`;
       $('reportCoach').textContent = `教練｜${rec.coach || '-'}`;
-      $('reportAcademy').textContent = rec.academyName || '奕晉網球學院';
+      // 學院名以紀錄為準；沒有才退回本機記住的設定（白標：報告上只出現客戶自己的名字）
+      const acadName = rec.academyName || getAcademyName();
+      $('reportAcademy').textContent = acadName;
+      if ($('reportSignAcademy')) $('reportSignAcademy').textContent = acadName;
 
       // 同齡樣本夠不夠算百分位？不夠就整份報告不做「強弱項」推論
       const sampleN   = Number(s.sampleSize) || 0;
@@ -2787,7 +2790,7 @@
         .forEach(id => setVal(id, ''));
       setVal('squatUnit', 'kg'); setVal('pullUpUnit', '次'); setVal('mbWeight', '');
       setVal('gender', '男'); setVal('dominantHand', '右手');
-      setVal('testDate', todayISO()); setVal('academyName', '奕晉網球學院');
+      setVal('testDate', todayISO()); setVal('academyName', getAcademyName());
       photoDataUrl = '';
       $('reportPhoto').src = defaultPhoto;
       mobilityPhotoData = [];
@@ -3128,9 +3131,25 @@
     }
 
     // ── 初始化 ──
+    /* ── 學院名稱（白標）─────────────────────────────────────────
+       報告是「學院出給家長的文件」，上面只該有學院自己的名字。
+       這台電腦記住最後一次填的名字，換一間學院用不必改程式碼。      */
+    const ACADEMY_KEY = 'tpa_academyName';
+    const ACADEMY_DEFAULT = '奕晉網球學院';
+    function getAcademyName() {
+      try { return localStorage.getItem(ACADEMY_KEY) || ACADEMY_DEFAULT; }
+      catch (e) { return ACADEMY_DEFAULT; }        // 無痕模式等存取被擋時不要炸掉
+    }
+    function rememberAcademyName(v) {
+      const name = (v || '').trim();
+      if (!name) return;
+      try { localStorage.setItem(ACADEMY_KEY, name); } catch (e) {}
+    }
+
     function init() {
       setVal('testDate', todayISO());
-      setVal('academyName', '奕晉網球學院');
+      setVal('academyName', getAcademyName());
+      $('academyName').addEventListener('change', e => rememberAcademyName(e.target.value));
       $('reportPhoto').src = defaultPhoto;
 
       $('previewBtn').addEventListener('click', previewReport);
