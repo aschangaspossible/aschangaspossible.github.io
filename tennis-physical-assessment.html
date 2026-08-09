@@ -413,6 +413,200 @@
       box-shadow: var(--shadow);
     }
 
+    /* ══════════════════════════════════════════════════════════════
+       報告視覺（rp-* ）—— 編輯體風格：留白、細線、等寬字標籤、單一深綠重點色。
+       全部前綴 rp-，與表單 UI 的樣式完全隔離，改報告不會動到表單。
+       ══════════════════════════════════════════════════════════════ */
+    .report-card, .coach-page {
+      --ink: #0E1F1B; --ink2: #33473F; --muted: #63776F; --faint: #93A79F;
+      --line: #DEE7E3; --line2: #C7D5CF; --tint: #F5F8F7;
+      --brand: #0C5B4B; --brand-soft: #E4F0EC;
+      --pos: #2C8A58; --pos-soft: #E7F3EC;
+      --warn: #A9781A; --warn-soft: #F9F0DE;
+      --crit: #A33C2C; --crit-soft: #F8E9E5;
+      --bench: #8FA8A0;
+      --f-d: "Avenir Next", "Segoe UI Semibold", system-ui, sans-serif;
+      --f-m: ui-monospace, "SF Mono", Menlo, monospace;
+      color: var(--ink);
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+    .rp-inner { padding: 38px 44px 30px; display: flex; flex-direction: column; gap: 16px; }
+
+    .rp-eyebrow { font-family: var(--f-m); font-size: 9.5px; letter-spacing: .15em;
+                  text-transform: uppercase; color: var(--faint); margin: 0 0 4px; }
+    .rp-sec > h3 { font-family: var(--f-d); font-size: 16px; font-weight: 600; margin: 0; letter-spacing: .01em; }
+    .rp-sechead { display: flex; align-items: baseline; justify-content: space-between;
+                  gap: 14px; margin-bottom: 9px; }
+    .rp-note { font-size: 11px; color: var(--muted); margin: 0; }
+
+    /* 抬頭 */
+    .rp-top { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: end;
+              padding-bottom: 14px; border-bottom: 2px solid var(--ink); }
+    .rp-who { display: flex; gap: 14px; align-items: center; }
+    .rp-mono { width: 48px; height: 48px; border-radius: 50%; background: var(--brand-soft);
+               color: var(--brand); display: grid; place-items: center; overflow: hidden;
+               font-family: var(--f-d); font-size: 21px; font-weight: 600; flex: none; }
+    .rp-mono img { width: 100%; height: 100%; object-fit: cover; }
+    .rp-who h1 { font-family: var(--f-d); font-size: 25px; margin: 0; letter-spacing: .02em; line-height: 1.1; }
+    .rp-dl { margin: 3px 0 0; display: flex; flex-wrap: wrap; gap: 0 13px;
+             font-family: var(--f-m); font-size: 10.5px; color: var(--muted); }
+    .rp-dl div { display: flex; gap: 4px; }
+    .rp-dl dt { color: var(--faint); } .rp-dl dd { margin: 0; color: var(--ink2); }
+    .rp-meta { text-align: right; font-family: var(--f-m); font-size: 10.5px;
+               color: var(--muted); line-height: 1.75; }
+    .rp-meta strong { color: var(--ink); }
+    .rp-doc { display: block; font-family: var(--f-d); font-size: 11px; letter-spacing: .18em;
+              text-transform: uppercase; color: var(--brand); margin-bottom: 4px; }
+    .rp-pg { font-family: var(--f-m); font-size: 9.5px; color: var(--faint); letter-spacing: .1em; }
+
+    /* 結論帶 */
+    .rp-verdict { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center;
+                  background: var(--tint); border: 1px solid var(--line); border-radius: 5px; padding: 16px 20px; }
+    .rp-score { display: flex; align-items: baseline; gap: 6px; }
+    .rp-score b { font-family: var(--f-d); font-size: 46px; font-weight: 600;
+                  line-height: .88; letter-spacing: -.02em; }
+    .rp-score span { font-family: var(--f-m); font-size: 12px; color: var(--faint); }
+    .rp-cov { display: inline-block; font-family: var(--f-m); font-size: 10px; letter-spacing: .05em;
+              background: var(--warn-soft); color: var(--warn); border-radius: 3px; padding: 2px 7px; margin-top: 7px; }
+    .rp-cov.full { background: var(--pos-soft); color: var(--pos); }
+    .rp-gauge { margin-top: 9px; width: 210px; }
+    .rp-gtrack { display: flex; height: 6px; gap: 2px; }
+    .rp-gtrack i { flex: 1; background: var(--line2); border-radius: 2px; }
+    .rp-gtrack i.on { background: var(--warn); }
+    .rp-gtrack i.on-good { background: var(--pos); }
+    .rp-gtrack i.on-risk { background: var(--crit); }
+    .rp-gmark { display: flex; justify-content: space-between; margin-top: 4px;
+                font-family: var(--f-m); font-size: 9px; color: var(--faint); }
+    .rp-vc p { margin: 0; font-size: 13.5px; line-height: 1.7; color: var(--ink2); }
+    .rp-vc p strong { color: var(--ink); }
+    .rp-tier { display: inline-block; font-family: var(--f-m); font-size: 10.5px; letter-spacing: .06em;
+               background: var(--warn-soft); color: var(--warn); border-radius: 3px; padding: 2px 8px; margin-bottom: 6px; }
+    .rp-tier.good { background: var(--pos-soft); color: var(--pos); }
+    .rp-tier.risk { background: var(--crit-soft); color: var(--crit); }
+    .rp-caveat { margin-top: 9px; font-size: 10.5px; color: var(--muted);
+                 border-left: 2px solid var(--line2); padding-left: 9px; }
+
+    /* 雷達 + 發現 */
+    .rp-row2 { display: grid; grid-template-columns: 280px 1fr; gap: 26px; align-items: start; }
+    .rp-radar .grid polygon { fill: none; stroke: var(--line); stroke-width: 1; }
+    .rp-radar .spoke { stroke: var(--line); stroke-width: 1; }
+    .rp-radar .bench { fill: none; stroke: var(--bench); stroke-width: 1.5; stroke-dasharray: 4 3; }
+    .rp-radar .me { fill: var(--brand); fill-opacity: .15; stroke: var(--brand);
+                    stroke-width: 2; stroke-linejoin: round; }
+    .rp-radar .pt { fill: var(--brand); }
+    .rp-radar .lbl { font-size: 10.5px; fill: var(--ink2); text-anchor: middle; }
+    .rp-radar .lbl.off { fill: var(--faint); }
+    .rp-radar .sm { font-family: var(--f-m); font-size: 8.5px; fill: #AFBEB8; text-anchor: middle; }
+    .rp-radar .num { font-family: var(--f-m); font-size: 9.5px; fill: var(--brand);
+                     text-anchor: middle; font-weight: 600; }
+    .rp-key { display: flex; gap: 13px; justify-content: center; margin-top: 5px;
+              font-size: 10.5px; color: var(--muted); }
+    .rp-key span { display: flex; align-items: center; gap: 5px; }
+    .rp-sw { width: 14px; height: 0; border-top: 2px solid var(--brand); }
+    .rp-sw.d { border-top: 2px dashed var(--bench); }
+    .rp-sw.o { border-top: 2px dotted var(--faint); }
+
+    .rp-finds { display: grid; gap: 8px; }
+    .rp-find { display: grid; grid-template-columns: 3px 1fr; gap: 11px;
+               border: 1px solid var(--line); border-radius: 4px; padding: 11px 13px; }
+    .rp-find .bar { border-radius: 2px; }
+    .rp-find.p .bar { background: var(--pos); }
+    .rp-find.w .bar { background: var(--warn); }
+    .rp-find.c .bar { background: var(--bench); }
+    .rp-find h4 { margin: 0 0 3px; font-size: 12.5px; font-weight: 600;
+                  display: flex; gap: 7px; align-items: baseline; }
+    .rp-find h4 em { font-style: normal; font-family: var(--f-m); font-size: 9px;
+                     letter-spacing: .09em; text-transform: uppercase; color: var(--faint); }
+    .rp-find p { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--ink2); }
+    .rp-find ul { margin: 0; padding-left: 15px; font-size: 12.5px; line-height: 1.6; color: var(--ink2); }
+    .rp-find li + li { margin-top: 2px; }
+
+    /* 每項對照條：中線＝同齡中位，往右＝領先 */
+    .rp-mtx { border-top: 1px solid var(--line); }
+    .rp-mhead, .rp-m { display: grid; grid-template-columns: 120px 74px 1fr 66px;
+                       gap: 13px; align-items: center; }
+    .rp-mhead { font-family: var(--f-m); font-size: 9px; letter-spacing: .1em;
+                text-transform: uppercase; color: var(--faint); padding: 7px 0 6px; }
+    .rp-m { padding: 9px 0; border-bottom: 1px solid var(--line); }
+    .rp-m .nm { font-size: 12.5px; font-weight: 500; line-height: 1.3; }
+    .rp-m .nm small { display: block; font-family: var(--f-m); font-size: 9px;
+                      color: var(--faint); font-weight: 400; }
+    .rp-m .val { font-family: var(--f-d); font-size: 19px; font-weight: 600; text-align: right;
+                 font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .rp-m .val u { text-decoration: none; font-size: 10px; color: var(--muted);
+                   font-weight: 400; margin-left: 2px; }
+    .rp-scale { position: relative; height: 26px; }
+    .rp-scale .rail { position: absolute; left: 0; right: 0; top: 11px; height: 5px;
+                      background: var(--tint); border: 1px solid var(--line); border-radius: 3px; }
+    .rp-scale .mid { position: absolute; top: 6px; bottom: 6px; left: 50%; width: 1px; background: var(--bench); }
+    .rp-scale .fill { position: absolute; top: 11px; height: 5px; border-radius: 3px; }
+    .rp-scale .dot { position: absolute; top: 8.5px; width: 10px; height: 10px; border-radius: 50%;
+                     border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.12); }
+    .rp-scale .tag { position: absolute; top: -2px; font-family: var(--f-m); font-size: 9.5px;
+                     font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .rp-scale.g .fill, .rp-scale.g .dot { background: var(--pos); } .rp-scale.g .tag { color: var(--pos); }
+    .rp-scale.y .fill, .rp-scale.y .dot { background: var(--warn); } .rp-scale.y .tag { color: var(--warn); }
+    .rp-scale.r .fill, .rp-scale.r .dot { background: var(--crit); } .rp-scale.r .tag { color: var(--crit); }
+    .rp-scale .none { position: absolute; inset: 0; display: flex; align-items: center;
+                      font-size: 10.5px; color: var(--faint); }
+    .rp-trend { font-family: var(--f-m); font-size: 10.5px; color: var(--faint); text-align: right; }
+    .rp-trend.up { color: var(--pos); } .rp-trend.down { color: var(--crit); }
+
+    /* 左右差：雙向對照 */
+    .rp-asym { display: grid; gap: 9px; }
+    .rp-ai { border: 1px solid var(--line); border-left: 3px solid var(--crit);
+             border-radius: 4px; padding: 11px 13px; }
+    .rp-ai.mild { border-left-color: var(--warn); }
+    .rp-ai.good { border-left-color: var(--pos); }
+    .rp-ai .t { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .rp-ai h4 { margin: 0; font-size: 12.5px; font-weight: 600; }
+    .rp-ai h4 small { display: block; font-weight: 400; font-size: 10.5px; color: var(--muted); margin-top: 1px; }
+    .rp-gap { font-family: var(--f-d); font-size: 19px; font-weight: 600; color: var(--crit);
+              font-variant-numeric: tabular-nums; }
+    .rp-ai.mild .rp-gap { color: var(--warn); } .rp-ai.good .rp-gap { color: var(--pos); }
+    .rp-gap u { text-decoration: none; font-size: 10px; font-weight: 400; }
+    .rp-bip { display: grid; grid-template-columns: 62px 1fr 1fr 62px; align-items: center;
+              gap: 7px; margin-top: 8px; }
+    .rp-bip .s { font-family: var(--f-m); font-size: 10px; color: var(--muted);
+                 font-variant-numeric: tabular-nums; }
+    .rp-bip .s.rt { text-align: right; }
+    .rp-lane { height: 13px; background: var(--tint); border: 1px solid var(--line); position: relative; }
+    .rp-lane.l { border-right: 0; } .rp-lane.rr { border-left: 0; }
+    .rp-lane .f { position: absolute; top: 0; bottom: 0; background: var(--bench); }
+    .rp-lane .f.weak { background: var(--crit); }
+    .rp-ai.mild .rp-lane .f.weak { background: var(--warn); }
+    .rp-ai.good .rp-lane .f.weak { background: var(--pos); }
+    .rp-lane.l .f { right: 0; } .rp-lane.rr .f { left: 0; }
+    .rp-why { margin: 7px 0 0; font-size: 11.5px; color: var(--ink2); line-height: 1.5; }
+    .rp-lgd { display: flex; gap: 12px; font-family: var(--f-m); font-size: 9.5px; color: var(--muted); }
+    .rp-lgd span { display: flex; align-items: center; gap: 4px; }
+    .rp-dot3 { width: 6px; height: 6px; border-radius: 50%; }
+    .rp-dot3.g { background: var(--pos); } .rp-dot3.y { background: var(--warn); }
+    .rp-dot3.r { background: var(--crit); }
+
+    /* 訓練計畫 */
+    .rp-plan { border: 1px solid var(--line); border-radius: 5px; overflow: hidden; margin-top: auto; }
+    .rp-ph { background: var(--brand); color: #fff; padding: 11px 17px; display: flex;
+             justify-content: space-between; align-items: baseline; gap: 14px; }
+    .rp-ph h3 { margin: 0; font-family: var(--f-d); font-size: 14px; font-weight: 600; }
+    .rp-ph span { font-family: var(--f-m); font-size: 10px; opacity: .85; }
+    .rp-plan ol { margin: 0; padding: 4px 0; list-style: none; counter-reset: s; }
+    .rp-plan li { counter-increment: s; display: grid; grid-template-columns: auto 1fr;
+                  gap: 12px; padding: 10px 17px; align-items: center; }
+    .rp-plan li + li { border-top: 1px solid var(--line); }
+    .rp-plan li::before { content: counter(s); font-family: var(--f-m); font-size: 10px;
+      color: var(--brand); border: 1px solid var(--line2); border-radius: 50%;
+      width: 20px; height: 20px; display: grid; place-items: center; }
+    .rp-plan li b { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 1px; }
+    .rp-plan li p { margin: 0; font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+    .rp-pf { border-top: 1px solid var(--line); background: var(--tint); padding: 9px 17px;
+             font-size: 11.5px; color: var(--ink2); display: flex; justify-content: space-between; gap: 14px; }
+    .rp-pf b { color: var(--ink); }
+    .rp-foot { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line);
+               display: flex; justify-content: space-between; font-family: var(--f-m);
+               font-size: 9.5px; color: var(--faint); }
+
     /* ── 教練頁（報告第 2 頁）──────────────────────────────────────
        家長頁回答「他強在哪、該練什麼」；教練頁回答「這分數怎麼算出來的、
        哪些數字可以信」。預設不顯示，勾選才出現、才會列印。            */
@@ -1946,216 +2140,103 @@
 
       <section class="report-wrap">
         <article class="report-card" id="reportCard">
-          <div class="report-watermark"></div>
-          <div class="report-inner">
-            <section class="report-top">
-              <div class="player-block">
-                <img id="reportPhoto" class="avatar" alt="球員照片" />
+          <div class="rp-inner">
+
+            <header class="rp-top">
+              <div class="rp-who">
+                <div class="rp-mono" id="rpAvatar">—</div>
                 <div>
-                  <h3 class="player-name" id="reportName">球員姓名</h3>
-                  <div class="player-meta">
-                    <span id="reportAge">年齡｜—</span>
-                    <span id="reportBody">身高體重｜—</span>
-                    <span id="reportHand">慣用手｜—</span>
-                  </div>
+                  <h1 id="reportName">球員姓名</h1>
+                  <dl class="rp-dl" id="rpBio"></dl>
                 </div>
               </div>
-
-              <div class="report-title">
-                <small>Tennis Athlete</small>
-                <h2>PERFORMANCE<br />REPORT</h2>
-                <p>Tennis Physical Performance Assessment</p>
+              <div class="rp-meta">
+                <span class="rp-doc">Performance Report</span>
+                <div>檢測日期 <strong id="reportDate">—</strong></div>
+                <div>教練 <strong id="reportCoach">—</strong> · <span id="reportAcademy">奕晉網球學院</span></div>
+                <div class="rp-pg" id="rpPageNo">第 1 頁 · 給家長</div>
               </div>
+            </header>
 
-              <div class="academy-block">
-                <div>
-                  <div id="reportDate">檢測日期｜—</div>
-                  <div id="reportCoach">教練｜—</div>
-                  <div id="reportAcademy">奕晉網球學院</div>
-                </div>
-              </div>
-            </section>
-
-            <div class="divider"></div>
-
-            <section class="summary-strip">
-              <div class="summary-card">
-                <small>Overall Score</small>
-                <strong id="overallScore">—</strong>
-                <div class="score-ruler" id="scoreRuler" aria-hidden="true">
-                  <div class="sr-track">
+            <section class="rp-verdict">
+              <div>
+                <div class="rp-score"><b id="overallScore">—</b><span>/ 100</span></div>
+                <div class="rp-gauge">
+                  <div class="rp-gtrack" id="scoreRuler" aria-hidden="true">
                     <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
                   </div>
-                  <div class="sr-mark"><span>0</span><span><b>50 同齡中位</b></span><span>100</span></div>
+                  <div class="rp-gmark"><span>0</span><span>50 中位</span><span>100</span></div>
                 </div>
-                <span id="overallScoreNote">整體體能表現分數</span>
+                <span class="rp-cov" id="rpCoverage"></span>
               </div>
-
-              <div class="summary-card">
-                <small>Best Ability</small>
-                <strong id="bestAbility">—</strong>
-                <span>目前最突出的能力</span>
-              </div>
-
-              <div class="summary-card">
-                <small>Main Focus</small>
-                <strong id="mainFocus">—</strong>
-                <span>下一階段優先訓練</span>
-              </div>
-
-              <div class="summary-card">
-                <small>Training Status</small>
-                <strong id="trainingStatus" class="status-neutral">—</strong>
-                <span id="trainingStatusNote">送出或叫出報告後顯示</span>
+              <div class="rp-vc">
+                <span class="rp-tier" id="rpTier">—</span>
+                <p id="rpHeadline">送出或叫出報告後顯示。</p>
+                <p class="rp-caveat" id="sampleNote"></p>
               </div>
             </section>
 
-            <section class="overview">
-              <div class="card">
-                <div class="card-title-row">
-                  <div>
-                    <p class="card-kicker">Core Ability Overview</p>
-                    <h3 class="card-title">核心能力雷達圖</h3>
-                  </div>
-
-                  <div class="legend">
-                    <span><i class="dot dot-gray"></i>同齡平均</span>
-                    <span><i class="dot dot-player"></i>球員能力</span>
-                  </div>
-                </div>
-
-                <div class="radar-box">
-                  <canvas id="radarChart"></canvas>
-                </div>
+            <section class="rp-sec">
+              <div class="rp-sechead">
+                <div><p class="rp-eyebrow">Core Ability</p><h3>核心能力總覽</h3></div>
+                <p class="rp-note">虛線＝同齡中位；空心＝本次無法計分</p>
               </div>
-
-              <div class="card">
-                <div class="card-title-row">
-                  <div>
-                    <p class="card-kicker">Professional Analysis</p>
-                    <h3 class="card-title">關鍵分析區</h3>
-                  </div>
-                </div>
-
-                <div class="analysis-grid">
-                  <div class="analysis-box">
-                    <h4>
-                      A｜優勢 Strengths
-                      <span class="tag tag-good">GOOD</span>
-                    </h4>
-                    <ul class="analysis-list" id="strengthList"></ul>
-                  </div>
-
-                  <div class="analysis-box">
-                    <h4>
-                      B｜待加強 Improve
-                      <span class="tag tag-watch">FOCUS</span>
-                    </h4>
-                    <ul class="analysis-list" id="improveList"></ul>
-                  </div>
-
-                  <div class="analysis-box">
-                    <h4>
-                      C｜場上影響 On-Court
-                      <span class="tag tag-court">COURT</span>
-                    </h4>
-                    <ul class="analysis-list" id="courtList"></ul>
-                  </div>
-
-                  <div class="analysis-box">
-                    <h4>
-                      D｜其他測試的補充
-                      <span class="tag tag-court">EXTRA</span>
-                    </h4>
-                    <ul class="analysis-list" id="otherTestList"></ul>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section class="card">
-              <div class="card-title-row">
+              <div class="rp-row2">
                 <div>
-                  <p class="card-kicker">Key Testing Data</p>
-                  <h3 class="card-title">最重要數據</h3>
+                  <svg class="rp-radar" id="radarSvg" viewBox="0 0 300 262" width="100%" height="auto" role="img"></svg>
+                  <div class="rp-key">
+                    <span><i class="rp-sw"></i><span id="rpKeyName">球員</span></span>
+                    <span><i class="rp-sw d"></i>同齡中位</span>
+                    <span><i class="rp-sw o"></i>未計分</span>
+                  </div>
                 </div>
-              </div>
-
-              <div class="metric-rows" id="dataGrid">
-                <div class="mrow mrow-head">
-                  <span>項目</span><span class="mv">本次</span>
-                  <span class="mbar-head"><span>← 落後</span><span>中位</span><span>領先 →</span></span>
-                  <span class="mtrend">vs 上次</span>
-                </div>
-                <div class="mrow">
-                  <div class="mname">10m 衝刺</div>
-                  <div class="mv">—</div>
-                  <div class="mbar"><span class="mnone">叫出報告後顯示與同齡的對照</span></div>
-                  <div class="mtrend">—</div>
-                </div>
-                <div class="mrow">
-                  <div class="mname">立定跳遠</div>
-                  <div class="mv">—</div>
-                  <div class="mbar"><span class="mnone">教練可在下方「最重要數據」自選項目</span></div>
-                  <div class="mtrend">—</div>
-                </div>
-              </div>
-              </section>
-
-
-            <section class="card asym-card" id="asymmetryCard" style="display:none">
-              <div class="card-title-row">
-                <div>
-                  <p class="card-kicker">Asymmetry Analysis</p>
-                  <h3 class="card-title">左右不對稱性分析</h3>
-                </div>
-                <div style="font-size:12px;color:var(--muted);text-align:right;line-height:1.5">
-                  🟢 &lt;10% 良好<br>🟡 10–15% 觀察<br>🔴 &gt;15% 優先處理
-                </div>
-              </div>
-              <div class="asym-grid">
-                <div class="asym-item asym-empty" id="asymLandTime">
-                  <div class="asym-label">落地穩定時間</div>
-                  <div class="asym-value">—</div>
-                  <div class="asym-pct">%</div>
-                  <div class="asym-status">未輸入資料</div>
-                </div>
-                <div class="asym-item asym-empty" id="asymLandNkg">
-                  <div class="asym-label">落地峰值/體重 N/kg</div>
-                  <div class="asym-value">—</div>
-                  <div class="asym-pct">%</div>
-                  <div class="asym-status">未輸入資料</div>
-                </div>
-                <div class="asym-item asym-empty" id="asymDJRSI">
-                  <div class="asym-label">Drop Jump RSI</div>
-                  <div class="asym-value">—</div>
-                  <div class="asym-pct">%</div>
-                  <div class="asym-status">未輸入資料</div>
-                </div>
+                <div class="rp-finds" id="rpFinds"></div>
               </div>
             </section>
 
-            <section class="focus-card">
-              <div class="focus-left">
-                <p class="card-kicker">Development Focus</p>
-                <h3>下一階段重點</h3>
-                <p>未來 6 週訓練方向</p>
+            <section class="rp-sec">
+              <div class="rp-sechead">
+                <div><p class="rp-eyebrow">Key Data</p><h3>關鍵數據 vs 同齡</h3></div>
+                <p class="rp-note">圓點＝他的位置；中線＝同齡中位</p>
               </div>
-
-              <ul class="focus-list" id="focusList"></ul>
-
-              <div class="recommendation" id="recommendationText">
-                <strong>訓練建議：</strong>
-                送出或叫出報告後顯示教練備註
+              <div class="rp-mhead">
+                <span>項目</span><span style="text-align:right">本次</span>
+                <span style="display:flex;justify-content:space-between"><span>← 落後</span><span>中位</span><span>領先 →</span></span>
+                <span style="text-align:right">vs 上次</span>
               </div>
+              <div class="rp-mtx" id="dataGrid"></div>
+              <p class="rp-note" style="margin-top:7px" id="rpTrendNote"></p>
             </section>
 
-            <footer class="signature">
-              <span id="reportSignAcademy">奕晉網球學院</span>
-              <span>體能檢測報告｜Physical Performance Assessment</span>
-            </footer>
+            <section class="rp-sec" id="asymmetryCard" style="display:none">
+              <div class="rp-sechead">
+                <div><p class="rp-eyebrow">Asymmetry</p><h3 id="rpAsymTitle">左右腳差異</h3></div>
+                <div class="rp-lgd">
+                  <span><i class="rp-dot3 g"></i>&lt;10% 良好</span>
+                  <span><i class="rp-dot3 y"></i>10–15% 觀察</span>
+                  <span><i class="rp-dot3 r"></i>&gt;15% 優先處理</span>
+                </div>
+              </div>
+              <div class="rp-asym" id="rpAsym"></div>
+              <p class="rp-note" style="margin-top:8px" id="rpAsymNote"></p>
+            </section>
+
+            <div class="rp-plan">
+              <div class="rp-ph"><h3>未來 6 週訓練方向</h3><span id="rpPlanRange"></span></div>
+              <ol id="focusList"></ol>
+              <div class="rp-pf">
+                <span id="rpRetest"></span>
+                <span>負責教練：<b id="rpPlanCoach">—</b></span>
+              </div>
+            </div>
+
+            <div class="rp-foot">
+              <span id="reportSignAcademy">奕晉網球學院 · 體能與康復部門</span>
+              <span id="rpFootMeta"></span>
+            </div>
           </div>
         </article>
+
 
         <!-- 第 2 頁：教練頁。勾「附上教練頁」才顯示／列印 -->
         <article class="report-card coach-page" id="coachPage">
@@ -2550,18 +2631,28 @@
     function displayReport(rec, result) {
       const s   = result.scores;
       const age = result.age;
-
-      $('reportPhoto').src = photoDataUrl || defaultPhoto;
-      $('reportName').textContent  = rec.playerName || '未命名球員';
-      $('reportAge').textContent   = `年齡｜${age} 歲`;
-      $('reportBody').textContent  = `身高體重｜${rec.height ?? '-'} cm / ${rec.weight ?? '-'} kg`;
-      $('reportHand').textContent  = `慣用手｜${rec.dominantHand || '-'}`;
-      $('reportDate').textContent  = `檢測日期｜${rec.testDate || '-'}`;
-      $('reportCoach').textContent = `教練｜${rec.coach || '-'}`;
-      // 學院名以紀錄為準；沒有才退回本機記住的設定（白標：報告上只出現客戶自己的名字）
       const acadName = rec.academyName || getAcademyName();
+
+      // ── 抬頭 ──
+      const av = $('rpAvatar');
+      if (photoDataUrl) av.innerHTML = `<img src="${photoDataUrl}" alt="" />`;
+      else av.textContent = (rec.playerName || '—').trim().charAt(0);
+      $('reportName').textContent = rec.playerName || '未命名球員';
+      $('rpKeyName').textContent  = rec.playerName || '球員';
+      $('rpBio').innerHTML = [
+        ['年齡', age != null ? `${age} 歲` : '—'],
+        ['身高', rec.height ? `${rec.height} cm` : '—'],
+        ['體重', rec.weight ? `${rec.weight} kg` : '—'],
+        ['慣用手', rec.dominantHand || '—'],
+        ['比較組', (s.normGroup || rec.ageGroup || '—').replace('_', ' ')]
+      ].map(x => `<div><dt>${x[0]}</dt><dd>${escapeHtml(String(x[1]))}</dd></div>`).join('');
+      $('reportDate').textContent    = rec.testDate || '—';
+      $('reportCoach').textContent   = rec.coach || '—';
       $('reportAcademy').textContent = acadName;
-      if ($('reportSignAcademy')) $('reportSignAcademy').textContent = acadName;
+      $('reportSignAcademy').textContent = acadName + ' · 體能與康復部門';
+      $('rpPlanCoach').textContent   = rec.coach || '—';
+      $('rpFootMeta').textContent    = [result.testId, s.baselineVersion ? `對照 ${s.baselineVersion} 基準` : '']
+                                        .filter(Boolean).join(' · ');
 
       // 同齡樣本夠不夠算百分位？不夠就整份報告不做「強弱項」推論
       const sampleN   = Number(s.sampleSize) || 0;
@@ -2574,65 +2665,72 @@
       const scored    = metricConfig.filter(m => m.active && currentDimStates[m.id] === 'scored');
       const testedCnt = metricConfig.filter(m => currentDimStates[m.id] !== 'untested').length;
       const coverage  = (s.coverage != null) ? s.coverage : scored.length;
+      const hasTotal  = scored.length && s.total != null;
 
-      // 總分永遠標示涵蓋度 —— 只測 1 維卻寫「整體體能表現分數」會誤導家長
-      const hasTotal = scored.length && s.total != null;
+      // ── 總分 + 標尺 + 涵蓋度 ──
       $('overallScore').textContent = hasTotal ? s.total : '—';
-
-      // 分段標尺：10 格，每格 10 分。顏色跟著評級走，家長一眼知道落在哪一段。
       const ruler = $('scoreRuler');
-      if (ruler) {
-        ruler.classList.toggle('on', !!hasTotal);
-        if (hasTotal) {
-          const lit = Math.round(Math.max(0, Math.min(100, s.total)) / 10);
-          const cls = s.total >= 75 ? 'on-good' : (s.total >= 50 ? 'on' : 'on-risk');
-          Array.from(ruler.querySelectorAll('.sr-track i')).forEach((el, i) => {
-            el.className = i < lit ? cls : '';
-          });
-        }
-      }
-      const covEl = $('overallScoreNote');
-      if (covEl) {
-        covEl.textContent = coverage
-          ? (coverage < metricConfig.length ? `僅測 ${coverage}/${metricConfig.length} 項能力` : '六項能力完整')
-          : '整體體能表現分數';
-        covEl.style.color = (coverage && coverage < 3) ? '#b45309' : '';
-      }
-      $('bestAbility').textContent  = scored.length >= 2 ? (s.bestAbility  || '-') : '樣本建立中';
-      $('mainFocus').textContent    = scored.length >= 2 ? (s.weakestAbility || '-') : '樣本建立中';
+      const lit = hasTotal ? Math.round(Math.max(0, Math.min(100, s.total)) / 10) : 0;
+      // 門檻對齊百分位語意：50＝同齡中位，不是及格線
+      const cls = !hasTotal ? '' : (s.total >= 75 ? 'on-good' : (s.total >= 50 ? 'on' : 'on-risk'));
+      Array.from(ruler.children).forEach((el, i) => { el.className = (i < lit) ? cls : ''; });
 
-      const status = $('trainingStatus'), note = $('trainingStatusNote');
-      status.classList.remove('status-good','status-watch','status-risk','status-neutral');
-      if (!scored.length) {
-        status.textContent = '待常模'; status.classList.add('status-neutral');
-        note.textContent = `同齡樣本 ${sampleN} 筆，尚無法評級`;
-      }
-      // 門檻對齊百分位語意：50 = 同齡基準的中位數，不是「及格邊緣」。
-      // （v23 中點法把中位數修正回 50，門檻若停在 55，中位數的球員會被評成最低級）
-      else if (s.total >= 75) { status.textContent = '良好';   status.classList.add('status-good');  note.textContent = '同齡前段（約前 25%），可進入更高強度訓練'; }
-      else if (s.total >= 50) { status.textContent = '觀察';   status.classList.add('status-watch'); note.textContent = '達同齡中位水準，持續補強弱項'; }
-      else                    { status.textContent = '待加強'; status.classList.add('status-risk');  note.textContent = '低於同齡中位，建議先建立基礎穩定與移動品質'; }
+      const covEl = $('rpCoverage');
+      covEl.textContent = coverage
+        ? (coverage < metricConfig.length ? `僅測 ${coverage}/${metricConfig.length} 項能力` : '六項能力完整')
+        : '尚無可計分能力';
+      covEl.classList.toggle('full', coverage === metricConfig.length);
 
+      const tier = $('rpTier');
+      tier.classList.remove('good','risk');
+      if (!hasTotal)            { tier.textContent = `待常模 · 同齡樣本 ${sampleN} 筆`; }
+      else if (s.total >= 75)   { tier.textContent = '良好 · 同齡前段'; tier.classList.add('good'); }
+      else if (s.total >= 50)   { tier.textContent = '觀察 · 達同齡中位水準'; }
+      else                      { tier.textContent = '待加強 · 低於同齡中位'; tier.classList.add('risk'); }
+
+      // ── 一句話結論：用真實數據組出來，不寫死 ──
+      const mList = (result && result.metrics) || [];
+      const rankable = mList.filter(m => m.pct !== null && m.pct !== undefined);
+      const topM  = rankable.length ? rankable.reduce((a,b) => a.pct > b.pct ? a : b) : null;
+      const lowM  = rankable.length ? rankable.reduce((a,b) => a.pct < b.pct ? a : b) : null;
+      const bestDim = scored.length >= 2 ? (s.bestAbility || '') : '';
+      const weakDim = scored.length >= 2 ? (s.weakestAbility || '') : '';
+      let headline = '';
+      if (hasTotal && bestDim && weakDim && bestDim !== weakDim) {
+        headline = `<strong>${escapeHtml(bestDim)}是目前的相對強項，${escapeHtml(weakDim)}是接下來最該補的一塊。</strong>`;
+      } else if (hasTotal) {
+        headline = `<strong>本次共有 ${coverage} 項能力達到計分門檻。</strong>`;
+      } else {
+        headline = `<strong>同齡樣本尚未累積足夠，本次僅呈現原始數據。</strong>`;
+      }
+      if (topM) headline += ` ${escapeHtml(topM.label)} ${topM.value}${escapeHtml(topM.unit||'')}`
+                          + `（${topM.rankNote ? escapeHtml(topM.rankNote) : '第 ' + topM.pct + ' 百分位'}）是本次最亮眼的一項`;
+      if (lowM && topM && lowM.id !== topM.id)
+        headline += `；${escapeHtml(lowM.label)} ${lowM.value}${escapeHtml(lowM.unit||'')}`
+                  + `（${lowM.rankNote ? escapeHtml(lowM.rankNote) : '第 ' + lowM.pct + ' 百分位'}）則落在後段`;
+      if (topM) headline += '。';
+      $('rpHeadline').innerHTML = headline;
+
+      // ── 分數怎麼讀 + 基準版本 ──
+      const noteEl = $('sampleNote');
+      if (s.baselineVersion) {
+        const nList = scored.map(m => (s.dims[m.id] || {}).n).filter(Boolean);
+        const nTxt  = nList.length ? `，各項基準 ${Math.min.apply(null,nList)}–${Math.max.apply(null,nList)} 人` : '';
+        noteEl.textContent = `分數為隊內百分位：50 分＝同齡隊友的中位水準，不是及格線。對照 ${s.baselineVersion} 基準${nTxt}。`;
+      } else {
+        noteEl.textContent = !normReady
+          ? `同組樣本 ${sampleN} 筆，尚無法計算百分位 —— 本次僅呈現原始數據，不做同齡比較。`
+          : `分數為隊內百分位：50 分＝同齡隊友的中位水準，不是及格線。同組樣本 ${sampleN} 筆。`;
+      }
+
+      // ── 強項 / 待加強 / 場上會怎麼樣 ──
       const strengths = [], weaknesses = [], courts = [], focuses = [];
       scored.forEach(m => {
         const v = s[m.id];
         if (v == null) return;                      // v23 起算不出來的維度回 null，不臆測
-        if (v >= 55) { strengths.push(m.strength); }
+        if (v >= 55) strengths.push(m.strength);
         else { weaknesses.push(m.weakness); courts.push(m.court); focuses.push(m.focus); }
       });
-
-      // 沒有任何維度算得出分數時，不要用預設 50 分去臆測強弱項
-      const noNorm = !scored.length;
-      renderList('strengthList', strengths.slice(0,3),  '✅',
-        noNorm ? '待同齡樣本累積後自動列出' : '本次此區無項目');
-      renderList('improveList',  weaknesses.slice(0,3), '⚠️',
-        noNorm ? `同齡樣本目前 ${sampleN} 筆，本次不做同齡比較。已完成 ${testedCnt} 個面向的檢測，數據皆已存檔，累積至 ${NORM_MIN_SAMPLE} 筆以上即自動產生分析。`
-               : '本次此區無項目');
-      renderList('courtList',    courts.slice(0,3),     '🎾',
-        noNorm ? '待能力分析產生後同步說明' : '本次此區無項目');
-      renderList('focusList',    focuses.slice(0,3),    '▸',
-        noNorm ? '本階段以基礎穩定與移動品質為主；左右差異若已標示紅燈，請優先處理。'
-               : '本次此區無項目');
 
       // D｜其他測試的補充：教練勾選的項目（帶數值）+ 自由文字
       const otherTests = [];
@@ -2642,118 +2740,101 @@
         const v = item.get(rec);
         if (v !== null && v !== undefined && v !== '') otherTests.push(`${item.label}：${v}${item.unit || ''}`);
       });
-      if (rec.dExtraText) {
-        rec.dExtraText.split(/\r?\n/).map(s => s.trim()).filter(Boolean).forEach(line => otherTests.push(line));
-      }
-      // 活動度測試：教練勾選「呈現報告」的項目（✓ 綠 / ✗ 紅）
+      if (rec.dExtraText)
+        rec.dExtraText.split(/\r?\n/).map(x => x.trim()).filter(Boolean).forEach(l => otherTests.push(l));
+      const mobSym = v => v==='pass' ? '<span style="color:#2C8A58;font-weight:700">✓</span>'
+                        : v==='fail' ? '<span style="color:#A33C2C;font-weight:700">✗</span>'
+                        : '<span style="color:#93A79F">—</span>';
       const mobLines = [];
-      const mobSym = v => v==='pass' ? '<span style="color:#16a34a;font-weight:700">✓ 通過</span>'
-                        : v==='fail' ? '<span style="color:#dc2626;font-weight:700">✗ 未通過</span>'
-                        : '<span style="color:#9ca3af">—</span>';
       (rec.mobilityShow || []).forEach(id => {
         const it = mobilityItems.find(x => x.id === id);
         const d  = (rec.mobility || {})[id];
         if (!it || !d) return;
-        if (it.bilateral) {
-          if (!d.L && !d.R) return;
-          mobLines.push(`${it.label}：左 ${mobSym(d.L)}　右 ${mobSym(d.R)}`);
-        } else {
-          if (!d.v) return;
-          mobLines.push(`${it.label}：${mobSym(d.v)}`);
-        }
+        if (it.bilateral) { if (d.L || d.R) mobLines.push(`${escapeHtml(it.label)}：左 ${mobSym(d.L)}　右 ${mobSym(d.R)}`); }
+        else if (d.v)     { mobLines.push(`${escapeHtml(it.label)}：${mobSym(d.v)}`); }
       });
-      const otherUl = $('otherTestList');
-      if (otherUl) {
-        otherUl.innerHTML = '';
-        otherTests.forEach(text => {  // 文字/數值項目 → 跳脫 HTML
-          const li = document.createElement('li');
-          li.innerHTML = `<span>📋</span><span>${escapeHtml(text)}</span>`;
-          otherUl.appendChild(li);
-        });
-        mobLines.forEach(html => {     // 活動度需保留顏色 → 直接塞 innerHTML
-          const li = document.createElement('li');
-          li.innerHTML = `<span>🤸</span><span>${html}</span>`;
-          otherUl.appendChild(li);
-        });
-        // D 區沒內容就整格不顯示（別讓報告出現「本次未挑選補充項目」這種空欄位），
-        // 並讓 C 區補上空出來的半格，版面不留洞
-        const dBox = otherUl.closest('.analysis-box');
-        const cBox = ($('courtList') || {}).closest ? $('courtList').closest('.analysis-box') : null;
-        const dEmpty = !otherUl.children.length;
-        if (dBox) dBox.style.display = dEmpty ? 'none' : '';
-        if (cBox) cBox.classList.toggle('analysis-box-wide', dEmpty);
-      }
 
-      // 最重要數據：依教練自選的項目產生「vs 同齡對照條」
-      // 後台 v24 送來 result.metrics（每項的隊內百分位）；沒有的話退回舊的數字卡片。
+      const finds = [];
+      if (strengths.length)
+        finds.push(['p','強項','Strength', `<p>${strengths.slice(0,2).map(escapeHtml).join('')}</p>`]);
+      if (weaknesses.length)
+        finds.push(['w','待加強','Focus',
+          '<ul>' + weaknesses.slice(0,3).map(x => `<li>${escapeHtml(x)}</li>`).join('') + '</ul>']);
+      else if (!scored.length)
+        finds.push(['w','目前狀態','Status',
+          `<p>同齡樣本目前 ${sampleN} 筆，本次不做同齡比較。已完成 ${testedCnt} 個面向的檢測，`
+          + `數據皆已存檔，累積至 ${NORM_MIN_SAMPLE} 筆以上即自動產生分析。</p>`]);
+      if (courts.length)
+        finds.push(['c','場上會怎麼樣','On-Court', `<p>${courts.slice(0,2).map(escapeHtml).join('')}</p>`]);
+      if (otherTests.length || mobLines.length)
+        finds.push(['c','其他測試','Extra',
+          '<ul>' + otherTests.map(x => `<li>${escapeHtml(x)}</li>`).join('')
+                 + mobLines.map(x => `<li>${x}</li>`).join('') + '</ul>']);
+      $('rpFinds').innerHTML = finds.map(f =>
+        `<div class="rp-find ${f[0]}"><div class="bar"></div><div>`
+        + `<h4>${f[1]} <em>${f[2]}</em></h4>${f[3]}</div></div>`).join('');
+
+      // ── 關鍵數據 vs 同齡（中線＝中位，往右＝領先）──
       // 為什麼要對照條：維度分數會抹平差異 —— 王柏雨「速度與變向 52」其實是
-      // 10m 第 7 百分位 + 5-10-5 第 93 百分位平均出來的，卡片看不出這件事。
-      const keyM = (rec.keyMetrics && rec.keyMetrics.length) ? rec.keyMetrics : defaultKeyMetrics;
+      // 10m 第 7 百分位 + 5-10-5 第 93 百分位平均出來的，數字卡片看不出這件事。
+      const hist = (result && result.history) || [];
+      const prev = hist.length ? hist[0] : null;
       const grid = $('dataGrid');
-      const mList = (result && result.metrics) || [];
-      if (grid) {
-        if (mList.length) {
-          grid.className = 'metric-rows';
-          grid.innerHTML = `<div class="mrow mrow-head">
-              <span>項目</span><span class="mv">本次</span>
-              <span class="mbar-head"><span>← 落後</span><span>中位</span><span>領先 →</span></span>
-              <span class="mtrend">vs 上次</span>
-            </div>` + mList.map(m => {
-            const unit = m.unit ? `<u>${escapeHtml(m.unit)}</u>` : '';
-            if (m.pct === null || m.pct === undefined) {
-              return `<div class="mrow">
-                <div class="mname">${escapeHtml(m.label)}</div>
-                <div class="mv">${m.value}${unit}</div>
-                <div class="mbar"><span class="mnone">無同齡基準 · 僅顯示數值</span></div>
-                <div class="mtrend">—</div></div>`;
-            }
-            // >50% 綠（中位之上即為正面）／40–50% 琥珀／<40% 紅
-            const tone = m.pct > 50 ? 'good' : (m.pct >= 40 ? 'mild' : 'bad');
-            const p = Math.max(2, Math.min(98, m.pct));
-            const bar = p >= 50
-              ? `<i class="mfill ${tone}" style="left:50%;width:${p-50}%"></i>`
-              : `<i class="mfill ${tone}" style="left:${p}%;width:${50-p}%"></i>`;
-            const note = m.rankNote ? `<b>${escapeHtml(m.rankNote)}</b>` : `贏過隊上 ${m.pct}%`;
-            const med  = (m.median !== null && m.median !== undefined) ? ` ｜ 中位 ${m.median}` : '';
-            const tagPos = p >= 50 ? `left:calc(${p}% + 8px)` : `left:calc(${p}% + 10px)`;
-            return `<div class="mrow">
-              <div class="mname">${escapeHtml(m.label)}</div>
-              <div class="mv">${m.value}${unit}</div>
-              <div class="mbar"><i class="maxis"></i><i class="mmid"></i>${bar}
-                <span class="mtag ${tone}" style="${tagPos}">${note}${med}</span></div>
-              <div class="mtrend">—</div></div>`;
-          }).join('');
-        } else {
-          grid.className = 'data-grid';
-          grid.innerHTML = keyM.map(id => {
-            const it = dExtraItems.find(x => x.id === id);
-            if (!it) return '';
-            const v = it.get(rec);
-            const show = (v !== null && v !== undefined && v !== '') ? v : '—';
-            return `<div class="metric-card">
-              <div class="metric-label">${it.label}</div>
-              <div class="metric-value">${show}</div>
-              <div class="metric-unit">${(it.unit || '').trim()}</div>
-            </div>`;
-          }).join('');
+      grid.innerHTML = mList.map(m => {
+        const unit = m.unit ? `<u>${escapeHtml(m.unit)}</u>` : '';
+        // vs 上次：方向依指標性質（越小越好 vs 越大越好）
+        let trend = '—', tcls = '';
+        if (prev && prev.values[m.id] != null) {
+          const d = m.value - prev.values[m.id];
+          if (Math.abs(d) > 1e-9) {
+            const better = m.lower ? d < 0 : d > 0;
+            tcls  = better ? 'up' : 'down';
+            trend = (d > 0 ? '+' : '') + Math.round(d * 100) / 100;
+          } else trend = '持平';
         }
-      }
+        const trendCell = `<div class="rp-trend ${tcls}">${trend}</div>`;
 
-      const coachNote = rec.notes || '建議持續追蹤球員弱項，並安排 6 週訓練週期進行複測。';
-      $('recommendationText').innerHTML = `<strong>訓練建議：</strong>${escapeHtml(coachNote)}`;
+        if (m.pct === null || m.pct === undefined) {
+          return `<div class="rp-m"><div class="nm">${escapeHtml(m.label)}</div>`
+            + `<div class="val">${m.value}${unit}</div>`
+            + `<div class="rp-scale"><div class="rail"></div><div class="mid"></div>`
+            + `<span class="none">無同齡基準 · 僅顯示數值</span></div>${trendCell}</div>`;
+        }
+        // >50 綠（中位之上即為正面）／40–50 琥珀／<40 紅
+        const tone = m.pct > 50 ? 'g' : (m.pct >= 40 ? 'y' : 'r');
+        const p = Math.max(2, Math.min(98, m.pct));
+        const fill = p >= 50 ? `left:50%;width:${p - 50}%` : `left:${p}%;width:${50 - p}%`;
+        const note = m.rankNote ? escapeHtml(m.rankNote) : `第 ${m.pct} 百分位`;
+        const med  = (m.median !== null && m.median !== undefined)
+                   ? (m.pct === 50 ? '｜正好中位' : `｜中位 ${m.median}`) : '';
+        // 標籤靠右時會超出邊界 → 改成貼右緣往左寫
+        const tagPos = p > 72 ? `right:calc(${100 - p}% + 10px)` : `left:calc(${p}% + 10px)`;
+        return `<div class="rp-m"><div class="nm">${escapeHtml(m.label)}</div>`
+          + `<div class="val">${m.value}${unit}</div>`
+          + `<div class="rp-scale ${tone}"><div class="rail"></div><div class="mid"></div>`
+          + `<div class="fill" style="${fill}"></div>`
+          + `<div class="dot" style="left:calc(${p}% - 5px)"></div>`
+          + `<div class="tag" style="${tagPos}">${note}${med}</div></div>${trendCell}</div>`;
+      }).join('') || '<div class="rp-m"><div class="nm">尚無資料</div><div class="val">—</div>'
+                   + '<div class="rp-scale"><span class="none">叫出報告後顯示與同齡的對照</span></div>'
+                   + '<div class="rp-trend">—</div></div>';
 
-      const noteEl = $('sampleSizeNote');
-      if (noteEl && s.baselineVersion) {
-        // v23：對凍結基準計分 → 標註版本，家長/教練才知道分數是跟什麼比
-        const nList = scored.map(m => (s.dims[m.id] || {}).n).filter(Boolean);
-        const nTxt  = nList.length ? `各項基準 ${Math.min.apply(null,nList)}–${Math.max.apply(null,nList)} 人` : '';
-        noteEl.textContent = `對照 ${s.baselineVersion} 基準（${nTxt}）`;
-      }
-      else if (noteEl) noteEl.textContent = !normReady
-        ? `⚠ 同組樣本 ${sampleN} 筆，尚無法計算百分位 — 本次僅呈現原始數據，不做同齡比較`
-        : (s.insufficientSample
-            ? `⚠ 同組樣本 ${sampleN} 筆（建議至少 ${NORM_GOOD_SAMPLE} 筆），分數僅供參考`
-            : `✓ 同組樣本數：${sampleN} 筆`);
+      $('rpTrendNote').textContent = prev
+        ? `「vs 上次」對照 ${prev.testDate}（${prev.testId}）。`
+        : '「vs 上次」本次無資料 —— 這是首次以此基準計分，第二次檢測後此欄會顯示進退幅度。';
+
+      // ── 訓練計畫 ──
+      const plan = focuses.slice(0, 3);
+      if (!plan.length) plan.push('本階段以基礎穩定與移動品質為主；左右差異若已標示紅燈，請優先處理。');
+      const coachNote = rec.notes || '';
+      $('focusList').innerHTML = plan.map((t, i) =>
+        `<li><div><b>${escapeHtml(t)}</b>` + (i === 0 && coachNote
+          ? `<p>${escapeHtml(coachNote)}</p>` : '') + `</div></li>`).join('');
+      const d0 = rec.testDate ? new Date(rec.testDate) : new Date();
+      const d1 = new Date(d0.getTime() + 42 * 864e5);
+      const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      $('rpPlanRange').textContent = `${fmt(d0)} → ${fmt(d1)}`;
+      $('rpRetest').innerHTML = `下次複測：<b>${fmt(d1)}</b>`;
 
       drawRadarChart(s);
       displayAsymmetry(rec);
@@ -2894,129 +2975,80 @@
     }
 
     // ── 雷達圖 ──
+    /* 雷達圖（SVG）。六軸固定順序：上＝速度，順時針。
+       只連「有分數」的軸 —— 舊版把未計分的軸用 50 補值連起來，
+       會畫出一個看起來六維都有值的假形狀。                       */
     function drawRadarChart(scores) {
-      const canvas = $('radarChart');
-      const box    = canvas.parentElement;
-      const dpr    = window.devicePixelRatio || 1;
-      const W = box.clientWidth, H = box.clientHeight;
-      canvas.width  = W * dpr; canvas.height = H * dpr;
-      canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
-      const ctx = canvas.getContext('2d');
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, W, H);
+      const svg = $('radarSvg');
+      if (!svg) return;
+      const CX = 150, CY = 135, R = 110;
+      const AX = [
+        { id:'speedAgility',   name:'速度與變向' },
+        { id:'lowerPower',     name:'下肢爆發'   },
+        { id:'rotational',     name:'轉體爆發'   },
+        { id:'throwing',       name:'投擲'       },
+        { id:'singleLegDecel', name:'單腿減速'   },
+        { id:'cardio',         name:'心肺適能'   }
+      ];
+      const ang = i => (Math.PI * 2 * i / 6) - Math.PI / 2;      // 從正上方開始
+      const pt  = (i, r) => [CX + Math.cos(ang(i)) * r, CY + Math.sin(ang(i)) * r];
+      const poly = r => AX.map((_, i) => pt(i, r).map(n => n.toFixed(1)).join(',')).join(' ');
 
-      const labels = metricConfig.map(m => m.short);
-      // 算不出來的維度用 50 當「頂點位置」只是為了畫得出多邊形，
-      // 但那個點會畫成空心虛線並在軸標寫「未測」，不會被誤讀成 50 分
-      const player = metricConfig.map(m => scores?.[m.id] ?? 50);
-      const avg    = metricConfig.map(() => 50);
-      const cx = W / 2, cy = H / 2 + 8;
-      const R  = Math.min(W, H) * 0.34;
-      const n  = labels.length;
-      const step  = Math.PI * 2 / n;
-      const start = -Math.PI / 2;
+      const dims = scores.dims || {};
+      const state = id => (dims[id] && dims[id].state) || currentDimStates[id] || 'untested';
+      const val   = id => (dims[id] && dims[id].score != null) ? dims[id].score
+                        : (scores[id] != null ? scores[id] : null);
 
-      for (let lv = 1; lv <= 5; lv++) {
-        const r = R / 5 * lv;
-        ctx.beginPath();
-        labels.forEach((_, i) => {
-          const a = start + i * step;
-          i === 0 ? ctx.moveTo(cx + Math.cos(a)*r, cy + Math.sin(a)*r)
-                  : ctx.lineTo(cx + Math.cos(a)*r, cy + Math.sin(a)*r);
-        });
-        ctx.closePath(); ctx.strokeStyle = '#d9e2ec'; ctx.lineWidth = 1; ctx.stroke();
-      }
+      let g = '';
+      // 網格三圈 + 輻條
+      g += `<g class="grid">${[R, R*0.5, R*0.25].map(r => `<polygon points="${poly(r)}"/>`).join('')}</g>`;
+      g += `<g class="spoke">${AX.map((_, i) => {
+              const [x, y] = pt(i, R);
+              return `<line x1="${CX}" y1="${CY}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`;
+            }).join('')}</g>`;
+      // 同齡中位＝50 分那一圈
+      g += `<polygon class="bench" points="${poly(R * 0.5)}"/>`;
 
-      labels.forEach((lbl, i) => {
-        const a = start + i * step;
-        ctx.beginPath(); ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + Math.cos(a)*R, cy + Math.sin(a)*R);
-        ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1; ctx.stroke();
-        const lx = cx + Math.cos(a)*(R+32), ly = cy + Math.sin(a)*(R+30);
-        const st = (currentDimStates || {})[metricConfig[i].id];
-        ctx.font = '800 13px system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans TC"';
-        ctx.fillStyle = (st && st !== 'scored') ? '#94a3b8' : '#344054';
-        ctx.textAlign = lx > cx+10 ? 'left' : lx < cx-10 ? 'right' : 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(lbl, lx, ly);
-        // 沒計分的維度直接在軸標下方說明原因，避免家長把空心點讀成「0 分」或「50 分」
-        if (st && st !== 'scored') {
-          // 「未測」和「基準不足」是兩件事：前者沒做這項測驗，後者做了但隊上沒人可比。
-          // 舊版一律寫「未測」會誤導教練以為漏測。
-          ctx.font = '500 9.5px system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans TC"';
-          ctx.fillStyle = st === 'untested' ? '#b0bcc9' : '#b45309';
-          ctx.fillText(st === 'untested' ? '未測' : '基準不足', lx, ly + 13);
-        }
+      // 只連有分數的軸
+      const scoredPts = [];
+      AX.forEach((a, i) => {
+        if (state(a.id) !== 'scored') return;
+        const v = val(a.id);
+        if (v == null) return;
+        scoredPts.push({ i, v, p: pt(i, R * Math.max(0, Math.min(100, v)) / 100) });
+      });
+      if (scoredPts.length >= 3)
+        g += `<polygon class="me" points="${scoredPts.map(o => o.p.map(n=>n.toFixed(1)).join(',')).join(' ')}"/>`;
+      else if (scoredPts.length === 2)
+        g += `<line class="me" x1="${scoredPts[0].p[0].toFixed(1)}" y1="${scoredPts[0].p[1].toFixed(1)}"
+                    x2="${scoredPts[1].p[0].toFixed(1)}" y2="${scoredPts[1].p[1].toFixed(1)}" fill="none"/>`;
+      g += `<g class="pt">${scoredPts.map(o =>
+              `<circle cx="${o.p[0].toFixed(1)}" cy="${o.p[1].toFixed(1)}" r="3.4"/>`).join('')}</g>`;
+
+      // 軸標：未計分的用灰字並標明原因（未測 / 基準不足）
+      AX.forEach((a, i) => {
+        const st = state(a.id);
+        const [lx, ly] = pt(i, R + 20);
+        const off = st !== 'scored';
+        const dy  = ly < CY ? -2 : 10;
+        g += `<text class="lbl${off ? ' off' : ''}" x="${lx.toFixed(1)}" y="${(ly + dy).toFixed(1)}">${a.name}</text>`;
+        if (off)
+          g += `<text class="sm" x="${lx.toFixed(1)}" y="${(ly + dy + 11).toFixed(1)}">`
+             + (st === 'untested' ? '未測' : '基準不足') + `</text>`;
+      });
+      // 有分數的軸標上數字
+      scoredPts.forEach(o => {
+        const [nx, ny] = pt(o.i, R * Math.max(0, Math.min(100, o.v)) / 100);
+        const outward = 12;
+        const [ox, oy] = [nx + Math.cos(ang(o.i)) * outward, ny + Math.sin(ang(o.i)) * outward];
+        g += `<text class="num" x="${ox.toFixed(1)}" y="${(oy + 3).toFixed(1)}">${o.v}</text>`;
       });
 
-      function poly(vals, fill, stroke, lw) {
-        ctx.beginPath();
-        vals.forEach((v, i) => {
-          const r = R * Math.max(0, Math.min(100, v)) / 100;
-          const a = start + i * step;
-          i === 0 ? ctx.moveTo(cx + Math.cos(a)*r, cy + Math.sin(a)*r)
-                  : ctx.lineTo(cx + Math.cos(a)*r, cy + Math.sin(a)*r);
-        });
-        ctx.closePath();
-        ctx.fillStyle = fill; ctx.strokeStyle = stroke; ctx.lineWidth = lw;
-        ctx.fill(); ctx.stroke();
-      }
-      poly(avg,    'rgba(120,130,145,0.22)', 'rgba(120,130,145,0.88)', 2);
-
-      // 哪幾維真的算得出分數？算不出來就不要畫成 50 分的實心圖形
-      const states    = currentDimStates || {};
-      const isScored  = metricConfig.map(m => (states[m.id] || 'nonorm') === 'scored');
-      const anyScored = isScored.some(Boolean);
-
-      // 只把「有分數」的頂點連起來 —— 連到未計分的軸會畫出一個假的六邊形，
-      // 看起來像六維都有值，實際上那些頂點是 ?? 50 撐出來的。
-      function polyScored(vals, fill, stroke, lw) {
-        const pts = [];
-        vals.forEach((v, i) => {
-          if (!isScored[i]) return;
-          const r = R * Math.max(0, Math.min(100, v)) / 100;
-          const a = start + i * step;
-          pts.push([cx + Math.cos(a)*r, cy + Math.sin(a)*r]);
-        });
-        if (pts.length < 2) {          // 只有 1 維 → 畫一條到圓心的線段，不畫面
-          if (pts.length === 1) {
-            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(pts[0][0], pts[0][1]);
-            ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke();
-          }
-          return;
-        }
-        ctx.beginPath();
-        pts.forEach((p, i) => i === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1]));
-        ctx.closePath();
-        ctx.fillStyle = fill; ctx.strokeStyle = stroke; ctx.lineWidth = lw;
-        ctx.fill(); ctx.stroke();
-      }
-
-      if (!anyScored) {
-        ctx.save();
-        ctx.font = '700 13px system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans TC"';
-        ctx.fillStyle = '#64748b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText('同齡樣本不足', cx, cy - 8);
-        ctx.font = '500 11px system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans TC"';
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText('本次不計分', cx, cy + 10);
-        ctx.restore();
-        return;
-      }
-
-      polyScored(player, 'rgba(15,118,110,0.46)', '#0f766e', 3);
-      player.forEach((v, i) => {
-        if (!isScored[i]) return;              // 未計分 → 不畫點（軸標已註明原因）
-        const r = R * Math.max(0, Math.min(100, v)) / 100;
-        const a = start + i * step;
-        ctx.beginPath(); ctx.arc(cx + Math.cos(a)*r, cy + Math.sin(a)*r, 4.5, 0, Math.PI*2);
-        ctx.fillStyle = '#fff'; ctx.fill();
-        ctx.lineWidth = 3; ctx.strokeStyle = '#0f766e'; ctx.stroke();
-        // 有分數的軸標上數字，不必去對照雷達刻度
-        ctx.font = '700 10px ui-monospace, "SF Mono", Menlo, monospace';
-        ctx.fillStyle = '#0f766e'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(String(v), cx + Math.cos(a)*(r+13), cy + Math.sin(a)*(r+13));
-      });
+      svg.innerHTML = g;
+      svg.setAttribute('aria-label',
+        '能力雷達圖：' + (scoredPts.length
+          ? AX.filter(a => state(a.id) === 'scored').map(a => `${a.name} ${val(a.id)}`).join('、')
+          : '本次無可計分維度'));
     }
 
     function renderList(id, items, icon, emptyText) {
@@ -3043,7 +3075,6 @@
       setVal('gender', '男'); setVal('dominantHand', '右手');
       setVal('testDate', todayISO()); setVal('academyName', getAcademyName());
       photoDataUrl = '';
-      $('reportPhoto').src = defaultPhoto;
       mobilityPhotoData = [];
       if ($('mobilityPhotoInput')) $('mobilityPhotoInput').value = '';
       if ($('mobilityPhotoName')) $('mobilityPhotoName').textContent = '未選擇檔案';
@@ -3401,7 +3432,6 @@
       setVal('testDate', todayISO());
       setVal('academyName', getAcademyName());
       $('academyName').addEventListener('change', e => rememberAcademyName(e.target.value));
-      $('reportPhoto').src = defaultPhoto;
 
       $('previewBtn').addEventListener('click', previewReport);
       $('submitBtn').addEventListener('click', submitRecord);
@@ -3428,7 +3458,7 @@
         const n = $('photoInput').files?.[0]?.name || '';
         if ($('photoFileName')) $('photoFileName').textContent = n ? (n + '（壓縮中…）') : '處理中…';
         const small = await compressPhoto(r);   // 壓縮後再存，重印時才放得進資料庫
-        photoDataUrl = small; $('reportPhoto').src = small;
+        photoDataUrl = small;
         if ($('photoFileName')) $('photoFileName').textContent = n || '已選擇';
       });
 
@@ -3484,43 +3514,35 @@
 
     // 左右差改「雙向對照圖」：只給百分比看不出哪隻腳弱，也不知道指標是什麼意思。
     // lowerIsBetter=true 代表數值越小越好（落地穩定時間、落地衝擊力）。
-    function updateAsymItem(id, label, val, opt) {
-      const el = $(id);
-      if (!el) return;
-      opt = opt || {};
-      const L = parseFloat(opt.L), R = parseFloat(opt.R);
-      const both = isFinite(L) && isFinite(R) && L > 0 && R > 0;
-
-      if (val === null || !both) {
-        el.className = 'asym-item asym-empty';
-        el.innerHTML = `<div class="asym-label">${escapeHtml(label)}</div>
-          <div class="asym-value">${val !== null ? val.toFixed(1) : '—'}</div>
-          <div class="asym-pct">%</div>
-          <div class="asym-status">${val !== null ? asymStatus(val) : '未輸入資料'}</div>`;
-        return;
-      }
-
+    /* 左右差一列：左右兩條由中間往外長，弱側標色。
+       lowerIsBetter 決定哪一側算「弱」—— 落地時間/衝擊力越小越好，
+       DJ 彈性則越大越好，方向弄反會把結論講成相反的一腳。         */
+    function asymRow(label, en, val, opt) {
+      if (val === null || val === undefined) return '';
+      const L = toNum(opt.L), R = toNum(opt.R);
+      if (!(L > 0) || !(R > 0)) return '';
       const lower = !!opt.lowerIsBetter;
-      const weakL = lower ? (L > R) : (L < R);          // 哪一側較弱
-      const mx = Math.max(L, R);
-      const wL = Math.round(L / mx * 100), wR = Math.round(R / mx * 100);
-      const fmt = v => (Math.round(v * 100) / 100);
-      const u = opt.unit || '';
-
-      el.className = 'asym-row ' + asymClass(val);
-      el.innerHTML = `
-        <div class="ar-top">
-          <div class="ar-name">${escapeHtml(label)}${opt.en ? `<small>${escapeHtml(opt.en)}</small>` : ''}</div>
-          <div class="ar-gap">${val.toFixed(1)}<u>%</u></div>
+      const weakL = lower ? (L > R) : (L < R);
+      const tone  = val > 15 ? '' : (val >= 10 ? 'mild' : 'good');
+      const mx    = Math.max(L, R);
+      const wL    = Math.max(8, Math.round(L / mx * 100));
+      const wR    = Math.max(8, Math.round(R / mx * 100));
+      const u     = opt.unit || '';
+      const r2    = x => Math.round(x * 100) / 100;
+      const side  = weakL ? '左' : '右';
+      return `<div class="rp-ai ${tone}">
+        <div class="t">
+          <h4>${escapeHtml(label)}<small>${escapeHtml(en)}</small></h4>
+          <div class="rp-gap">${r2(val)}<u>%</u></div>
         </div>
-        <div class="ar-bip">
-          <span class="ar-s">左 ${fmt(L)}${u}</span>
-          <div class="ar-lane l"><i class="${weakL ? 'weak' : ''}" style="width:${wL}%"></i></div>
-          <div class="ar-lane r"><i class="${weakL ? '' : 'weak'}" style="width:${wR}%"></i></div>
-          <span class="ar-s r">右 ${fmt(R)}${u}</span>
+        <div class="rp-bip">
+          <span class="s">左 ${r2(L)}${escapeHtml(u)}</span>
+          <div class="rp-lane l"><div class="f${weakL ? ' weak' : ''}" style="width:${wL}%"></div></div>
+          <div class="rp-lane rr"><div class="f${weakL ? '' : ' weak'}" style="width:${wR}%"></div></div>
+          <span class="s rt">右 ${r2(R)}${escapeHtml(u)}</span>
         </div>
-        <p class="ar-why">${escapeHtml(opt.why || '')}<span class="ar-weak">${weakL ? '左' : '右'}腳較弱</span></p>
-      `;
+        <p class="rp-why"><b>${side}腳較弱</b> —— ${escapeHtml(opt.why)}</p>
+      </div>`;
     }
 
     function displayAsymmetry(rec) {
@@ -3535,22 +3557,42 @@
       const nkgL = w > 0 ? toNum(rec.singleLegLandForceL) / w : null;
       const nkgR = w > 0 ? toNum(rec.singleLegLandForceR) / w : null;
 
-      updateAsymItem('asymLandTime', '落地後站穩所需時間', landTime, {
-        L: rec.singleLegLandL, R: rec.singleLegLandR, unit: 's', lowerIsBetter: true,
-        en: 'Landing Stabilisation Time', why: '站穩所需時間較長的一側，單腳落地控制較弱。' });
-      updateAsymItem('asymLandNkg', '落地衝擊承受力', landNkg, {
-        L: nkgL, R: nkgR, unit: '', lowerIsBetter: true,
-        en: 'Peak Landing Force / 體重', why: '吸收落地衝擊的能力兩側不一致，長期會由強側代償。' });
-      updateAsymItem('asymDJRSI', '落地再起跳的彈性', djRSI, {
-        L: rec.singleLegDJL, R: rec.singleLegDJR, unit: '', lowerIsBetter: false,
-        en: 'Drop Jump RSI', why: '「落地後立刻再蹬」的能力兩側落差，影響該側被拉開後的煞停與回位。' });
+      const rows = [
+        asymRow('落地後站穩所需時間', 'Landing Stabilisation Time', landTime, {
+          L: rec.singleLegLandL, R: rec.singleLegLandR, unit: 's', lowerIsBetter: true,
+          why: '站穩所需時間較長的一側，單腳落地控制較弱。' }),
+        asymRow('落地衝擊承受力', 'Peak Landing Force / 體重', landNkg, {
+          L: nkgL, R: nkgR, unit: '', lowerIsBetter: true,
+          why: '吸收落地衝擊的能力兩側不一致，長期會由強側代償。' }),
+        asymRow('落地再起跳的彈性', 'Drop Jump RSI', djRSI, {
+          L: rec.singleLegDJL, R: rec.singleLegDJR, unit: '', lowerIsBetter: false,
+          why: '「落地後立刻再蹬」的能力兩側落差，影響該側被拉開後的煞停與回位。' })
+      ].filter(Boolean);
+      $('rpAsym').innerHTML = rows.join('');
+
+      // 三項是否都指向同一腳 → 值得在報告上明講
+      const weakSides = [];
+      const push = (v, L, R, lower) => {
+        if (v === null || !(toNum(L) > 0) || !(toNum(R) > 0)) return;
+        weakSides.push(lower ? (toNum(L) > toNum(R) ? '左' : '右') : (toNum(L) < toNum(R) ? '左' : '右'));
+      };
+      push(landTime, rec.singleLegLandL, rec.singleLegLandR, true);
+      push(landNkg, nkgL, nkgR, true);
+      push(djRSI, rec.singleLegDJL, rec.singleLegDJR, false);
+      const same = weakSides.length >= 2 && weakSides.every(x => x === weakSides[0]);
+      $('rpAsymNote').innerHTML = same
+        ? `${weakSides.length} 項左右差都指向<strong>${weakSides[0]}腳</strong>。建議列為本季第一優先，並於第 6 週單獨複測此三項。`
+        : '左右差未集中在同一側，先確認量測一致性再判讀。';
+      $('rpAsymTitle').textContent = rows.length && [landTime, landNkg, djRSI].some(v => v !== null && v > 15)
+        ? '左右腳差異 — 需優先處理' : '左右腳差異';
 
       // 只有任一項不對稱性 > 15%（需優先處理）時才顯示，平常隱藏讓報告清爽
       const over15 = [landTime, landNkg, djRSI].some(v => v !== null && v > 15);
-      card.style.display = over15 ? '' : 'none';
+      card.style.display = (over15 && rows.length) ? '' : 'none';
       // 沒有不對稱性區塊時，報告放大填滿整頁（避免底部空白）
       const rc = $('reportCard'); if (rc) rc.classList.toggle('fill', !over15);
     }
+
 
 
     // ── 預覽報告（不儲存）──
