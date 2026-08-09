@@ -413,6 +413,57 @@
       box-shadow: var(--shadow);
     }
 
+    /* ── 教練頁（報告第 2 頁）──────────────────────────────────────
+       家長頁回答「他強在哪、該練什麼」；教練頁回答「這分數怎麼算出來的、
+       哪些數字可以信」。預設不顯示，勾選才出現、才會列印。            */
+    .coach-page { display: none; margin-top: 26px; }
+    .coach-page.on { display: block; }
+    .cp-inner { padding: 30px 38px; display: flex; flex-direction: column; gap: 16px; }
+    .cp-head { display: flex; justify-content: space-between; align-items: flex-end;
+               gap: 18px; border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
+    .cp-head h3 { margin: 0; font-size: 21px; letter-spacing: -0.02em; }
+    .cp-meta { display: flex; gap: 20px; flex-wrap: wrap; font-size: 11.5px; color: var(--muted); }
+    .cp-meta b { display: block; color: var(--ink); font-weight: 700;
+                 font-variant-numeric: tabular-nums; margin-top: 1px; }
+    .cp-pageno { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+    .cp-sec > h4 { margin: 0 0 3px; font-size: 14.5px; letter-spacing: -0.01em; }
+    .cp-sec > .cp-sub { margin: 0 0 9px; font-size: 11px; color: var(--muted); }
+
+    .cptbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .cptbl th { font-size: 9.5px; letter-spacing: .08em; color: var(--muted);
+                text-align: left; padding: 6px 9px; font-weight: 600;
+                border-bottom: 1px solid var(--line); }
+    .cptbl td { padding: 7px 9px; border-bottom: 1px solid #eef2f6; vertical-align: top; }
+    .cptbl td.n { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+    .cptbl tr.dimrow td { font-weight: 700; }
+    .cp-pill { display: inline-block; font-size: 9.5px; padding: 1.5px 7px;
+               border-radius: 4px; font-weight: 700; white-space: nowrap; }
+    .cp-pill.ok { background: #dcfce7; color: #15803d; }
+    .cp-pill.no { background: #fef3c7; color: #b45309; }
+    .cp-pill.un { background: #eef1f4; color: #8a94a3; }
+    .cp-parts { font-size: 11px; color: var(--muted); line-height: 1.7; }
+    .cp-parts em { font-style: normal; color: var(--ink); font-variant-numeric: tabular-nums; }
+    .cp-parts s { color: #b0b8c4; }
+
+    .cp-total { margin-top: 8px; font-size: 11.5px; color: var(--ink);
+                background: var(--surface-soft); border-radius: 8px; padding: 9px 12px; }
+
+    .cp-raw { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px 14px; }
+    .cp-raw div { display: flex; justify-content: space-between; gap: 8px;
+                  font-size: 11.5px; padding: 4px 0; border-bottom: 1px solid #f0f3f7; }
+    .cp-raw span:first-child { color: var(--muted); }
+    .cp-raw span:last-child { font-variant-numeric: tabular-nums; font-weight: 700; }
+
+    .cp-note { border: 1px solid var(--line); border-left: 3px solid var(--orange);
+               border-radius: 6px; padding: 11px 14px; font-size: 11.5px; line-height: 1.7; }
+    .cp-note ul { margin: 0; padding-left: 17px; }
+    .cp-note li + li { margin-top: 5px; }
+    .cp-note b { color: var(--ink); }
+    .cp-note .ok-line { color: var(--muted); }
+
+    .cp-two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+
     .report-card::before {
       content: "";
       position: absolute;
@@ -1096,6 +1147,14 @@
         padding: 22px 30px;
         gap: 9px;
       }
+
+      /* 教練頁：獨立一張 A4。內容量比家長頁少 → 用自己的 zoom，不然會縮得太小 */
+      .coach-page { break-before: page; page-break-before: always; margin-top: 0; }
+      .coach-page.on { display: block !important; }
+      .coach-page:not(.on) { display: none !important; }
+      .report-card.coach-page { zoom: 0.72; }
+      .cp-inner { padding: 24px 30px; gap: 13px; }
+      .cp-raw { grid-template-columns: repeat(5, 1fr); }
 
       /* 雷達圖在列印時縮小高度，省出垂直空間 */
       .report-card.fill { zoom: 0.72; }   /* 無不對稱性區塊時放大填滿整頁（0.77→0.72：對照條加高後會溢出）*/
@@ -1872,6 +1931,11 @@
               <button class="btn btn-light" id="printBtn" type="button">列印 / PDF</button>
               <button class="btn btn-light" id="resetBtn" type="button">重設</button>
             </div>
+            <label class="no-print" style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;color:#475569;cursor:pointer">
+              <input type="checkbox" id="coachPageToggle" style="width:16px;height:16px;cursor:pointer" />
+              附上教練頁（第 2 頁：計分明細、原始數據、資料品質、方法學）
+              <span style="color:#94a3b8;font-size:12px">— 給家長時不要勾</span>
+            </label>
             <div id="loadingMsg" style="display:none; margin-top:12px;">
               正在計算分數並儲存至後台，請稍候…
             </div>
@@ -2088,6 +2152,59 @@
             <footer class="signature">
               <span id="reportSignAcademy">奕晉網球學院</span>
               <span>體能檢測報告｜Physical Performance Assessment</span>
+            </footer>
+          </div>
+        </article>
+
+        <!-- 第 2 頁：教練頁。勾「附上教練頁」才顯示／列印 -->
+        <article class="report-card coach-page" id="coachPage">
+          <div class="cp-inner">
+            <div class="cp-head">
+              <div>
+                <h3 id="cpName">—</h3>
+                <div class="cp-meta" id="cpMeta"></div>
+              </div>
+              <div class="cp-pageno">第 2 頁　共 2 頁 · 給教練</div>
+            </div>
+
+            <section class="cp-sec">
+              <h4>六維計分明細</h4>
+              <p class="cp-sub">括號內為該項的隊內百分位。總分只採計「可計分」的維度。</p>
+              <table class="cptbl">
+                <thead>
+                  <tr><th>維度</th><th>狀態</th><th style="text-align:right">分數</th>
+                      <th style="text-align:right">基準人數</th><th>組成項目（實際採計）</th></tr>
+                </thead>
+                <tbody id="cpDimBody"></tbody>
+              </table>
+              <div class="cp-total" id="cpTotalNote"></div>
+            </section>
+
+            <section class="cp-sec">
+              <h4>完整原始數據</h4>
+              <p class="cp-sub">未填的項目不列出。</p>
+              <div class="cp-raw" id="cpRaw"></div>
+            </section>
+
+            <div class="cp-two">
+              <section class="cp-sec">
+                <h4>資料品質提醒</h4>
+                <p class="cp-sub">會影響這份報告怎麼解讀</p>
+                <div class="cp-note" id="cpQuality"></div>
+              </section>
+              <section class="cp-sec">
+                <h4>方法學註記</h4>
+                <p class="cp-sub">哪些項目能對外部常模、哪些只能隊內比</p>
+                <table class="cptbl">
+                  <thead><tr><th>項目</th><th>本院協定</th><th>文獻</th><th>對外部常模</th></tr></thead>
+                  <tbody id="cpMethod"></tbody>
+                </table>
+              </section>
+            </div>
+
+            <footer class="signature">
+              <span id="cpSignAcademy">奕晉網球學院</span>
+              <span>教練頁｜詳見 REFERENCE_青少年網球體能常模.md</span>
             </footer>
           </div>
         </article>
@@ -2639,7 +2756,140 @@
 
       drawRadarChart(s);
       displayAsymmetry(rec);
+      renderCoachPage(rec, result, acadName);
       $('reportCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    /* ══════════════ 報告第 2 頁：教練頁 ══════════════
+       家長頁講結論，教練頁講「這個數字是怎麼來的、能不能信」。
+       資料來自後台 v26 的 dimParts（維度組成明細）與 history（同一人其他次）。
+       後台沒送＝舊紀錄 → 用 currentDimStates 退回只畫得出來的部分。        */
+
+    // 這些項目的協定與文獻對照是固定知識，寫死即可（改動時同步 REFERENCE_*.md）
+    const METHOD_NOTES = [
+      ['立定跳遠',   '2 次取佳',              '同',                      'ok', '可'],
+      ['10m 衝刺',   '靜止起跑<br>起跑退光閘後方 50cm', '同（20m 測驗取 10m 分段）', 'ok', '可'],
+      ['擺臂反向跳', '擺臂 Abalakov',         '不擺臂 CMJ',              'no', '需 ÷1.11'],
+      ['5-10-5 變向', 'Pro Agility',          '文獻收的是 5-0-5（不同測驗）', 'un', '否'],
+      ['蜘蛛跑',     '逆時針 · 碼錶',          '方向兩種都有<br>（我們＝USTA 原始協定）· 光閘', 'no', '參考'],
+      ['30-15 IFT',  '28m 跑道',              '無青少年網球常模',          'un', '否']
+    ];
+
+    const RAW_FIELDS = [
+      ['sprint10m','10m 衝刺','秒'], ['sprint30m','30m 衝刺','秒'],
+      ['agility515L','5-10-5 左','秒'], ['agility515R','5-10-5 右','秒'],
+      ['spiderRun','蜘蛛跑','秒'], ['cmjHeight','擺臂反向跳','cm'],
+      ['broadJump','立定跳遠','cm'], ['lateralJumpL','Skater 左','cm'],
+      ['lateralJumpR','Skater 右','cm'], ['singleLegLandL','單腿落地 左','秒'],
+      ['singleLegLandR','單腿落地 右','秒'], ['singleLegLandForceL','落地力 左','N'],
+      ['singleLegLandForceR','落地力 右','N'], ['singleLegDJL','單腿 DJ 左','cm'],
+      ['singleLegDJR','單腿 DJ 右','cm'], ['rotationalThrowL','轉體投擲 左','m'],
+      ['rotationalThrowR','轉體投擲 右','m'], ['servingThrow','發球拋擲','m'],
+      ['mbWeight','藥球重量','kg'], ['IFT30_15','30-15 IFT','km/h'],
+      ['IFTmaxHR','IFT 最大心率','bpm'], ['gripStrength','握力','kg'],
+      ['serveSpeed','發球速度','km/h'], ['height','身高','cm'],
+      ['weight','體重','kg'], ['legLength','腿長','cm'], ['armLength','臂長','cm']
+    ];
+
+    let lastCoachArgs = null;          // 讓勾選框可以重畫，不必重新載入紀錄
+
+    function renderCoachPage(rec, result, acadName) {
+      lastCoachArgs = [rec, result, acadName];
+      const page = $('coachPage');
+      if (!page) return;
+      const on = $('coachPageToggle') && $('coachPageToggle').checked;
+      page.classList.toggle('on', !!on);
+      if (!on) return;                     // 沒勾就不算，省得白做
+
+      const s = (result && result.scores) || result || {};
+      const parts = (result && result.dimParts) || [];
+      const hist  = (result && result.history) || [];
+
+      $('cpName').textContent = rec.playerName || '—';
+      $('cpSignAcademy').textContent = acadName || '奕晉網球學院';
+      const meta = [
+        ['檢測編號', (result && result.testId) || '—'],
+        ['常模組',   s.normGroup || rec.ageGroup || '—'],
+        ['計分法',   s.scoreMethod === 'frozen-midpoint' ? '凍結基準 · 中點百分位'
+                   : s.scoreMethod === 'live-midpoint' ? '即時池 · 中點百分位' : '—'],
+        ['基準版本', s.baselineVersion || '—'],
+        ['檢測日期', rec.testDate || '—']
+      ];
+      $('cpMeta').innerHTML = meta.map(m =>
+        `<div>${escapeHtml(m[0])}<b>${escapeHtml(String(m[1]))}</b></div>`).join('');
+
+      // ── 六維明細 ──
+      const dims = (result && result.scores && result.scores.dims) || (s && s.dims) || {};
+      const PILL = { scored:['ok','可計分'], no_norm:['no','基準不足'], untested:['un','未測'] };
+      $('cpDimBody').innerHTML = (parts.length ? parts : []).map(d => {
+        const st = (dims[d.id] && dims[d.id].state) || 'untested';
+        const p  = PILL[st] || PILL.untested;
+        const dm = dims[d.id] || {};
+        const items = d.parts.map(x => {
+          if (x.state === 'untested') return `<s>${escapeHtml(x.label)}</s>`;
+          const v = `<em>${x.value}${escapeHtml(x.unit)}</em>`;
+          return x.state === 'used'
+            ? `${escapeHtml(x.label)} ${v}（${x.pct}）`
+            : `${escapeHtml(x.label)} ${v} <span style="color:#b45309">無對照</span>`;
+        }).join(' · ');
+        return `<tr class="dimrow">
+          <td>${escapeHtml(d.name)}</td>
+          <td><span class="cp-pill ${p[0]}">${p[1]}</span></td>
+          <td class="n">${dm.score == null ? '—' : dm.score}</td>
+          <td class="n">${dm.n || '—'}</td>
+          <td class="cp-parts">${items || '—'}</td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="5" style="color:#8a94a3">此紀錄無維度明細（舊資料）</td></tr>';
+
+      const scoredNames = Object.keys(dims).filter(k => dims[k].state === 'scored');
+      const scoredVals  = scoredNames.map(k => dims[k].score);
+      $('cpTotalNote').innerHTML = scoredVals.length
+        ? `總分 <b>${s.total}</b> ＝ (${scoredVals.join(' + ')}) / ${scoredVals.length}。`
+          + `「基準不足」的維度<b>不列入平均，也不臆測成 50 分</b>。`
+        : '本次沒有任何維度達到計分門檻，因此不產生總分。';
+
+      // ── 原始數據 ──
+      $('cpRaw').innerHTML = RAW_FIELDS
+        .filter(f => rec[f[0]] !== '' && rec[f[0]] != null)
+        .map(f => `<div><span>${escapeHtml(f[1])}</span><span>${escapeHtml(String(rec[f[0]]))} ${f[2]}</span></div>`)
+        .join('') || '<div style="color:#8a94a3">無原始數據</div>';
+
+      // ── 資料品質 ──
+      const issues = [];
+      if (!rec.legLength) issues.push('<b>腿長未量</b> → Skater jump 若已測也無法計分（計分＝跳距÷腿長）。補量後可回溯重算。');
+      const noNorm = parts.filter(d => (dims[d.id] || {}).state === 'no_norm').map(d => d.name);
+      if (noNorm.length) issues.push(`<b>${noNorm.join('、')}</b> 基準人數不足 ${'10'} 人 → 只能看原始值與左右差，無法給分。`);
+
+      // 同一人跨次比對：抓協定漂移（差太多）與疑似重複填寫（完全相同）
+      if (hist.length) {
+        const cur = {}; (result.metrics || []).forEach(m => cur[m.id] = m.value);
+        parts.forEach(d => d.parts.forEach(x => { if (x.value != null) cur[x.id] = x.value; }));
+        hist.forEach(h => {
+          const drift = [], same = [];
+          Object.keys(h.values).forEach(id => {
+            if (cur[id] == null) return;
+            const a = h.values[id], b = cur[id];
+            const pctDiff = Math.abs(b - a) / a;
+            if (a === b) same.push(id);
+            else if (pctDiff >= 0.12) drift.push(`${id} ${a}→${b}`);
+          });
+          if (drift.length) issues.push(
+            `<b>與 ${h.testDate}（${h.testId}）差異偏大</b>：${escapeHtml(drift.join('、'))}。`
+            + `同一人短期內變化超過 12%，先確認兩次的<b>量測方式是否一致</b>，再判斷是不是真的進步或退步。`);
+          if (same.length >= 3) issues.push(
+            `<b>與 ${h.testDate}（${h.testId}）有 ${same.length} 項數值完全相同</b>`
+            + `（${escapeHtml(same.slice(0,5).join('、'))}）。請確認是否有沿用上次成績未重測。`);
+        });
+      }
+      $('cpQuality').innerHTML = issues.length
+        ? '<ul>' + issues.map(i => `<li>${i}</li>`).join('') + '</ul>'
+        : '<span class="ok-line">未偵測到影響解讀的問題。</span>';
+
+      // ── 方法學 ──
+      $('cpMethod').innerHTML = METHOD_NOTES.map(m =>
+        `<tr><td>${m[0]}</td><td style="color:#667085">${m[1]}</td>`
+        + `<td style="color:#667085">${m[2]}</td>`
+        + `<td><span class="cp-pill ${m[3]}">${m[4]}</span></td></tr>`).join('');
     }
 
     // ── 雷達圖 ──
@@ -3165,6 +3415,9 @@
         if (el) el.addEventListener('blur', () => checkRange(id));
       });
       $('printBtn').addEventListener('click', () => window.print());
+      $('coachPageToggle').addEventListener('change', () => {
+        if (lastCoachArgs) renderCoachPage.apply(null, lastCoachArgs);
+      });
       $('resetBtn').addEventListener('click', resetForm);
       $('scrollTopBtn').addEventListener('click', () =>
         $('assessmentForm').scrollIntoView({ behavior: 'smooth', block: 'start' })
