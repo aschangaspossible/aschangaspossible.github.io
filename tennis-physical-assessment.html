@@ -1811,11 +1811,11 @@
               <div class="player-block">
                 <img id="reportPhoto" class="avatar" alt="球員照片" />
                 <div>
-                  <h3 class="player-name" id="reportName">林小宇</h3>
+                  <h3 class="player-name" id="reportName">球員姓名</h3>
                   <div class="player-meta">
-                    <span id="reportAge">年齡｜13 歲</span>
-                    <span id="reportBody">身高體重｜158 cm / 47 kg</span>
-                    <span id="reportHand">慣用手｜右手</span>
+                    <span id="reportAge">年齡｜—</span>
+                    <span id="reportBody">身高體重｜—</span>
+                    <span id="reportHand">慣用手｜—</span>
                   </div>
                 </div>
               </div>
@@ -1828,9 +1828,9 @@
 
               <div class="academy-block">
                 <div>
-                  <div id="reportDate">檢測日期｜2026-05-13</div>
-                  <div id="reportCoach">教練｜Coach Mark</div>
-                  <div id="reportAcademy">Tennis Academy</div>
+                  <div id="reportDate">檢測日期｜—</div>
+                  <div id="reportCoach">教練｜—</div>
+                  <div id="reportAcademy">奕晉網球學院</div>
                 </div>
               </div>
             </section>
@@ -1840,26 +1840,26 @@
             <section class="summary-strip">
               <div class="summary-card">
                 <small>Overall Score</small>
-                <strong id="overallScore">67</strong>
+                <strong id="overallScore">—</strong>
                 <span id="overallScoreNote">整體體能表現分數</span>
               </div>
 
               <div class="summary-card">
                 <small>Best Ability</small>
-                <strong id="bestAbility">爆發</strong>
+                <strong id="bestAbility">—</strong>
                 <span>目前最突出的能力</span>
               </div>
 
               <div class="summary-card">
                 <small>Main Focus</small>
-                <strong id="mainFocus">單腳</strong>
+                <strong id="mainFocus">—</strong>
                 <span>下一階段優先訓練</span>
               </div>
 
               <div class="summary-card">
                 <small>Training Status</small>
-                <strong id="trainingStatus" class="status-watch">觀察</strong>
-                <span id="trainingStatusNote">具備基礎，需補強控制能力</span>
+                <strong id="trainingStatus" class="status-neutral">—</strong>
+                <span id="trainingStatusNote">送出或叫出報告後顯示</span>
               </div>
             </section>
 
@@ -1934,50 +1934,26 @@
                 </div>
               </div>
 
-              <div class="data-grid" id="dataGrid">
-                <div class="metric-card">
-                  <div class="metric-label">10m Sprint</div>
-                  <div class="metric-value" id="metricSprint">—</div>
-                  <div class="metric-unit">sec</div>
-                  <div class="metric-note">第一拍啟動</div>
+              <div class="metric-rows" id="dataGrid">
+                <div class="mrow mrow-head">
+                  <span>項目</span><span class="mv">本次</span>
+                  <span class="mbar-head"><span>← 落後</span><span>中位</span><span>領先 →</span></span>
+                  <span class="mtrend">vs 上次</span>
                 </div>
-
-                <div class="metric-card">
-                  <div class="metric-label">Broad Jump</div>
-                  <div class="metric-value" id="metricJump">—</div>
-                  <div class="metric-unit">cm</div>
-                  <div class="metric-note">水平爆發</div>
+                <div class="mrow">
+                  <div class="mname">10m 衝刺</div>
+                  <div class="mv">—</div>
+                  <div class="mbar"><span class="mnone">叫出報告後顯示與同齡的對照</span></div>
+                  <div class="mtrend">—</div>
                 </div>
-
-                <div class="metric-card">
-                  <div class="metric-label">CMJ Height</div>
-                  <div class="metric-value" id="metricCMJ">—</div>
-                  <div class="metric-unit">cm</div>
-                  <div class="metric-note">垂直爆發</div>
-                </div>
-
-                <div class="metric-card">
-                  <div class="metric-label">5-10-5 Avg</div>
-                  <div class="metric-value" id="metricAgility">—</div>
-                  <div class="metric-unit">sec</div>
-                  <div class="metric-note">變向能力</div>
-                </div>
-
-                <div class="metric-card">
-                  <div class="metric-label">Single Leg Land</div>
-                  <div class="metric-value" id="metricLand">—</div>
-                  <div class="metric-unit">sec</div>
-                  <div class="metric-note">單腿減速</div>
-                </div>
-
-                <div class="metric-card">
-                  <div class="metric-label">Spider Run</div>
-                  <div class="metric-value" id="metricSpider">—</div>
-                  <div class="metric-unit">sec</div>
-                  <div class="metric-note">場上移動</div>
+                <div class="mrow">
+                  <div class="mname">立定跳遠</div>
+                  <div class="mv">—</div>
+                  <div class="mbar"><span class="mnone">教練可在下方「最重要數據」自選項目</span></div>
+                  <div class="mtrend">—</div>
                 </div>
               </div>
-            </section>
+              </section>
 
 
             <section class="card asym-card" id="asymmetryCard" style="display:none">
@@ -2023,7 +1999,7 @@
 
               <div class="recommendation" id="recommendationText">
                 <strong>訓練建議：</strong>
-                球員已具備不錯的基礎爆發能力，若能進一步提升減速與再加速控制，將有助於底線移動效率與防守品質。
+                送出或叫出報告後顯示教練備註
               </div>
             </section>
 
