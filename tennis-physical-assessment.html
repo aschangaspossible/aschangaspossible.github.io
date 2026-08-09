@@ -406,11 +406,10 @@
     }
     .report-card {
       position: relative;
-      overflow: hidden;
-      border-radius: 36px;
-      border: 1px solid rgba(217, 226, 236, 0.95);
-      background: var(--surface);
-      box-shadow: var(--shadow);
+      border-radius: 4px;
+      border: 1px solid #DEE7E3;
+      background: #fff;
+      box-shadow: 0 2px 20px rgba(14, 31, 27, .10);
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -536,20 +535,22 @@
                  font-variant-numeric: tabular-nums; white-space: nowrap; }
     .rp-m .val u { text-decoration: none; font-size: 10px; color: var(--muted);
                    font-weight: 400; margin-left: 2px; }
-    .rp-scale { position: relative; height: 26px; }
-    .rp-scale .rail { position: absolute; left: 0; right: 0; top: 11px; height: 5px;
+    .rp-scale { position: relative; height: 32px; }
+    .rp-scale .rail { position: absolute; left: 0; right: 0; top: 19px; height: 5px;
                       background: var(--tint); border: 1px solid var(--line); border-radius: 3px; }
-    .rp-scale .mid { position: absolute; top: 6px; bottom: 6px; left: 50%; width: 1px; background: var(--bench); }
-    .rp-scale .fill { position: absolute; top: 11px; height: 5px; border-radius: 3px; }
-    .rp-scale .dot { position: absolute; top: 8.5px; width: 10px; height: 10px; border-radius: 50%;
+    .rp-scale .mid { position: absolute; top: 14px; bottom: 4px; left: 50%; width: 1px; background: var(--bench); }
+    .rp-scale .fill { position: absolute; top: 19px; height: 5px; border-radius: 3px; }
+    .rp-scale .dot { position: absolute; top: 16.5px; width: 10px; height: 10px; border-radius: 50%;
                      border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.12); }
-    .rp-scale .tag { position: absolute; top: -2px; font-family: var(--f-m); font-size: 9.5px;
+    /* 標籤浮在條的正上方 —— 壓在條上會看不清楚 */
+    .rp-scale .tag { position: absolute; top: 1px; font-family: var(--f-m); font-size: 9.5px;
                      font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .rp-scale .none { top: 19px; }
     .rp-scale.g .fill, .rp-scale.g .dot { background: var(--pos); } .rp-scale.g .tag { color: var(--pos); }
     .rp-scale.y .fill, .rp-scale.y .dot { background: var(--warn); } .rp-scale.y .tag { color: var(--warn); }
     .rp-scale.r .fill, .rp-scale.r .dot { background: var(--crit); } .rp-scale.r .tag { color: var(--crit); }
-    .rp-scale .none { position: absolute; inset: 0; display: flex; align-items: center;
-                      font-size: 10.5px; color: var(--faint); }
+    .rp-scale .none { position: absolute; left: 0; right: 0; height: 5px; display: flex;
+                      align-items: center; font-size: 10.5px; color: var(--faint); }
     .rp-trend { font-family: var(--f-m); font-size: 10.5px; color: var(--faint); text-align: right; }
     .rp-trend.up { color: var(--pos); } .rp-trend.down { color: var(--crit); }
 
@@ -658,14 +659,7 @@
 
     .cp-two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
 
-    .report-card::before {
-      content: "";
-      position: absolute;
-      inset: 0 0 auto 0;
-      height: 12px;
-      background: linear-gradient(90deg, var(--primary), var(--blue), var(--yellow));
-      z-index: 2;
-    }
+    .report-card::before { content: none; }
 
     .report-inner {
       position: relative;
@@ -2183,7 +2177,7 @@
               </div>
               <div class="rp-row2">
                 <div>
-                  <svg class="rp-radar" id="radarSvg" viewBox="0 0 300 262" width="100%" height="auto" role="img"></svg>
+                  <svg class="rp-radar" id="radarSvg" viewBox="0 0 300 280" width="100%" height="auto" role="img"></svg>
                   <div class="rp-key">
                     <span><i class="rp-sw"></i><span id="rpKeyName">球員</span></span>
                     <span><i class="rp-sw d"></i>同齡中位</span>
@@ -2628,6 +2622,16 @@
     }
 
     // ── 顯示報告 ──
+    /* 常模組標籤。規則與後台 saveRecord 相同 —— 兩邊要一起改。
+       後台沒把 normGroup 送進 loadRecord，所以報告這邊自己算。 */
+    function normGroupLabel(age, gender) {
+      const a = Number(age);
+      if (!isFinite(a)) return '—';
+      if (a < 12) return 'U12';
+      if (a < 14) return 'U14';
+      return 'U14 以上 ' + (gender === '男' ? '男' : gender === '女' ? '女' : '');
+    }
+
     function displayReport(rec, result) {
       const s   = result.scores;
       const age = result.age;
@@ -2644,7 +2648,7 @@
         ['身高', rec.height ? `${rec.height} cm` : '—'],
         ['體重', rec.weight ? `${rec.weight} kg` : '—'],
         ['慣用手', rec.dominantHand || '—'],
-        ['比較組', (s.normGroup || rec.ageGroup || '—').replace('_', ' ')]
+        ['比較組', normGroupLabel(age, rec.gender)]
       ].map(x => `<div><dt>${x[0]}</dt><dd>${escapeHtml(String(x[1]))}</dd></div>`).join('');
       $('reportDate').textContent    = rec.testDate || '—';
       $('reportCoach').textContent   = rec.coach || '—';
@@ -2891,7 +2895,7 @@
       $('cpSignAcademy').textContent = acadName || '奕晉網球學院';
       const meta = [
         ['檢測編號', (result && result.testId) || '—'],
-        ['常模組',   s.normGroup || rec.ageGroup || '—'],
+        ['常模組',   normGroupLabel(result.age, rec.gender)],
         ['計分法',   s.scoreMethod === 'frozen-midpoint' ? '凍結基準 · 中點百分位'
                    : s.scoreMethod === 'live-midpoint' ? '即時池 · 中點百分位' : '—'],
         ['基準版本', s.baselineVersion || '—'],
@@ -2981,7 +2985,7 @@
     function drawRadarChart(scores) {
       const svg = $('radarSvg');
       if (!svg) return;
-      const CX = 150, CY = 135, R = 110;
+      const CX = 150, CY = 143, R = 104;
       const AX = [
         { id:'speedAgility',   name:'速度與變向' },
         { id:'lowerPower',     name:'下肢爆發'   },
@@ -2995,7 +2999,7 @@
       const poly = r => AX.map((_, i) => pt(i, r).map(n => n.toFixed(1)).join(',')).join(' ');
 
       const dims = scores.dims || {};
-      const state = id => (dims[id] && dims[id].state) || currentDimStates[id] || 'untested';
+      const state = id => (dims[id] && dims[id].state) || (currentDimStates || {})[id] || 'untested';
       const val   = id => (dims[id] && dims[id].score != null) ? dims[id].score
                         : (scores[id] != null ? scores[id] : null);
 
@@ -3485,9 +3489,11 @@
       renderKeyMetricSelectors();  // 產生最重要數據自選下拉
       loadDraftList();  // 開啟時載入草稿清單
 
-      // 初次載入先畫一張預設雷達圖（只有基準線，不畫球員能力），避免報告區雷達圖空白
-      currentScores = { speedAgility:50, lowerPower:50, singleLegDecel:50, rotational:50, throwing:50, cardio:50 };
-      currentDimStates = null;
+      // 初次載入先畫一張空雷達圖（只有網格與中位虛線），避免報告區雷達圖空白。
+      // 六維一律標 untested，才不會在還沒有資料時畫出假的能力多邊形。
+      currentScores = {};
+      currentDimStates = { speedAgility:'untested', lowerPower:'untested', singleLegDecel:'untested',
+                           rotational:'untested', throwing:'untested', cardio:'untested' };
       setTimeout(() => drawRadarChart(currentScores), 100);
     }
 
