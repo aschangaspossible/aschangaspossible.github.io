@@ -719,6 +719,22 @@
       align-items: start;
     }
 
+    /* 總分分段標尺：把「50 = 同齡中位」直接標在刻度上。
+       沒有它，家長會用學校成績的框架把 60 分讀成「100 分只拿 60」。 */
+    .score-ruler { margin: 7px 0 2px; display: none; }
+    .score-ruler.on { display: block; }
+    .sr-track { display: flex; height: 6px; gap: 2px; }
+    .sr-track i { flex: 1; background: #e2e8f0; border-radius: 2px; }
+    .sr-track i.on { background: var(--orange); }
+    .sr-track i.on-good { background: #16a34a; }
+    .sr-track i.on-risk { background: #dc2626; }
+    .sr-mark {
+      display: flex; justify-content: space-between; margin-top: 4px;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 8.5px; color: #94a3b8;
+    }
+    .sr-mark b { color: #475569; font-weight: 600; }
+
     .data-grid {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
@@ -1062,7 +1078,9 @@
       /* 固定設計寬度 1000px，再用 zoom 縮放鋪滿 A4 直式寬度（210mm≈794px）*/
       .report-card {
         width: 1000px;
-        zoom: 0.59;
+        /* 0.59 → 0.555：左右差改雙向對照圖後（3格橫排→3列直排）內容變高約 260px，
+           原本的 0.59 會溢出 A4（1118px vs 可用 1062px）。 */
+        zoom: 0.555;
         margin: 0 auto;            /* 置中，左右留白平均 */
         box-shadow: none;
         border: 0;
@@ -1080,7 +1098,7 @@
       }
 
       /* 雷達圖在列印時縮小高度，省出垂直空間 */
-      .report-card.fill { zoom: 0.77; }   /* 無不對稱性區塊時放大填滿整頁 */
+      .report-card.fill { zoom: 0.72; }   /* 無不對稱性區塊時放大填滿整頁（0.77→0.72：對照條加高後會溢出）*/
       .radar-box { min-height: 0; aspect-ratio: 1 / 0.6; }
       .analysis-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
       /* D 區隱藏時，C 區補滿整列，避免右下角留一個空洞 */
@@ -1197,19 +1215,71 @@
     .asym-card { margin-top: 16px; }
     .asym-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-top: 14px;
+      grid-template-columns: repeat(1, 1fr);   /* 雙向對照圖改直排（原本 3 格橫排） */
+      gap: 9px;
+      margin-top: 12px;
     }
+
+    /* ── 左右差：雙向對照圖 ──
+       左右實際值並列、弱側標紅，並用一句白話說明代表什麼。
+       只給百分比的話，看不出「哪隻腳弱」——那才是教練要處理的資訊。 */
+    .asym-row {
+      border: 1px solid rgba(15,23,42,.09);
+      border-left: 3px solid #dc2626;
+      border-radius: 7px;
+      padding: 10px 13px;
+      background: #fff;
+    }
+    .asym-row.asym-good { border-left-color: #16a34a; }
+    .asym-row.asym-watch { border-left-color: #b45309; }
+    .asym-row.asym-risk { border-left-color: #dc2626; }
+    .ar-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .ar-name { font-size: 12.5px; font-weight: 700; color: #1e293b; line-height: 1.3; }
+    .ar-name small {
+      display: block; font-weight: 400; font-size: 9.5px; color: #94a3b8; margin-top: 1px;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+    .ar-gap { font-size: 19px; font-weight: 800; font-variant-numeric: tabular-nums; color: #dc2626; }
+    .asym-row.asym-good .ar-gap { color: #16a34a; }
+    .asym-row.asym-watch .ar-gap { color: #b45309; }
+    .ar-gap u { text-decoration: none; font-size: 10px; font-weight: 500; margin-left: 1px; }
+    .ar-bip {
+      display: grid; grid-template-columns: 62px 1fr 1fr 62px;
+      align-items: center; gap: 6px; margin-top: 8px;
+    }
+    .ar-s {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 10px; color: #64748b; font-variant-numeric: tabular-nums;
+    }
+    .ar-s.r { text-align: right; }
+    .ar-lane { height: 12px; background: #f8fafc; border: 1px solid rgba(15,23,42,.08); position: relative; }
+    .ar-lane.l { border-right: 0; }
+    .ar-lane.r { border-left: 0; }
+    .ar-lane i { position: absolute; top: 0; bottom: 0; background: #94a3b8; }
+    .ar-lane i.weak { background: #dc2626; }
+    .asym-row.asym-good .ar-lane i.weak { background: #16a34a; }
+    .asym-row.asym-watch .ar-lane i.weak { background: #b45309; }
+    .ar-lane.l i { right: 0; }
+    .ar-lane.r i { left: 0; }
+    .ar-why { margin: 7px 0 0; font-size: 11px; color: #475569; line-height: 1.5; }
+    .ar-weak {
+      display: inline-block; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 9px; background: #fef2f2; color: #dc2626;
+      border-radius: 3px; padding: 1px 5px; margin-left: 5px;
+    }
+    .asym-row.asym-good .ar-weak { background: #f0fdf4; color: #16a34a; }
+    .asym-row.asym-watch .ar-weak { background: #fffbeb; color: #b45309; }
     .asym-item {
       border-radius: 14px;
       padding: 16px 12px;
       text-align: center;
       transition: transform .15s;
     }
-    .asym-good  { background: #dcfce7; color: #15803d; }
-    .asym-watch { background: #fef9c3; color: #854d0e; }
-    .asym-risk  { background: #fee2e2; color: #991b1b; }
+    /* 這三條是舊的「整格上色」樣式，只給退場用的 .asym-item（缺左右值時）。
+       新的 .asym-row 用左側色條，不能被整格底色蓋過。 */
+    .asym-item.asym-good  { background: #dcfce7; color: #15803d; }
+    .asym-item.asym-watch { background: #fef9c3; color: #854d0e; }
+    .asym-item.asym-risk  { background: #fee2e2; color: #991b1b; }
     .asym-empty { background: var(--surface-soft); color: var(--muted); }
     .asym-label { font-size: 11px; font-weight: 700; opacity: .8; margin-bottom: 6px; letter-spacing: .3px; }
     .asym-value { font-size: 30px; font-weight: 900; line-height: 1; }
@@ -1217,7 +1287,13 @@
     .asym-status{ font-size: 11px; font-weight: 700; margin-top: 6px; opacity: .85; }
 
     @media (max-width: 600px) {
-      .asym-grid { grid-template-columns: repeat(1, 1fr); }
+      .asym-grid { grid-template-columns: repeat(1, 1fr); gap: 7px; margin-top: 9px; }
+      .asym-row { padding: 8px 11px; }
+      .ar-gap { font-size: 16px; }
+      .ar-name { font-size: 11.5px; }
+      .ar-bip { margin-top: 6px; }
+      .ar-lane { height: 10px; }
+      .ar-why { margin-top: 5px; font-size: 10px; }
     }
     /* ── 密碼覆蓋層 ── */
 .pw-box
@@ -1841,6 +1917,12 @@
               <div class="summary-card">
                 <small>Overall Score</small>
                 <strong id="overallScore">—</strong>
+                <div class="score-ruler" id="scoreRuler" aria-hidden="true">
+                  <div class="sr-track">
+                    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                  </div>
+                  <div class="sr-mark"><span>0</span><span><b>50 同齡中位</b></span><span>100</span></div>
+                </div>
                 <span id="overallScoreNote">整體體能表現分數</span>
               </div>
 
@@ -2373,7 +2455,21 @@
       const coverage  = (s.coverage != null) ? s.coverage : scored.length;
 
       // 總分永遠標示涵蓋度 —— 只測 1 維卻寫「整體體能表現分數」會誤導家長
-      $('overallScore').textContent = (scored.length && s.total != null) ? s.total : '—';
+      const hasTotal = scored.length && s.total != null;
+      $('overallScore').textContent = hasTotal ? s.total : '—';
+
+      // 分段標尺：10 格，每格 10 分。顏色跟著評級走，家長一眼知道落在哪一段。
+      const ruler = $('scoreRuler');
+      if (ruler) {
+        ruler.classList.toggle('on', !!hasTotal);
+        if (hasTotal) {
+          const lit = Math.round(Math.max(0, Math.min(100, s.total)) / 10);
+          const cls = s.total >= 75 ? 'on-good' : (s.total >= 50 ? 'on' : 'on-risk');
+          Array.from(ruler.querySelectorAll('.sr-track i')).forEach((el, i) => {
+            el.className = i < lit ? cls : '';
+          });
+        }
+      }
       const covEl = $('overallScoreNote');
       if (covEl) {
         covEl.textContent = coverage
@@ -2591,9 +2687,11 @@
         ctx.fillText(lbl, lx, ly);
         // 沒計分的維度直接在軸標下方說明原因，避免家長把空心點讀成「0 分」或「50 分」
         if (st && st !== 'scored') {
-          ctx.font = '500 10px system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans TC"';
-          ctx.fillStyle = '#b0bcc9';
-          ctx.fillText(st === 'untested' ? '未測' : '無基準', lx, ly + 13);
+          // 「未測」和「基準不足」是兩件事：前者沒做這項測驗，後者做了但隊上沒人可比。
+          // 舊版一律寫「未測」會誤導教練以為漏測。
+          ctx.font = '500 9.5px system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans TC"';
+          ctx.fillStyle = st === 'untested' ? '#b0bcc9' : '#b45309';
+          ctx.fillText(st === 'untested' ? '未測' : '基準不足', lx, ly + 13);
         }
       });
 
@@ -2616,6 +2714,30 @@
       const isScored  = metricConfig.map(m => (states[m.id] || 'nonorm') === 'scored');
       const anyScored = isScored.some(Boolean);
 
+      // 只把「有分數」的頂點連起來 —— 連到未計分的軸會畫出一個假的六邊形，
+      // 看起來像六維都有值，實際上那些頂點是 ?? 50 撐出來的。
+      function polyScored(vals, fill, stroke, lw) {
+        const pts = [];
+        vals.forEach((v, i) => {
+          if (!isScored[i]) return;
+          const r = R * Math.max(0, Math.min(100, v)) / 100;
+          const a = start + i * step;
+          pts.push([cx + Math.cos(a)*r, cy + Math.sin(a)*r]);
+        });
+        if (pts.length < 2) {          // 只有 1 維 → 畫一條到圓心的線段，不畫面
+          if (pts.length === 1) {
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(pts[0][0], pts[0][1]);
+            ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke();
+          }
+          return;
+        }
+        ctx.beginPath();
+        pts.forEach((p, i) => i === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1]));
+        ctx.closePath();
+        ctx.fillStyle = fill; ctx.strokeStyle = stroke; ctx.lineWidth = lw;
+        ctx.fill(); ctx.stroke();
+      }
+
       if (!anyScored) {
         ctx.save();
         ctx.font = '700 13px system-ui,-apple-system,BlinkMacSystemFont,"Noto Sans TC"';
@@ -2628,17 +2750,18 @@
         return;
       }
 
-      poly(player, 'rgba(15,118,110,0.46)',  '#0f766e', 3);
+      polyScored(player, 'rgba(15,118,110,0.46)', '#0f766e', 3);
       player.forEach((v, i) => {
+        if (!isScored[i]) return;              // 未計分 → 不畫點（軸標已註明原因）
         const r = R * Math.max(0, Math.min(100, v)) / 100;
         const a = start + i * step;
         ctx.beginPath(); ctx.arc(cx + Math.cos(a)*r, cy + Math.sin(a)*r, 4.5, 0, Math.PI*2);
         ctx.fillStyle = '#fff'; ctx.fill();
-        ctx.lineWidth = 3;
-        // 未計分的維度：空心灰點 + 虛線，跟真的有分數的點區分開
-        if (isScored[i]) { ctx.strokeStyle = '#0f766e'; ctx.setLineDash([]); }
-        else             { ctx.strokeStyle = '#94a3b8'; ctx.setLineDash([2,2]); }
-        ctx.stroke(); ctx.setLineDash([]);
+        ctx.lineWidth = 3; ctx.strokeStyle = '#0f766e'; ctx.stroke();
+        // 有分數的軸標上數字，不必去對照雷達刻度
+        ctx.font = '700 10px ui-monospace, "SF Mono", Menlo, monospace';
+        ctx.fillStyle = '#0f766e'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(String(v), cx + Math.cos(a)*(r+13), cy + Math.sin(a)*(r+13));
       });
     }
 
@@ -3086,15 +3209,44 @@
       return '🔴 建議優先處理';
     }
 
-    function updateAsymItem(id, label, val) {
+    // 左右差改「雙向對照圖」：只給百分比看不出哪隻腳弱，也不知道指標是什麼意思。
+    // lowerIsBetter=true 代表數值越小越好（落地穩定時間、落地衝擊力）。
+    function updateAsymItem(id, label, val, opt) {
       const el = $(id);
       if (!el) return;
-      el.className = 'asym-item ' + (val !== null ? asymClass(val) : 'asym-empty');
+      opt = opt || {};
+      const L = parseFloat(opt.L), R = parseFloat(opt.R);
+      const both = isFinite(L) && isFinite(R) && L > 0 && R > 0;
+
+      if (val === null || !both) {
+        el.className = 'asym-item asym-empty';
+        el.innerHTML = `<div class="asym-label">${escapeHtml(label)}</div>
+          <div class="asym-value">${val !== null ? val.toFixed(1) : '—'}</div>
+          <div class="asym-pct">%</div>
+          <div class="asym-status">${val !== null ? asymStatus(val) : '未輸入資料'}</div>`;
+        return;
+      }
+
+      const lower = !!opt.lowerIsBetter;
+      const weakL = lower ? (L > R) : (L < R);          // 哪一側較弱
+      const mx = Math.max(L, R);
+      const wL = Math.round(L / mx * 100), wR = Math.round(R / mx * 100);
+      const fmt = v => (Math.round(v * 100) / 100);
+      const u = opt.unit || '';
+
+      el.className = 'asym-row ' + asymClass(val);
       el.innerHTML = `
-        <div class="asym-label">${label}</div>
-        <div class="asym-value">${val !== null ? val.toFixed(1) : '—'}</div>
-        <div class="asym-pct">%</div>
-        <div class="asym-status">${val !== null ? asymStatus(val) : '未輸入資料'}</div>
+        <div class="ar-top">
+          <div class="ar-name">${escapeHtml(label)}${opt.en ? `<small>${escapeHtml(opt.en)}</small>` : ''}</div>
+          <div class="ar-gap">${val.toFixed(1)}<u>%</u></div>
+        </div>
+        <div class="ar-bip">
+          <span class="ar-s">左 ${fmt(L)}${u}</span>
+          <div class="ar-lane l"><i class="${weakL ? 'weak' : ''}" style="width:${wL}%"></i></div>
+          <div class="ar-lane r"><i class="${weakL ? '' : 'weak'}" style="width:${wR}%"></i></div>
+          <span class="ar-s r">右 ${fmt(R)}${u}</span>
+        </div>
+        <p class="ar-why">${escapeHtml(opt.why || '')}<span class="ar-weak">${weakL ? '左' : '右'}腳較弱</span></p>
       `;
     }
 
@@ -3106,9 +3258,19 @@
       const landNkg  = calcAsym(rec.singleLegLandForceL, rec.singleLegLandForceR);
       const djRSI    = calcAsym(rec.singleLegDJL, rec.singleLegDJR);
 
-      updateAsymItem('asymLandTime', '落地穩定時間', landTime);
-      updateAsymItem('asymLandNkg',  '落地峰值/體重 N/kg', landNkg);
-      updateAsymItem('asymDJRSI',    'Drop Jump RSI', djRSI);
+      const w = toNum(rec.weight);
+      const nkgL = w > 0 ? toNum(rec.singleLegLandForceL) / w : null;
+      const nkgR = w > 0 ? toNum(rec.singleLegLandForceR) / w : null;
+
+      updateAsymItem('asymLandTime', '落地後站穩所需時間', landTime, {
+        L: rec.singleLegLandL, R: rec.singleLegLandR, unit: 's', lowerIsBetter: true,
+        en: 'Landing Stabilisation Time', why: '站穩所需時間較長的一側，單腳落地控制較弱。' });
+      updateAsymItem('asymLandNkg', '落地衝擊承受力', landNkg, {
+        L: nkgL, R: nkgR, unit: '', lowerIsBetter: true,
+        en: 'Peak Landing Force / 體重', why: '吸收落地衝擊的能力兩側不一致，長期會由強側代償。' });
+      updateAsymItem('asymDJRSI', '落地再起跳的彈性', djRSI, {
+        L: rec.singleLegDJL, R: rec.singleLegDJR, unit: '', lowerIsBetter: false,
+        en: 'Drop Jump RSI', why: '「落地後立刻再蹬」的能力兩側落差，影響該側被拉開後的煞停與回位。' });
 
       // 只有任一項不對稱性 > 15%（需優先處理）時才顯示，平常隱藏讓報告清爽
       const over15 = [landTime, landNkg, djRSI].some(v => v !== null && v > 15);
