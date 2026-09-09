@@ -2505,6 +2505,10 @@
     let currentScores   = null;
     let currentDimStates = null;   // 六維各自的計分狀態（scored / nonorm / untested）
     let currentDraftId  = null;  // 目前編輯中的草稿 ID
+    /* 這份表單已正式送出的檢測編號。非 null 代表再按一次送出就會產生重複紀錄。
+       2026-09-09 陳慶安即因此被寫成 T0051／T0052 兩筆，且兩筆都標「納入常模」，
+       同一人在 U14以上_女 池裡被算兩次，第二筆的百分位還被自己拉歪。 */
+    let submittedTestId = null;
 
     const $ = id => document.getElementById(id);
 
@@ -2660,6 +2664,15 @@
     }
 
     async function submitRecord() {
+      // 已送出過就先擋一次 —— 重複送出會在 02 與常模池各多一筆，該球員的百分位會被自己拉歪
+      if (submittedTestId) {
+        const again = confirm(
+          `⚠ 這筆已經送出過了，檢測編號 ${submittedTestId}。\n\n` +
+          `再送一次會在後台產生第二筆一模一樣的紀錄，該球員會被重複計入常模、百分位失真。\n\n` +
+          `要輸入下一位請按下方的「重設」鈕。確定仍要再送一次嗎？`
+        );
+        if (!again) return;
+      }
       const rec = collectFormData();
       if (currentDraftId) rec.draftId = currentDraftId;  // 送出後自動刪草稿
       if (!rec.playerName) { alert('請輸入球員姓名再送出。'); return; }
@@ -2721,7 +2734,8 @@
           ? '\n\n⚠ 同組樣本不足 10 筆，分數僅供參考，資料累積後會更精準。' : '';
         const photoMsg = result.mobilityFolder
           ? `\n\n📷 已上傳 ${mobilityPhotoData.length} 張活動度照片到雲端資料夾。` : '';
-        alert(`已儲存！檢測編號：${result.testId}${photoMsg}${warnMsg}`);
+        markSubmitted(result.testId);
+        alert(`已儲存！檢測編號：${result.testId}${photoMsg}${warnMsg}\n\n這筆已寫進後台，送出鈕已鎖定。要輸入下一位請按下方的「重設」鈕。`);
         mobilityPhotoData = [];
         if ($('mobilityPhotoInput')) $('mobilityPhotoInput').value = '';
         if ($('mobilityPhotoName')) $('mobilityPhotoName').textContent = '未選擇檔案';
@@ -2729,7 +2743,7 @@
         alert('網路錯誤，請稍後再試。');
       } finally {
         $('loadingMsg').style.display = 'none';
-        $('submitBtn').disabled = false;
+        if (!submittedTestId) $('submitBtn').disabled = false;  // 已送出就維持鎖定
       }
     }
 
@@ -3185,6 +3199,24 @@
       });
     }
 
+    /* 送出成功後把送出鈕鎖成「已送出」，避免同一筆被送第二次。 */
+    function markSubmitted(testId) {
+      submittedTestId = testId;
+      const b = $('submitBtn');
+      if (!b) return;
+      b.disabled = true;
+      b.textContent = `✅ 已送出（${testId}）`;
+      b.title = '這筆已經寫進後台。要輸入下一位請按下方的「重設」鈕。';
+    }
+    function clearSubmitted() {
+      submittedTestId = null;
+      const b = $('submitBtn');
+      if (!b) return;
+      b.disabled = false;
+      b.textContent = '送出並產生報告';
+      b.title = '';
+    }
+
     function resetForm() {
       ['playerName','birthday','height','weight','legLength','armLength','coachName',
        'sprint10m','spiderRun','agility515L','agility515R','cmjHeight','broadJump',
@@ -3207,6 +3239,7 @@
       clearMobility();
       defaultKeyMetrics.forEach((d,i)=>{ const s=$('keyMetric'+i); if(s) s.value=d; });
       currentDraftId = null;
+      clearSubmitted();   // 換下一位 → 解鎖送出鈕
       if ($('currentDraftBadge')) $('currentDraftBadge').style.display = 'none';
     }
 
@@ -3302,6 +3335,7 @@
         if (handleAuthError(result)) return;
         if (result.error) { alert('錯誤：' + result.error); return; }
         fillFormData(result.rec);
+        clearSubmitted();   // 換人了，解除上一位的「已送出」鎖定
         currentDraftId = draftId;
         $('currentDraftName').textContent = result.rec.playerName || '';
         $('currentDraftBadge').style.display = 'block';
