@@ -2410,6 +2410,97 @@
     // ===== 設定：部署 Apps Script 後，把 URL 貼在這裡 =====
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzui0D7wBTHs02oqO87bbabZdvdvEW0FuHtmxMWfQAot30pm5C62AkjBvQSxltp8ldE/exec';
 
+    // ===== 連線：自動重試＋失敗紀錄（2026-09-14）=====
+    // 實測：Apps Script「執行作業」顯示每次都 2–8 秒跑完，瀏覽器卻偶爾等 30–130 秒後收到 404。
+    // 卡在 Google 轉址到 script.googleusercontent.com 取結果那段，不是我們的程式慢，改後台救不了。
+    // 對策：「只讀」的動作逾時就放棄重來；會寫資料的動作不自動重送（第一次很可能已寫入，重送會重複）。
+    const NET_READ  = { attempts: 3, timeoutMs: 25000, gapMs: [1500, 3000] };
+    const NET_WRITE = { attempts: 1, timeoutMs: 90000, gapMs: [] };
+    const NET_FAIL_MSG = '伺服器暫時沒有回應（已自動重試 3 次）。請稍候 1 分鐘再試；若一直失敗請告訴 Adam。';
+    const SUBMIT_UNSURE_MSG = '送出後沒有收到伺服器回應，無法確認是否已經存入。\n\n' +
+      '請先到上方「📂 查詢歷史報告」按「載入 / 重新整理」，看清單裡有沒有這位球員這次的紀錄：\n' +
+      '・有 → 已經存好了，直接按「叫出報告」，不要再按送出（會重複計入常模）\n' +
+      '・沒有 → 再按一次送出';
+    const DRAFT_UNSURE_MSG = '沒有收到伺服器回應，無法確認草稿是否已經存入。\n請先看上方草稿清單有沒有這位球員，再決定要不要重存。';
+    const DELETE_UNSURE_MSG = '沒有收到伺服器回應，無法確認是否已經刪除。清單會重新整理，請確認一下。';
+
+    class NetError extends Error {
+      constructor(kind, status) { super(kind); this.kind = kind; this.status = status || 0; }
+    }
+
+    async function fetchJsonOnce_(url, init, timeoutMs) {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+      try {
+        const resp = await fetch(url, { ...(init || {}), signal: ctrl.signal });
+        const txt = await resp.text();
+        if (!resp.ok) throw new NetError('http', resp.status);
+        try { return JSON.parse(txt); } catch (e) { throw new NetError('badjson', resp.status); }
+      } catch (err) {
+        if (err instanceof NetError) throw err;
+        throw new NetError(ctrl.signal.aborted ? 'timeout' : 'network');
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    /**
+     * 呼叫後台。params＝GET 參數；要走 POST 就傳 { post: body }。
+     * 只重試「連線層」的失敗（逾時／404／斷線）；後台正常回來的 { error } 不重試。
+     * onRetry(第幾次, 總次數) 給按鈕顯示「重試中」。全部失敗丟 NetError。
+     */
+    async function callApi(op, params, policy, onRetry) {
+      const p = policy || NET_READ;
+      const isPost = !!(params && params.post);
+      const url  = isPost ? SCRIPT_URL : `${SCRIPT_URL}?${new URLSearchParams(params)}`;
+      const init = isPost
+        ? { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(params.post) }
+        : undefined;
+      const t0 = Date.now();
+      const kinds = [];
+      let lastErr = null;
+      for (let i = 1; i <= p.attempts; i++) {
+        if (i > 1) {
+          if (onRetry) onRetry(i, p.attempts);
+          await new Promise(r => setTimeout(r, p.gapMs[i - 2] || 3000));
+        }
+        try {
+          const json = await fetchJsonOnce_(url, init, p.timeoutMs);
+          if (i > 1) queueNetLog_({ op, attempts: i, outcome: 'retry-ok', ms: Date.now() - t0, detail: kinds.join(',') });
+          return json;
+        } catch (err) {
+          lastErr = err;
+          kinds.push(err.kind + (err.status ? ':' + err.status : ''));
+        }
+      }
+      queueNetLog_({ op, attempts: p.attempts, outcome: 'failed', ms: Date.now() - t0, detail: kinds.join(',') });
+      throw lastErr;
+    }
+
+    // 連線失敗紀錄 → 後台 ClientLog 分頁。只記動作名／次數／結果／耗時／錯誤類型／時區，不含球員資料與密碼。
+    // 登入前沒有 token 寫不進去 → 先放 localStorage，拿到憑證後補送。
+    const NETLOG_KEY = 'yj_netlog_q';
+    function queueNetLog_(ev) {
+      let q = [];
+      try { q = JSON.parse(localStorage.getItem(NETLOG_KEY) || '[]'); } catch (e) {}
+      q.push({ ...ev, at: new Date().toISOString() });
+      try { localStorage.setItem(NETLOG_KEY, JSON.stringify(q.slice(-20))); } catch (e) {}
+      flushNetLog_();
+    }
+    function flushNetLog_() {
+      if (!sessionToken) return;
+      let q = [];
+      try { q = JSON.parse(localStorage.getItem(NETLOG_KEY) || '[]'); } catch (e) {}
+      if (!q.length) return;
+      try { localStorage.removeItem(NETLOG_KEY); } catch (e) {}
+      let tz = '';
+      try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+      q.forEach(ev => {
+        const params = new URLSearchParams({ action: 'logClientEvent', token: sessionToken, tz, ...ev });
+        fetch(`${SCRIPT_URL}?${params}`).catch(() => {});   // 寫紀錄本身失敗就算了：不重試、不再記
+      });
+    }
+
     const metricConfig = [
       {
         id: "speedAgility", label: "速度與變向", short: "速度", active: true,
@@ -2713,16 +2804,12 @@
       $('submitBtn').disabled = true;
       try {
         // 用 POST（text/plain 屬簡單請求，免 CORS 預檢）把照片一起送上去，避開 GET 網址長度限制
-        const resp   = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            action: 'saveRecord', token: sessionToken,
-            data: JSON.stringify(rec), photo: photoDataUrl || '',
-            mobilityPhotos: mobilityPhotoData || []
-          })
-        });
-        const result = await resp.json();
+        // 送出會寫資料 → NET_WRITE 不自動重送（第一次很可能已寫入，重送會變重複紀錄）
+        const result = await callApi('saveRecord', { post: {
+          action: 'saveRecord', token: sessionToken,
+          data: JSON.stringify(rec), photo: photoDataUrl || '',
+          mobilityPhotos: mobilityPhotoData || []
+        } }, NET_WRITE);
         if (handleAuthError(result)) return;
         if (result.error) { alert('錯誤：' + result.error); return; }
         currentScores = result.scores;
@@ -2740,7 +2827,7 @@
         if ($('mobilityPhotoInput')) $('mobilityPhotoInput').value = '';
         if ($('mobilityPhotoName')) $('mobilityPhotoName').textContent = '未選擇檔案';
       } catch (err) {
-        alert('網路錯誤，請稍後再試。');
+        alert(SUBMIT_UNSURE_MSG);
       } finally {
         $('loadingMsg').style.display = 'none';
         if (!submittedTestId) $('submitBtn').disabled = false;  // 已送出就維持鎖定
@@ -3265,11 +3352,10 @@
       // 兩個按鈕一起鎖，避免重複送出
       $('saveDraftBtn').disabled = true; $('saveNextBtn').disabled = true;
       try {
-        const params = new URLSearchParams({
+        // 新草稿沒有 draftId，重送會多建一份 → 不自動重送
+        const result = await callApi('saveDraft', {
           action: 'saveDraft', token: sessionToken, data: JSON.stringify(rec)
-        });
-        const resp = await fetch(`${SCRIPT_URL}?${params}`);
-        const result = await resp.json();
+        }, NET_WRITE);
         if (handleAuthError(result)) return;
         if (result.error) { alert('錯誤：' + result.error); return; }
         const savedName = rec.playerName;
@@ -3287,7 +3373,7 @@
           alert(`已儲存草稿：${savedName}\n下次可從上方草稿清單繼續輸入。`);
         }
       } catch (err) {
-        alert('網路錯誤，請稍後再試。');
+        alert(DRAFT_UNSURE_MSG);
       } finally {
         btn.textContent = origText;
         $('saveDraftBtn').disabled = false; $('saveNextBtn').disabled = false;
@@ -3298,9 +3384,7 @@
       const listEl = $('draftList');
       if (!listEl) return;
       try {
-        const params = new URLSearchParams({ action: 'listDrafts', token: sessionToken });
-        const resp = await fetch(`${SCRIPT_URL}?${params}`);
-        const result = await resp.json();
+        const result = await callApi('listDrafts', { action: 'listDrafts', token: sessionToken });
         const drafts = result.drafts || [];
         if (!drafts.length) {
           listEl.innerHTML = '<div class="draft-empty">目前沒有未完成的草稿</div>';
@@ -3329,9 +3413,7 @@
 
     async function loadDraft(draftId) {
       try {
-        const params = new URLSearchParams({ action: 'loadDraft', token: sessionToken, draftId });
-        const resp = await fetch(`${SCRIPT_URL}?${params}`);
-        const result = await resp.json();
+        const result = await callApi('loadDraft', { action: 'loadDraft', token: sessionToken, draftId });
         if (handleAuthError(result)) return;
         if (result.error) { alert('錯誤：' + result.error); return; }
         fillFormData(result.rec);
@@ -3341,22 +3423,22 @@
         $('currentDraftBadge').style.display = 'block';
         $('assessmentForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
       } catch (err) {
-        alert('網路錯誤，請稍後再試。');
+        alert(NET_FAIL_MSG);
       }
     }
 
     async function deleteDraft(draftId, name) {
       if (!confirm(`確定要刪除「${name}」的草稿嗎？此動作無法復原。`)) return;
       try {
-        const params = new URLSearchParams({ action: 'deleteDraft', token: sessionToken, draftId });
-        await fetch(`${SCRIPT_URL}?${params}`);
+        await callApi('deleteDraft', { action: 'deleteDraft', token: sessionToken, draftId }, NET_WRITE);
         if (currentDraftId === draftId) {
           currentDraftId = null;
           $('currentDraftBadge').style.display = 'none';
         }
         loadDraftList();
       } catch (err) {
-        alert('網路錯誤，請稍後再試。');
+        alert(DELETE_UNSURE_MSG);
+        loadDraftList();
       }
     }
 
@@ -3367,15 +3449,14 @@
       if (!listEl) return;
       listEl.innerHTML = '<div class="draft-empty">載入中…</div>';
       try {
-        const params = new URLSearchParams({ action: 'listRecords', token: sessionToken });
-        const resp = await fetch(`${SCRIPT_URL}?${params}`);
-        const result = await resp.json();
+        const result = await callApi('listRecords', { action: 'listRecords', token: sessionToken }, NET_READ,
+          (i, n) => { listEl.innerHTML = `<div class="draft-empty">伺服器回應較慢，重試中（${i}/${n}）…</div>`; });
         if (handleAuthError(result)) return;
         if (result.error) { listEl.innerHTML = '<div class="draft-empty">錯誤：' + escapeHtml(result.error) + '</div>'; return; }
         allRecords = result.records || [];
         renderRecordList();
       } catch (err) {
-        listEl.innerHTML = '<div class="draft-empty">網路錯誤，請稍後再試。</div>';
+        listEl.innerHTML = '<div class="draft-empty">' + escapeHtml(NET_FAIL_MSG) + '</div>';
       }
     }
 
@@ -3398,7 +3479,7 @@
           </div>
           <div class="draft-item-progress">編號 ${escapeHtml(r.testId)}　${escapeHtml(r.ageGroup || '')}${r.age ? '　' + r.age + ' 歲' : ''}</div>
           <div class="draft-item-actions">
-            <button class="draft-btn draft-btn-load" onclick="openRecord('${r.testId}')">📄 叫出報告</button>
+            <button class="draft-btn draft-btn-load" onclick="openRecord('${r.testId}', this)">📄 叫出報告</button>
             <button class="draft-btn draft-btn-del" onclick="deleteRecordUI('${r.testId}','${escapeHtml(r.playerName||'')}')">🗑 刪除</button>
           </div>
         </div>`).join('');
@@ -3408,32 +3489,37 @@
     async function deleteRecordUI(testId, name) {
       if (!confirm(`確定要永久刪除「${name}」的檢測紀錄（編號 ${testId}）嗎？\n\n此動作無法復原，會一併移除該筆的雷達圖分數，且不再納入常模。`)) return;
       try {
-        const params = new URLSearchParams({ action: 'deleteRecord', token: sessionToken, testId });
-        const resp = await fetch(`${SCRIPT_URL}?${params}`);
-        const result = await resp.json();
+        const result = await callApi('deleteRecord', { action: 'deleteRecord', token: sessionToken, testId }, NET_WRITE);
         if (handleAuthError(result)) return;
         if (result.error) { alert('刪除失敗：' + result.error); return; }
         allRecords = allRecords.filter(r => r.testId !== testId);
         renderRecordList();
         alert(`已刪除「${name}」的檢測紀錄（編號 ${testId}）。`);
       } catch (err) {
-        alert('網路錯誤，請稍後再試。');
+        alert(DELETE_UNSURE_MSG);
+        loadRecordList();
       }
     }
 
-    async function openRecord(testId) {
+    async function openRecord(testId, btn) {
+      // 叫報告要等幾秒 → 按鈕顯示進度，不然教練以為沒反應會連按
+      const origText = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = '載入中…'; }
       try {
-        const params = new URLSearchParams({ action: 'loadRecord', token: sessionToken, testId });
-        const resp = await fetch(`${SCRIPT_URL}?${params}`);
-        const result = await resp.json();
+        const result = await callApi('loadRecord', { action: 'loadRecord', token: sessionToken, testId }, NET_READ,
+          (i, n) => { if (btn) btn.textContent = `重試中（${i}/${n}）…`; });
         if (handleAuthError(result)) return;
         if (result.error) { alert('錯誤：' + result.error); return; }
         photoDataUrl = result.photo || '';       // 有存照片就帶回，沒有則用預設照片
         currentScores = result.scores;
-        displayReport(result.rec, { scores: result.scores, age: result.age });
+        // 整包傳入：metrics（關鍵數據對照條）、history（vs 上次）、dimParts（教練頁）都在 result 裡。
+        // 2026-09-14 以前只傳 scores/age → 重印報告的「關鍵數據」一律顯示「尚無資料」。
+        displayReport(result.rec, result);
         alert(`已叫出「${result.rec.playerName || ''}」的報告（編號 ${testId}）。\n請按報告上方「列印 / PDF」輸出。`);
       } catch (err) {
-        alert('網路錯誤，請稍後再試。');
+        alert(NET_FAIL_MSG);
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = origText; }
       }
     }
 
@@ -3942,6 +4028,7 @@
       document.body.classList.remove('locked');
       $('loginOverlay').style.display = 'none';
       $('whoAmI').textContent = sessionUser ? `👤 ${sessionUser}` : '';
+      flushNetLog_();   // 登入前累積的連線失敗紀錄，拿到憑證後補送
     }
 
     async function doLogin() {
@@ -3953,9 +4040,8 @@
       btn.disabled = true; btn.textContent = '登入中…';
       $('passwordError').textContent = '';
       try {
-        const params = new URLSearchParams({ action: 'login', user, pass });
-        const resp = await fetch(`${SCRIPT_URL}?${params}`);
-        const result = await resp.json();
+        const result = await callApi('login', { action: 'login', user, pass }, NET_READ,
+          (i, n) => { btn.textContent = `重試中（${i}/${n}）…`; });
         if (result.error) { $('passwordError').textContent = result.error; return; }
         sessionToken = result.token;
         sessionUser  = result.name || result.user;
@@ -3964,7 +4050,7 @@
         showApp();
         init();                    // 憑證到手才載入球員名單等資料
       } catch (e) {
-        $('passwordError').textContent = '網路錯誤，請稍後再試';
+        $('passwordError').textContent = NET_FAIL_MSG;
       } finally {
         btn.disabled = false; btn.textContent = '登入';
       }
